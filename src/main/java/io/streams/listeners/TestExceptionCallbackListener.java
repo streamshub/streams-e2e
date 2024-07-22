@@ -58,7 +58,7 @@ public class TestExceptionCallbackListener implements TestExecutionExceptionHand
     private void saveKubernetesState(ExtensionContext context, Throwable throwable) throws Throwable {
         LogCollector logCollector = new LogCollectorBuilder()
                 .withNamespacedResources("deployment", "subscription", "operatorgroup", "configmaps", "secret")
-                .withClusterWideResources("dsci", "dsc", "nodes", "pv")
+                .withClusterWideResources("nodes", "pv")
                 .withKubeClient(KubeResourceManager.getKubeClient())
                 .withKubeCmdClient(KubeResourceManager.getKubeCmdClient())
                 .withRootFolderPath(TestUtils.getLogPath(
