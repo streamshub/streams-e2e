@@ -32,6 +32,7 @@
         <junit.jupiter.version>5.10.3</junit.jupiter.version>
         <junit.platform.version>1.10.3</junit.platform.version>
         <maven.surefire.version>3.3.0</maven.surefire.version>
+        <maven.compile.plugin.version>3.13.0</maven.compile.plugin.version>
     </properties>
 
     <dependencies>
@@ -131,6 +132,16 @@
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>${maven.compile.plugin.version}</version>
+                <configuration>
+                    <compilerArgs>
+                        <arg>-proc:full</arg>
+                    </compilerArgs>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
