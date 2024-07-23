@@ -4,6 +4,7 @@
  */
 package io.streams.listeners;
 
+import io.streams.Environment;
 import org.junit.platform.launcher.TestExecutionListener;
 import org.junit.platform.launcher.TestPlan;
 import org.slf4j.Logger;
@@ -18,6 +19,7 @@ public class TestPlanExecutionListener implements TestExecutionListener {
         LOGGER.info("                        Test run started");
         LOGGER.info("=======================================================================");
         LOGGER.info("=======================================================================");
+        Environment.printEnvVars();
     }
 
     public void testPlanExecutionFinished(TestPlan testPlan) {
