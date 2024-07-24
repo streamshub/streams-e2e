@@ -4,6 +4,7 @@
  */
 package io.streams.listeners;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.fabric8.kubernetes.api.model.LabelSelectorBuilder;
 import io.skodjob.testframe.LogCollector;
 import io.skodjob.testframe.LogCollectorBuilder;
@@ -55,6 +56,7 @@ public class TestExceptionCallbackListener implements TestExecutionExceptionHand
         saveKubernetesState(context, throwable);
     }
 
+    @SuppressFBWarnings("BC_UNCONFIRMED_CAST_OF_RETURN_VALUE")
     private void saveKubernetesState(ExtensionContext context, Throwable throwable) throws Throwable {
         LogCollector logCollector = new LogCollectorBuilder()
                 .withNamespacedResources("deployment", "subscription", "operatorgroup", "configmaps", "secret")
