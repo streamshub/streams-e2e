@@ -31,3 +31,6 @@ jobs:
 
       - name: Build
         run: ./mvnw --batch-mode install -DskipITs=true
+
+      - name: Run spotbugs check
+        run: ./mvnw spotbugs:check
