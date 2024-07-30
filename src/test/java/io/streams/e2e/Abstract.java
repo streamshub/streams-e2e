@@ -2,9 +2,12 @@ package io.streams.e2e;
 
 import io.skodjob.testframe.annotations.ResourceManager;
 import io.skodjob.testframe.annotations.TestVisualSeparator;
+import io.skodjob.testframe.resources.DeploymentType;
+import io.skodjob.testframe.resources.InstallPlanType;
 import io.skodjob.testframe.resources.KubeResourceManager;
 import io.skodjob.testframe.resources.NamespaceType;
 import io.skodjob.testframe.resources.OperatorGroupType;
+import io.skodjob.testframe.resources.ServiceType;
 import io.skodjob.testframe.resources.SubscriptionType;
 import io.skodjob.testframe.utils.KubeUtils;
 import io.streams.constants.TestConstants;
@@ -21,7 +24,10 @@ public class Abstract {
         KubeResourceManager.getInstance().setResourceTypes(
             new NamespaceType(),
             new SubscriptionType(),
-            new OperatorGroupType()
+            new OperatorGroupType(),
+            new DeploymentType(),
+            new InstallPlanType(),
+            new ServiceType()
         );
         KubeResourceManager.getInstance().addCreateCallback(r -> {
             if (r.getKind().equals("Namespace")) {
