@@ -40,6 +40,8 @@
         <maven.compile.plugin.version>3.13.0</maven.compile.plugin.version>
         <maven.dependency.version>3.7.0</maven.dependency.version>
         <maven.download.plugin.version>1.9.0</maven.download.plugin.version>
+
+        <skipITs>true</skipITs>
     </properties>
 
     <dependencies>
@@ -266,6 +268,15 @@
     </build>
 
     <profiles>
+        <profile>
+            <id>test</id>
+            <properties>
+                <skipITs>false</skipITs>
+            </properties>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+        </profile>
         <profile>
             <id>get-operator-files</id>
             <activation>
