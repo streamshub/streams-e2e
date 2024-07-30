@@ -33,3 +33,6 @@ build/
 
 ### Others ###
 **.*kubeconfig
+
+### Operator install files ###
+operator-install-files/
