@@ -22,18 +22,18 @@ TODO
 ## Run tests
 Run all tests.
 ```bash
-$ ./mvnw verify
+$ ./mvnw verify -P test
 ```
 
 Run specific tag.
 ```bash
-$ ./mvnw verify -Dgroups=smoke
+$ ./mvnw verify -P test -Dgroups=smoke
 ```
 
 Run specific test class or test
 ```bash
-$ ./mvnw verify -Dit.tests=io.streams.e2e.dummy.DummyST
-$ ./mvnw verify -Dit.tests=io.streams.e2e.dummy.DummyST#dummyTest
+$ ./mvnw verify -P test -Dit.tests=io.streams.e2e.dummy.DummyST
+$ ./mvnw verify -P test -Dit.tests=io.streams.e2e.dummy.DummyST#dummyTest
 ```
 
 ## Test configuration
