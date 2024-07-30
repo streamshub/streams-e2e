@@ -30,7 +30,7 @@ jobs:
             ${{ runner.os }}-${{ matrix.version }}-maven-
 
       - name: Build
-        run: ./mvnw --batch-mode install -DskipITs=true
+        run: ./mvnw --batch-mode install -P get-operator-files
 
       - name: Run spotbugs check
         run: ./mvnw spotbugs:check

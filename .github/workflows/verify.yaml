@@ -27,4 +27,4 @@ jobs:
         uses: helm/kind-action@v1
 
       - name: Verify
-        run: ./mvnw verify -Dgroups=smoke
+        run: ./mvnw verify -P test -Dgroups=smoke
