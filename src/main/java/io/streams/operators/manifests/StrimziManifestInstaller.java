@@ -18,14 +18,13 @@ import io.fabric8.kubernetes.api.model.rbac.RoleBinding;
 import io.skodjob.testframe.TestFrameConstants;
 import io.skodjob.testframe.resources.KubeResourceManager;
 import io.skodjob.testframe.wait.Wait;
-import io.streams.Environment;
+import io.streams.constants.TestConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -39,8 +38,8 @@ import java.util.concurrent.CompletableFuture;
 public class StrimziManifestInstaller {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(StrimziManifestInstaller.class);
-    private static Path filesDir = Paths.get(Environment.USER_PATH, "operator-install-files",
-        "strimzi-kafka-operator", "install", "cluster-operator");
+    private static Path filesDir = TestConstants.YAML_MANIFEST_PATH.resolve("strimzi-kafka-operator").resolve(
+        "install").resolve("cluster-operator");
 
     /**
      * Deployment name for strimzi operator

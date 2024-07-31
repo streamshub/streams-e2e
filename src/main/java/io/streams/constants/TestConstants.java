@@ -4,6 +4,12 @@
  */
 package io.streams.constants;
 
+import io.streams.Environment;
+
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
 public interface TestConstants {
     String LOG_COLLECT_LABEL = "streams-e2e";
+    Path YAML_MANIFEST_PATH = Paths.get(Environment.USER_PATH, "operator-install-files");
 }
