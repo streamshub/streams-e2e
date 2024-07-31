@@ -2,6 +2,11 @@
 
 Test suite for verify interoperability of streams components like kafka, flink, etc... managed by operators on kubernetes.
 
+## Requirements
+There is several requirements you have to have installed to properly build the project and run the tests:
+- Java 17+
+- Helm 3+
+
 ## Use latest released upstream operators install files
 Run maven with profile `get-operator-files` to download all operators install files which will be used in test suite.
 
