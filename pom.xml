@@ -100,7 +100,16 @@
             <groupId>io.fabric8</groupId>
             <artifactId>kubernetes-client-api</artifactId>
             <version>${fabric8.version}</version>
-            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.fabric8</groupId>
+            <artifactId>kubernetes-model-apps</artifactId>
+            <version>${fabric8.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.fabric8</groupId>
+            <artifactId>kubernetes-model-rbac</artifactId>
+            <version>${fabric8.version}</version>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>

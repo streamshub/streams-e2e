@@ -18,7 +18,7 @@ public class Environment {
 
     private static final TestEnvironmentVariables ENVIRONMENT_VARIABLES = new TestEnvironmentVariables();
     private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm");
-    private static final String USER_PATH = System.getProperty("user.dir");
+    public static final String USER_PATH = System.getProperty("user.dir");
 
 
     public static final Path LOG_DIR = ENVIRONMENT_VARIABLES.getOrDefault("LOG_DIR",
