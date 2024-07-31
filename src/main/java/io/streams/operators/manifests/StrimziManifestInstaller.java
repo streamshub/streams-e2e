@@ -98,13 +98,13 @@ public class StrimziManifestInstaller {
                     .build();
 
                 KubeResourceManager.getInstance().createOrUpdateResourceWithoutWait(crb);
-            } else if (res instanceof Deployment && "strimzi-cluster-operator".equals(res.getMetadata().getName())) {
+            } else if (res instanceof Deployment && DEPLOYMENT_NAME.equals(res.getMetadata().getName())) {
                 modifyDeployment((Deployment) res);
             }
             KubeResourceManager.getInstance().createOrUpdateResourceWithoutWait(res);
         });
-        LOGGER.info("Done installing Strimzi : {}", OPERATOR_NS);
-        return Wait.untilAsync("Strimzi operator ready", 1_000,
+        LOGGER.info("Strimzi operator installed to namespace: {}", OPERATOR_NS);
+        return Wait.untilAsync("Strimzi operator readiness", TestFrameConstants.GLOBAL_POLL_INTERVAL_1_SEC,
             TestFrameConstants.GLOBAL_TIMEOUT, StrimziManifestInstaller::isReady);
     }
 
