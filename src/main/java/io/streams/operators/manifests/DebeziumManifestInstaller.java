@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 /**
- * Installer of debezium operator using yaml manifests files
+ * Installer of Debezium operator using yaml manifests files
  */
 public class DebeziumManifestInstaller {
 
@@ -32,7 +32,7 @@ public class DebeziumManifestInstaller {
     private static Path filesDir = TestConstants.YAML_MANIFEST_PATH.resolve("debezium");
 
     /**
-     * Deployment name for debezium operator
+     * Deployment name for Debezium operator
      */
     public static final String DEPLOYMENT_NAME = "debezium-operator";
 
@@ -81,7 +81,12 @@ public class DebeziumManifestInstaller {
     }
 
     private static boolean isReady() {
-        return KubeResourceManager.getKubeClient().getClient().apps()
-            .deployments().inNamespace(OPERATOR_NS).withName(DEPLOYMENT_NAME).isReady();
+        if (KubeResourceManager.getKubeClient().getClient().apps()
+            .deployments().inNamespace(OPERATOR_NS).withName(DEPLOYMENT_NAME).isReady()) {
+            LOGGER.info("Debezium Operator {}/{} is ready", OPERATOR_NS, DEPLOYMENT_NAME);
+            return true;
+        } else {
+            return false;
+        }
     }
 }
