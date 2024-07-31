@@ -32,7 +32,7 @@ public class DebeziumManifestInstaller {
     private static Path filesDir = TestConstants.YAML_MANIFEST_PATH.resolve("debezium");
 
     /**
-     * Deployment name for strimzi operator
+     * Deployment name for debezium operator
      */
     public static final String DEPLOYMENT_NAME = "debezium-operator";
 
