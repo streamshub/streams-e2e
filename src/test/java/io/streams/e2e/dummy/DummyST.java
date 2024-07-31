@@ -4,6 +4,7 @@ import io.fabric8.kubernetes.api.model.NamespaceBuilder;
 import io.skodjob.testframe.resources.KubeResourceManager;
 import io.streams.constants.TestTags;
 import io.streams.e2e.Abstract;
+import io.streams.operators.manifests.DebeziumManifestInstaller;
 import io.streams.operators.manifests.StrimziManifestInstaller;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -39,6 +40,15 @@ public class DummyST extends Abstract {
         assertTrue(KubeResourceManager.getKubeClient().getClient().apps()
             .deployments().inNamespace(StrimziManifestInstaller.OPERATOR_NS)
             .withName(StrimziManifestInstaller.DEPLOYMENT_NAME).isReady());
+    }
+
+    @Test
+    void installDebeziumFromManifestsTest() throws IOException {
+        CompletableFuture.allOf(
+            DebeziumManifestInstaller.install()).join();
+        assertTrue(KubeResourceManager.getKubeClient().getClient().apps()
+            .deployments().inNamespace(DebeziumManifestInstaller.OPERATOR_NS)
+            .withName(DebeziumManifestInstaller.DEPLOYMENT_NAME).isReady());
     }
 
     static boolean enabled() {
