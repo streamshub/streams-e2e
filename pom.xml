@@ -46,9 +46,11 @@
 
         <operator.files.destination>operator-install-files</operator.files.destination>
         <flink.files.destination>flink</flink.files.destination>
+        <cert.manager.files.destination>cert-manager</cert.manager.files.destination>
         <!-- Operators versions -->
         <strimzi.version>0.42.0</strimzi.version>
         <flink.version>1.9.0</flink.version>
+        <cert.manager.version>1.15.2</cert.manager.version>
     </properties>
 
     <dependencies>
@@ -291,12 +293,12 @@
             </activation>
             <build>
                 <plugins>
-                    <!-- Strimzi Operator -->
                     <plugin>
                         <groupId>com.googlecode.maven-download-plugin</groupId>
                         <artifactId>download-maven-plugin</artifactId>
                         <version>${maven.download.plugin.version}</version>
                         <executions>
+                            <!-- Strimzi Operator -->
                             <execution>
                                 <id>get-strimzi</id>
                                 <phase>generate-sources</phase>
@@ -316,15 +318,53 @@
                                     </fileMappers>
                                 </configuration>
                             </execution>
+                            <!-- Flink Operator -->
+                            <execution>
+                                <id>get-flink-deployment-crd</id>
+                                <phase>generate-sources</phase>
+                                <goals>
+                                    <goal>wget</goal>
+                                </goals>
+                                <configuration>
+                                    <url>https://raw.githubusercontent.com/apache/flink-kubernetes-operator/release-${flink.version}/helm/flink-kubernetes-operator/crds/flinkdeployments.flink.apache.org-v1.yml</url>
+                                    <outputDirectory>${basedir}/${operator.files.destination}/${flink.files.destination}/</outputDirectory>
+                                    <outputFileName>flinkdeployments.flink.apache.org-v1.yml</outputFileName>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>get-flink-sessionjob-crd</id>
+                                <phase>generate-sources</phase>
+                                <goals>
+                                    <goal>wget</goal>
+                                </goals>
+                                <configuration>
+                                    <url>https://raw.githubusercontent.com/apache/flink-kubernetes-operator/release-${flink.version}/helm/flink-kubernetes-operator/crds/flinksessionjobs.flink.apache.org-v1.yml</url>
+                                    <outputDirectory>${basedir}/${operator.files.destination}/${flink.files.destination}/</outputDirectory>
+                                    <outputFileName>flinksessionjobs.flink.apache.org-v1.yml</outputFileName>
+                                </configuration>
+                            </execution>
+                            <!-- Cert Manager -->
+                            <execution>
+                                <id>get-cert-manager</id>
+                                <phase>generate-sources</phase>
+                                <goals>
+                                    <goal>wget</goal>
+                                </goals>
+                                <configuration>
+                                    <url>https://github.com/cert-manager/cert-manager/releases/download/v${cert.manager.version}/cert-manager.yaml</url>
+                                    <outputDirectory>${basedir}/${operator.files.destination}/${cert.manager.files.destination}/</outputDirectory>
+                                    <outputFileName>cert-manager.yaml</outputFileName>
+                                </configuration>
+                            </execution>
                         </executions>
                         <configuration>
                             <overwrite>true</overwrite>
-                            <failOnError>false</failOnError>
+                            <failOnError>true</failOnError>
                             <skipCache>true</skipCache>
                             <retries>2</retries>
                         </configuration>
                     </plugin>
-                    <!-- Flink Operator -->
+                    <!-- Flink Operator Deployment -->
                     <plugin>
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>exec-maven-plugin</artifactId>
@@ -373,43 +413,6 @@
                                 </configuration>
                             </execution>
                         </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>com.googlecode.maven-download-plugin</groupId>
-                        <artifactId>download-maven-plugin</artifactId>
-                        <version>${maven.download.plugin.version}</version>
-                        <executions>
-                            <execution>
-                                <id>get-flink-deployment-crd</id>
-                                <phase>generate-sources</phase>
-                                <goals>
-                                    <goal>wget</goal>
-                                </goals>
-                                <configuration>
-                                    <url>https://raw.githubusercontent.com/apache/flink-kubernetes-operator/release-${flink.version}/helm/flink-kubernetes-operator/crds/flinkdeployments.flink.apache.org-v1.yml</url>
-                                    <outputDirectory>${basedir}/${operator.files.destination}/${flink.files.destination}/</outputDirectory>
-                                    <outputFileName>flinkdeployments.flink.apache.org-v1.yml</outputFileName>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>get-flink-sessionjob-crd</id>
-                                <phase>generate-sources</phase>
-                                <goals>
-                                    <goal>wget</goal>
-                                </goals>
-                                <configuration>
-                                    <url>https://raw.githubusercontent.com/apache/flink-kubernetes-operator/release-${flink.version}/helm/flink-kubernetes-operator/crds/flinksessionjobs.flink.apache.org-v1.yml</url>
-                                    <outputDirectory>${basedir}/${operator.files.destination}/${flink.files.destination}/</outputDirectory>
-                                    <outputFileName>flinksessionjobs.flink.apache.org-v1.yml</outputFileName>
-                                </configuration>
-                            </execution>
-                        </executions>
-                        <configuration>
-                            <overwrite>true</overwrite>
-                            <failOnError>false</failOnError>
-                            <skipCache>true</skipCache>
-                            <retries>2</retries>
-                        </configuration>
                     </plugin>
                 </plugins>
             </build>
