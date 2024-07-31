@@ -26,5 +26,8 @@ jobs:
       - name: Create k8s Kind Cluster
         uses: helm/kind-action@v1
 
+      - name: Get yaml install files
+        run: ./mvnw install -P get-operator-files
+
       - name: Verify
-        run: ./mvnw verify -P test -Dgroups=smoke
+        run: ./mvnw verify -P test -Dgroups=dummy
