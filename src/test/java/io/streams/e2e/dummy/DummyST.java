@@ -56,13 +56,13 @@ public class DummyST extends Abstract {
     @Test
     void installFlinkAndCertManagerFromManifestsTest() throws IOException {
         CompletableFuture.allOf(
-            CertManagerInstaller.install()).join();
+            CertManagerInstaller.install(),
+            FlinkManifestInstaller.install()).join();
+
         assertTrue(KubeResourceManager.getKubeClient().getClient().apps()
             .deployments().inNamespace(CertManagerInstaller.OPERATOR_NS)
             .withName(CertManagerInstaller.DEPLOYMENT_NAME).isReady());
 
-        CompletableFuture.allOf(
-            FlinkManifestInstaller.install()).join();
         assertTrue(KubeResourceManager.getKubeClient().getClient().apps()
             .deployments().inNamespace(FlinkManifestInstaller.OPERATOR_NS)
             .withName(FlinkManifestInstaller.DEPLOYMENT_NAME).isReady());
