@@ -4,6 +4,9 @@ import io.fabric8.kubernetes.api.model.NamespaceBuilder;
 import io.skodjob.testframe.resources.KubeResourceManager;
 import io.streams.constants.TestTags;
 import io.streams.e2e.Abstract;
+import io.streams.operands.strimzi.resources.KafkaType;
+import io.streams.operands.strimzi.templates.KafkaNodePoolTemplate;
+import io.streams.operands.strimzi.templates.KafkaTemplate;
 import io.streams.operators.manifests.CertManagerManifestInstaller;
 import io.streams.operators.manifests.ApicurioRegistryManifestInstaller;
 import io.streams.operators.manifests.DebeziumManifestInstaller;
@@ -11,11 +14,15 @@ import io.streams.operators.manifests.FlinkManifestInstaller;
 import io.streams.operators.manifests.StrimziManifestInstaller;
 import io.streams.operators.olm.bundle.StrimziOlmBundleInstaller;
 import io.streams.operators.olm.catalog.StrimziOlmCatalogInstaller;
+import io.strimzi.api.kafka.model.nodepool.ProcessRoles;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIf;
 
 import java.io.IOException;
+import java.lang.reflect.Array;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -45,6 +52,14 @@ public class DummyST extends Abstract {
         assertTrue(KubeResourceManager.getKubeClient().getClient().apps()
             .deployments().inNamespace(StrimziManifestInstaller.OPERATOR_NS)
             .withName(StrimziManifestInstaller.DEPLOYMENT_NAME).isReady());
+
+        String kafkaName = "my-kafka";
+        KubeResourceManager.getInstance().createResourceWithWait(
+            KafkaNodePoolTemplate.defaultKafkaNodePool(StrimziManifestInstaller.OPERATOR_NS, "controller", kafkaName, List.of(ProcessRoles.CONTROLLER)).build());
+        KubeResourceManager.getInstance().createResourceWithWait(
+            KafkaNodePoolTemplate.defaultKafkaNodePool(StrimziManifestInstaller.OPERATOR_NS, "broker", kafkaName, List.of(ProcessRoles.BROKER)).build());
+
+        KubeResourceManager.getInstance().createResourceWithWait(KafkaTemplate.defaultKafka(StrimziManifestInstaller.OPERATOR_NS, kafkaName, "3.7.1").build());
     }
 
     @Test
