@@ -91,7 +91,12 @@ public class ApicurioRegistryManifestInstaller {
     }
 
     private static boolean isReady() {
-        return KubeResourceManager.getKubeClient().getClient().apps()
-            .deployments().inNamespace(OPERATOR_NS).withName(DEPLOYMENT_NAME).isReady();
+        if (KubeResourceManager.getKubeClient().getClient().apps()
+            .deployments().inNamespace(OPERATOR_NS).withName(DEPLOYMENT_NAME).isReady()) {
+            LOGGER.info("Apicurio Registry operator {}/{} is ready", OPERATOR_NS, DEPLOYMENT_NAME);
+            return true;
+        } else {
+            return false;
+        }
     }
 }
