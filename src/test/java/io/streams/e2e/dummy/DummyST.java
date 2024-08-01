@@ -4,7 +4,9 @@ import io.fabric8.kubernetes.api.model.NamespaceBuilder;
 import io.skodjob.testframe.resources.KubeResourceManager;
 import io.streams.constants.TestTags;
 import io.streams.e2e.Abstract;
+import io.streams.operators.manifests.CertManagerInstaller;
 import io.streams.operators.manifests.DebeziumManifestInstaller;
+import io.streams.operators.manifests.FlinkManifestInstaller;
 import io.streams.operators.manifests.StrimziManifestInstaller;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -49,6 +51,21 @@ public class DummyST extends Abstract {
         assertTrue(KubeResourceManager.getKubeClient().getClient().apps()
             .deployments().inNamespace(DebeziumManifestInstaller.OPERATOR_NS)
             .withName(DebeziumManifestInstaller.DEPLOYMENT_NAME).isReady());
+    }
+
+    @Test
+    void installFlinkAndCertManagerFromManifestsTest() throws IOException {
+        CompletableFuture.allOf(
+            CertManagerInstaller.install(),
+            FlinkManifestInstaller.install()).join();
+
+        assertTrue(KubeResourceManager.getKubeClient().getClient().apps()
+            .deployments().inNamespace(CertManagerInstaller.OPERATOR_NS)
+            .withName(CertManagerInstaller.DEPLOYMENT_NAME).isReady());
+
+        assertTrue(KubeResourceManager.getKubeClient().getClient().apps()
+            .deployments().inNamespace(FlinkManifestInstaller.OPERATOR_NS)
+            .withName(FlinkManifestInstaller.DEPLOYMENT_NAME).isReady());
     }
 
     static boolean enabled() {
