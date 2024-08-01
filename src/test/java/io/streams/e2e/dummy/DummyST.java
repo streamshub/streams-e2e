@@ -5,6 +5,7 @@ import io.skodjob.testframe.resources.KubeResourceManager;
 import io.streams.constants.TestTags;
 import io.streams.e2e.Abstract;
 import io.streams.operators.manifests.CertManagerInstaller;
+import io.streams.operators.manifests.ApicurioRegistryManifestInstaller;
 import io.streams.operators.manifests.DebeziumManifestInstaller;
 import io.streams.operators.manifests.FlinkManifestInstaller;
 import io.streams.operators.manifests.StrimziManifestInstaller;
@@ -66,6 +67,15 @@ public class DummyST extends Abstract {
         assertTrue(KubeResourceManager.getKubeClient().getClient().apps()
             .deployments().inNamespace(FlinkManifestInstaller.OPERATOR_NS)
             .withName(FlinkManifestInstaller.DEPLOYMENT_NAME).isReady());
+    }
+
+    @Test
+    void installApicurioRegistryFromManifestTest() throws IOException {
+        ApicurioRegistryManifestInstaller.install().join();
+
+        assertTrue(KubeResourceManager.getKubeClient().getClient().apps()
+            .deployments().inNamespace(ApicurioRegistryManifestInstaller.OPERATOR_NS)
+            .withName(ApicurioRegistryManifestInstaller.DEPLOYMENT_NAME).isReady());
     }
 
     static boolean enabled() {
