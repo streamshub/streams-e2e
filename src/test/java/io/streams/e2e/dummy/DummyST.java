@@ -9,6 +9,7 @@ import io.streams.operators.manifests.ApicurioRegistryManifestInstaller;
 import io.streams.operators.manifests.DebeziumManifestInstaller;
 import io.streams.operators.manifests.FlinkManifestInstaller;
 import io.streams.operators.manifests.StrimziManifestInstaller;
+import io.streams.operators.olm.catalog.StrimziOlmCatalogInstaller;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIf;
@@ -43,6 +44,17 @@ public class DummyST extends Abstract {
         assertTrue(KubeResourceManager.getKubeClient().getClient().apps()
             .deployments().inNamespace(StrimziManifestInstaller.OPERATOR_NS)
             .withName(StrimziManifestInstaller.DEPLOYMENT_NAME).isReady());
+    }
+
+    @Test
+    void installStrimziByOlmCatalogTest() {
+        CompletableFuture.allOf(
+            StrimziOlmCatalogInstaller.install("strimzi-kafka-operator", "strimzi-olm",
+                "strimzi-cluster-operator.v0.42.0", "stable", "operatorhubio-catalog", "olm")
+        ).join();
+        assertTrue(KubeResourceManager.getKubeClient().getClient().apps()
+            .deployments().inNamespace("strimzi-olm")
+            .withName("strimzi-cluster-operator-v0.42.0").isReady());
     }
 
     @Test
