@@ -27,9 +27,9 @@ import java.util.concurrent.CompletableFuture;
 /**
  * Installer of Cert-manager using yaml manifests files
  */
-public class CertManagerInstaller {
+public class CertManagerManifestInstaller {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(CertManagerInstaller.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(CertManagerManifestInstaller.class);
     private static Path filesDir = TestConstants.YAML_MANIFEST_PATH.resolve("cert-manager");
 
     /**
@@ -80,7 +80,7 @@ public class CertManagerInstaller {
         });
         LOGGER.info("Cert-manager installed to namespace: {}", OPERATOR_NS);
         return Wait.untilAsync("Cert-manager readiness", TestFrameConstants.GLOBAL_POLL_INTERVAL_1_SEC,
-            TestFrameConstants.GLOBAL_TIMEOUT, CertManagerInstaller::isReady);
+            TestFrameConstants.GLOBAL_TIMEOUT, CertManagerManifestInstaller::isReady);
     }
 
     private static boolean isReady() {
