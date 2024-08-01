@@ -22,6 +22,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -54,19 +55,20 @@ public class CertManagerInstaller {
         Namespace namespace = new NamespaceBuilder().withNewMetadata().withName(OPERATOR_NS).endMetadata().build();
         KubeResourceManager.getInstance().createOrUpdateResourceWithWait(namespace);
 
-        List<HasMetadata> flinkResources = new LinkedList<>();
+        List<HasMetadata> certManagerResources = new LinkedList<>();
         Files.list(filesDir).sorted().forEach(file -> {
             try {
-                flinkResources.addAll(KubeResourceManager.getInstance().readResourcesFromFile(file));
+                certManagerResources.addAll(KubeResourceManager.getInstance().readResourcesFromFile(file));
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
         });
 
-        flinkResources.forEach(res -> {
-            if (res instanceof Namespaced) {
+        certManagerResources.forEach(res -> {
+            if (!Objects.equals(res.getMetadata().getNamespace(), "kube-system")) {
                 res.getMetadata().setNamespace(OPERATOR_NS);
             }
+
             if (res instanceof ClusterRoleBinding) {
                 ClusterRoleBinding crb = (ClusterRoleBinding) res;
                 crb.getSubjects().forEach(sbj -> sbj.setNamespace(OPERATOR_NS));
@@ -74,8 +76,6 @@ public class CertManagerInstaller {
             } else if (res instanceof RoleBinding) {
                 RoleBinding rb = (RoleBinding) res;
                 rb.getSubjects().forEach(sbj -> sbj.setNamespace(OPERATOR_NS));
-            } else {
-                res.getMetadata().setNamespace(OPERATOR_NS);
             }
             KubeResourceManager.getInstance().createOrUpdateResourceWithoutWait(res);
         });
