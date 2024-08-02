@@ -12,7 +12,7 @@ import java.util.List;
 
 public class KafkaNodePoolTemplate {
 
-    public static KafkaNodePoolBuilder defaultKafkaNodePool(String namespace, String name,
+    public static KafkaNodePoolBuilder defaultKafkaNodePool(String namespace, String name, int replicas,
                                                             String kafkaClusterName, List<ProcessRoles> roles) {
         return new KafkaNodePoolBuilder()
             .withNewMetadata()
@@ -21,7 +21,7 @@ public class KafkaNodePoolTemplate {
             .withName(name)
             .endMetadata()
             .withNewSpec()
-            .withReplicas(3)
+            .withReplicas(replicas)
             .addAllToRoles(roles)
             .withNewPersistentClaimStorage()
             .withSize("1Gi")

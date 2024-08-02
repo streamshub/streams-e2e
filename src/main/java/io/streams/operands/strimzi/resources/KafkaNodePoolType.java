@@ -16,7 +16,8 @@ import java.util.function.Consumer;
 
 public class KafkaNodePoolType implements NamespacedResourceType<KafkaNodePool> {
 
-    public KafkaNodePoolType() {}
+    public KafkaNodePoolType() {
+    }
 
     @Override
     public String getKind() {
@@ -29,13 +30,13 @@ public class KafkaNodePoolType implements NamespacedResourceType<KafkaNodePool> 
     }
 
     @Override
-    public void createInNamespace(String namespace, KafkaNodePool kafkaNodePool) {
-        getClient().inNamespace(namespace).resource(kafkaNodePool).create();
+    public void createInNamespace(String namespace, KafkaNodePool resource) {
+        getClient().inNamespace(namespace).resource(resource).create();
     }
 
     @Override
-    public void updateInNamespace(String namespace, KafkaNodePool kafkaNodePool) {
-        getClient().inNamespace(namespace).resource(kafkaNodePool).update();
+    public void updateInNamespace(String namespace, KafkaNodePool resource) {
+        getClient().inNamespace(namespace).resource(resource).update();
     }
 
     @Override
@@ -51,7 +52,7 @@ public class KafkaNodePoolType implements NamespacedResourceType<KafkaNodePool> 
     }
 
     @Override
-    public void create (KafkaNodePool resource) {
+    public void create(KafkaNodePool resource) {
         getClient().inNamespace(resource.getMetadata().getNamespace()).resource(resource).create();
     }
 
@@ -66,8 +67,8 @@ public class KafkaNodePoolType implements NamespacedResourceType<KafkaNodePool> 
     }
 
     @Override
-    public void replace(String s, Consumer<KafkaNodePool> editor) {
-        KafkaNodePool toBeUpdated = getClient().withName(s).get();
+    public void replace(String name, Consumer<KafkaNodePool> editor) {
+        KafkaNodePool toBeUpdated = getClient().withName(name).get();
         editor.accept(toBeUpdated);
         update(toBeUpdated);
     }

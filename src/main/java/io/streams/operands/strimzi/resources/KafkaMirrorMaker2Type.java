@@ -9,38 +9,38 @@ import io.fabric8.kubernetes.client.dsl.Resource;
 import io.skodjob.testframe.interfaces.NamespacedResourceType;
 import io.skodjob.testframe.resources.KubeResourceManager;
 import io.strimzi.api.kafka.Crds;
-import io.strimzi.api.kafka.model.kafka.Kafka;
-import io.strimzi.api.kafka.model.kafka.KafkaList;
+import io.strimzi.api.kafka.model.mirrormaker2.KafkaMirrorMaker2;
+import io.strimzi.api.kafka.model.mirrormaker2.KafkaMirrorMaker2List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.function.Consumer;
 
-public class KafkaType implements NamespacedResourceType<Kafka> {
+public class KafkaMirrorMaker2Type implements NamespacedResourceType<KafkaMirrorMaker2> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(KafkaType.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(KafkaMirrorMaker2Type.class);
 
 
-    public KafkaType() {
+    public KafkaMirrorMaker2Type() {
     }
 
     @Override
     public String getKind() {
-        return Kafka.RESOURCE_KIND;
+        return KafkaMirrorMaker2.RESOURCE_KIND;
     }
 
     @Override
-    public MixedOperation<Kafka, KafkaList, Resource<Kafka>> getClient() {
-        return kafkaClient();
+    public MixedOperation<KafkaMirrorMaker2, KafkaMirrorMaker2List, Resource<KafkaMirrorMaker2>> getClient() {
+        return kafkaMirrorMaker2Client();
     }
 
     @Override
-    public void createInNamespace(String namespace, Kafka resource) {
+    public void createInNamespace(String namespace, KafkaMirrorMaker2 resource) {
         getClient().inNamespace(namespace).resource(resource).create();
     }
 
     @Override
-    public void updateInNamespace(String namespace, Kafka resource) {
+    public void updateInNamespace(String namespace, KafkaMirrorMaker2 resource) {
         getClient().inNamespace(namespace).resource(resource).update();
     }
 
@@ -50,14 +50,14 @@ public class KafkaType implements NamespacedResourceType<Kafka> {
     }
 
     @Override
-    public void replaceInNamespace(String namespace, String name, Consumer<Kafka> consumer) {
-        Kafka toBeUpdated = getClient().inNamespace(namespace).withName(name).get();
+    public void replaceInNamespace(String namespace, String name, Consumer<KafkaMirrorMaker2> consumer) {
+        KafkaMirrorMaker2 toBeUpdated = getClient().inNamespace(namespace).withName(name).get();
         consumer.accept(toBeUpdated);
         update(toBeUpdated);
     }
 
     @Override
-    public void create(Kafka resource) {
+    public void create(KafkaMirrorMaker2 resource) {
         getClient().inNamespace(resource.getMetadata().getNamespace()).resource(resource).create();
     }
 
@@ -67,42 +67,42 @@ public class KafkaType implements NamespacedResourceType<Kafka> {
     }
 
     @Override
-    public void update(Kafka resource) {
+    public void update(KafkaMirrorMaker2 resource) {
         getClient().inNamespace(resource.getMetadata().getNamespace()).resource(resource).update();
     }
 
     @Override
-    public void replace(String name, Consumer<Kafka> editor) {
-        Kafka toBeUpdated = getClient().withName(name).get();
+    public void replace(String name, Consumer<KafkaMirrorMaker2> editor) {
+        KafkaMirrorMaker2 toBeUpdated = getClient().withName(name).get();
         editor.accept(toBeUpdated);
         update(toBeUpdated);
     }
 
     @Override
-    public boolean waitForReadiness(Kafka resource) {
-        Kafka kafka = kafkaClient().inNamespace(resource.getMetadata().getNamespace())
+    public boolean waitForReadiness(KafkaMirrorMaker2 resource) {
+        KafkaMirrorMaker2 kafkaMirrorMaker2 = kafkaMirrorMaker2Client().inNamespace(resource.getMetadata().getNamespace())
             .withName(resource.getMetadata().getName())
             .get();
 
-        boolean isReady = kafka.getStatus().getConditions().stream()
+        boolean isReady = kafkaMirrorMaker2.getStatus().getConditions().stream()
             .anyMatch(condition -> condition.getType().equals("Ready") && condition.getStatus().equals("True"));
 
         if (isReady) {
-            LOGGER.info("Kafka {}/{} is Ready", resource.getMetadata().getNamespace(), resource.getMetadata().getName());
+            LOGGER.info("KafkaMirrorMaker2 {}/{} is Ready", resource.getMetadata().getNamespace(), resource.getMetadata().getName());
             return true;
         } else {
-            LOGGER.debug("Kafka {}/{} is not ready yet. Waiting...", resource.getMetadata().getNamespace(),
+            LOGGER.debug("KafkaMirrorMaker2 {}/{} is not ready yet. Waiting...", resource.getMetadata().getNamespace(),
                 resource.getMetadata().getName());
             return false;
         }
     }
 
     @Override
-    public boolean waitForDeletion(Kafka resource) {
+    public boolean waitForDeletion(KafkaMirrorMaker2 resource) {
         return getClient().inNamespace(resource.getMetadata().getNamespace()).withName(resource.getMetadata().getName()).get() == null;
     }
 
-    public static MixedOperation<Kafka, KafkaList, Resource<Kafka>> kafkaClient() {
-        return Crds.kafkaOperation(KubeResourceManager.getKubeClient().getClient());
+    public static MixedOperation<KafkaMirrorMaker2, KafkaMirrorMaker2List, Resource<KafkaMirrorMaker2>> kafkaMirrorMaker2Client() {
+        return Crds.kafkaMirrorMaker2Operation(KubeResourceManager.getKubeClient().getClient());
     }
 }

@@ -5,8 +5,14 @@ import io.skodjob.testframe.resources.KubeResourceManager;
 import io.streams.constants.TestTags;
 import io.streams.e2e.Abstract;
 import io.streams.operands.strimzi.resources.KafkaType;
+import io.streams.operands.strimzi.templates.KafkaBridgeTemplate;
+import io.streams.operands.strimzi.templates.KafkaConnectTemplate;
+import io.streams.operands.strimzi.templates.KafkaConnectorTemplate;
+import io.streams.operands.strimzi.templates.KafkaMirrorMaker2Template;
 import io.streams.operands.strimzi.templates.KafkaNodePoolTemplate;
 import io.streams.operands.strimzi.templates.KafkaTemplate;
+import io.streams.operands.strimzi.templates.KafkaTopicTemplate;
+import io.streams.operands.strimzi.templates.KafkaUserTemplate;
 import io.streams.operators.manifests.CertManagerManifestInstaller;
 import io.streams.operators.manifests.ApicurioRegistryManifestInstaller;
 import io.streams.operators.manifests.DebeziumManifestInstaller;
@@ -14,6 +20,7 @@ import io.streams.operators.manifests.FlinkManifestInstaller;
 import io.streams.operators.manifests.StrimziManifestInstaller;
 import io.streams.operators.olm.bundle.StrimziOlmBundleInstaller;
 import io.streams.operators.olm.catalog.StrimziOlmCatalogInstaller;
+import io.strimzi.api.kafka.model.kafka.KafkaResources;
 import io.strimzi.api.kafka.model.nodepool.ProcessRoles;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -54,12 +61,29 @@ public class DummyST extends Abstract {
             .withName(StrimziManifestInstaller.DEPLOYMENT_NAME).isReady());
 
         String kafkaName = "my-kafka";
-        KubeResourceManager.getInstance().createResourceWithWait(
-            KafkaNodePoolTemplate.defaultKafkaNodePool(StrimziManifestInstaller.OPERATOR_NS, "controller", kafkaName, List.of(ProcessRoles.CONTROLLER)).build());
-        KubeResourceManager.getInstance().createResourceWithWait(
-            KafkaNodePoolTemplate.defaultKafkaNodePool(StrimziManifestInstaller.OPERATOR_NS, "broker", kafkaName, List.of(ProcessRoles.BROKER)).build());
+        String kafkaTopicName = "my-topic";
+        String kafkaUserName = "my-user";
+        String kafkaConnectName = "my-connect";
+        String kafkaBridgeName = "my-bridge";
 
-        KubeResourceManager.getInstance().createResourceWithWait(KafkaTemplate.defaultKafka(StrimziManifestInstaller.OPERATOR_NS, kafkaName, "3.7.1").build());
+        // At first create KafkaNodePools
+        KubeResourceManager.getInstance().createResourceWithWait(
+            KafkaNodePoolTemplate.defaultKafkaNodePool(StrimziManifestInstaller.OPERATOR_NS, "controller-source", 1,
+                kafkaName, List.of(ProcessRoles.CONTROLLER)).build(),
+            KafkaNodePoolTemplate.defaultKafkaNodePool(StrimziManifestInstaller.OPERATOR_NS, "broker-source", 3,
+                kafkaName, List.of(ProcessRoles.BROKER)).build(),
+            KafkaTemplate.defaultKafka(StrimziManifestInstaller.OPERATOR_NS, kafkaName).build()
+        );
+
+        // Now rest of the operands
+        KubeResourceManager.getInstance().createResourceWithWait(
+            KafkaTopicTemplate.defaultKafkaTopic(StrimziManifestInstaller.OPERATOR_NS, kafkaTopicName, kafkaName).build(),
+            KafkaUserTemplate.defaultKafkaUser(StrimziManifestInstaller.OPERATOR_NS, kafkaUserName, kafkaName).build(),
+            KafkaBridgeTemplate.defaultKafkaBridge(StrimziManifestInstaller.OPERATOR_NS, kafkaBridgeName,
+                KafkaResources.tlsBootstrapAddress(kafkaName)).build(),
+            KafkaConnectTemplate.defaultKafkaConnectWithConnector(StrimziManifestInstaller.OPERATOR_NS,
+                kafkaConnectName, kafkaName, KafkaResources.tlsBootstrapAddress(kafkaName)).build()
+        );
     }
 
     @Test

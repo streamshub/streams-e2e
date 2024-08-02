@@ -12,8 +12,15 @@ import io.skodjob.testframe.resources.SubscriptionType;
 import io.skodjob.testframe.utils.KubeUtils;
 import io.streams.constants.TestConstants;
 import io.streams.listeners.TestExceptionCallbackListener;
+import io.streams.operands.strimzi.resources.KafkaBridgeType;
+import io.streams.operands.strimzi.resources.KafkaConnectType;
+import io.streams.operands.strimzi.resources.KafkaConnectorType;
+import io.streams.operands.strimzi.resources.KafkaMirrorMaker2Type;
 import io.streams.operands.strimzi.resources.KafkaNodePoolType;
+import io.streams.operands.strimzi.resources.KafkaRebalanceType;
+import io.streams.operands.strimzi.resources.KafkaTopicType;
 import io.streams.operands.strimzi.resources.KafkaType;
+import io.streams.operands.strimzi.resources.KafkaUserType;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -31,7 +38,14 @@ public class Abstract {
             new InstallPlanType(),
             new ServiceType(),
             new KafkaType(),
-            new KafkaNodePoolType()
+            new KafkaNodePoolType(),
+            new KafkaTopicType(),
+            new KafkaUserType(),
+            new KafkaConnectType(),
+            new KafkaConnectorType(),
+            new KafkaMirrorMaker2Type(),
+            new KafkaRebalanceType(),
+            new KafkaBridgeType()
         );
         KubeResourceManager.getInstance().addCreateCallback(r -> {
             if (r.getKind().equals("Namespace")) {

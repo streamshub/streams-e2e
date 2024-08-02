@@ -11,7 +11,7 @@ import io.strimzi.api.kafka.model.kafka.listener.KafkaListenerType;
 
 public class KafkaTemplate {
 
-    public static KafkaBuilder defaultKafka(String namespace, String name, String version) {
+    public static KafkaBuilder defaultKafka(String namespace, String name) {
         return new KafkaBuilder()
             .withNewMetadata()
             .withNamespace(namespace)
@@ -21,7 +21,6 @@ public class KafkaTemplate {
             .endMetadata()
             .withNewSpec()
             .withNewKafka()
-            .withVersion(version)
             .addToListeners(
                 new GenericKafkaListenerBuilder()
                     .withName("plain")
@@ -43,6 +42,10 @@ public class KafkaTemplate {
             .withNewTopicOperator()
             .endTopicOperator()
             .endEntityOperator()
+            .withNewKafkaExporter()
+            .endKafkaExporter()
+            .withNewCruiseControl()
+            .endCruiseControl()
             .endSpec();
     }
 }

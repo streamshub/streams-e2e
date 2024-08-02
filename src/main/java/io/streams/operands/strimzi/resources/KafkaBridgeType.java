@@ -9,38 +9,38 @@ import io.fabric8.kubernetes.client.dsl.Resource;
 import io.skodjob.testframe.interfaces.NamespacedResourceType;
 import io.skodjob.testframe.resources.KubeResourceManager;
 import io.strimzi.api.kafka.Crds;
-import io.strimzi.api.kafka.model.kafka.Kafka;
-import io.strimzi.api.kafka.model.kafka.KafkaList;
+import io.strimzi.api.kafka.model.bridge.KafkaBridge;
+import io.strimzi.api.kafka.model.bridge.KafkaBridgeList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.function.Consumer;
 
-public class KafkaType implements NamespacedResourceType<Kafka> {
+public class KafkaBridgeType implements NamespacedResourceType<KafkaBridge> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(KafkaType.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(KafkaBridgeType.class);
 
 
-    public KafkaType() {
+    public KafkaBridgeType() {
     }
 
     @Override
     public String getKind() {
-        return Kafka.RESOURCE_KIND;
+        return KafkaBridge.RESOURCE_KIND;
     }
 
     @Override
-    public MixedOperation<Kafka, KafkaList, Resource<Kafka>> getClient() {
-        return kafkaClient();
+    public MixedOperation<KafkaBridge, KafkaBridgeList, Resource<KafkaBridge>> getClient() {
+        return kafkaBridgeClient();
     }
 
     @Override
-    public void createInNamespace(String namespace, Kafka resource) {
+    public void createInNamespace(String namespace, KafkaBridge resource) {
         getClient().inNamespace(namespace).resource(resource).create();
     }
 
     @Override
-    public void updateInNamespace(String namespace, Kafka resource) {
+    public void updateInNamespace(String namespace, KafkaBridge resource) {
         getClient().inNamespace(namespace).resource(resource).update();
     }
 
@@ -50,14 +50,14 @@ public class KafkaType implements NamespacedResourceType<Kafka> {
     }
 
     @Override
-    public void replaceInNamespace(String namespace, String name, Consumer<Kafka> consumer) {
-        Kafka toBeUpdated = getClient().inNamespace(namespace).withName(name).get();
+    public void replaceInNamespace(String namespace, String name, Consumer<KafkaBridge> consumer) {
+        KafkaBridge toBeUpdated = getClient().inNamespace(namespace).withName(name).get();
         consumer.accept(toBeUpdated);
         update(toBeUpdated);
     }
 
     @Override
-    public void create(Kafka resource) {
+    public void create(KafkaBridge resource) {
         getClient().inNamespace(resource.getMetadata().getNamespace()).resource(resource).create();
     }
 
@@ -67,42 +67,42 @@ public class KafkaType implements NamespacedResourceType<Kafka> {
     }
 
     @Override
-    public void update(Kafka resource) {
+    public void update(KafkaBridge resource) {
         getClient().inNamespace(resource.getMetadata().getNamespace()).resource(resource).update();
     }
 
     @Override
-    public void replace(String name, Consumer<Kafka> editor) {
-        Kafka toBeUpdated = getClient().withName(name).get();
+    public void replace(String name, Consumer<KafkaBridge> editor) {
+        KafkaBridge toBeUpdated = getClient().withName(name).get();
         editor.accept(toBeUpdated);
         update(toBeUpdated);
     }
 
     @Override
-    public boolean waitForReadiness(Kafka resource) {
-        Kafka kafka = kafkaClient().inNamespace(resource.getMetadata().getNamespace())
+    public boolean waitForReadiness(KafkaBridge resource) {
+        KafkaBridge kafkaBridge = kafkaBridgeClient().inNamespace(resource.getMetadata().getNamespace())
             .withName(resource.getMetadata().getName())
             .get();
 
-        boolean isReady = kafka.getStatus().getConditions().stream()
+        boolean isReady = kafkaBridge.getStatus().getConditions().stream()
             .anyMatch(condition -> condition.getType().equals("Ready") && condition.getStatus().equals("True"));
 
         if (isReady) {
-            LOGGER.info("Kafka {}/{} is Ready", resource.getMetadata().getNamespace(), resource.getMetadata().getName());
+            LOGGER.info("KafkaBridge {}/{} is Ready", resource.getMetadata().getNamespace(), resource.getMetadata().getName());
             return true;
         } else {
-            LOGGER.debug("Kafka {}/{} is not ready yet. Waiting...", resource.getMetadata().getNamespace(),
+            LOGGER.debug("KafkaBridge {}/{} is not ready yet. Waiting...", resource.getMetadata().getNamespace(),
                 resource.getMetadata().getName());
             return false;
         }
     }
 
     @Override
-    public boolean waitForDeletion(Kafka resource) {
+    public boolean waitForDeletion(KafkaBridge resource) {
         return getClient().inNamespace(resource.getMetadata().getNamespace()).withName(resource.getMetadata().getName()).get() == null;
     }
 
-    public static MixedOperation<Kafka, KafkaList, Resource<Kafka>> kafkaClient() {
-        return Crds.kafkaOperation(KubeResourceManager.getKubeClient().getClient());
+    public static MixedOperation<KafkaBridge, KafkaBridgeList, Resource<KafkaBridge>> kafkaBridgeClient() {
+        return Crds.kafkaBridgeOperation(KubeResourceManager.getKubeClient().getClient());
     }
 }
