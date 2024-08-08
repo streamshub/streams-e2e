@@ -24,7 +24,7 @@
         <maven.compiler.release>17</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <test-frame.version>0.3.0</test-frame.version>
+        <test-frame.version>0.4.0</test-frame.version>
         <fabric8.version>6.13.1</fabric8.version>
         <log4j.version>2.23.1</log4j.version>
         <slf4j.version>2.0.13</slf4j.version>
