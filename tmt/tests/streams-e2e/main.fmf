@@ -1,0 +1,12 @@
+test:
+  ./test.sh
+duration: 2h
+environment:
+  TEST_ENV_VAR: value
+
+/verify:
+  summary: Run dummy streams-e2e suite
+  duration: 40m
+  tier: 1
+  environment+:
+    TEST_GROUPS: dummy
