@@ -10,9 +10,9 @@ discover:
 # Required HW
 provision:
   hardware:
-    memory: ">= 24 GiB"
+    memory: ">= 16 GiB"
     cpu:
-      processors: ">= 8"
+      processors: ">= 4"
 
 # Install required packages and scripts for running streams-e2e suite
 prepare:
