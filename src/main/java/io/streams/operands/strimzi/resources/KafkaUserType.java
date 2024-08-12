@@ -36,22 +36,23 @@ public class KafkaUserType implements ResourceType<KafkaUser> {
 
     @Override
     public void create(KafkaUser resource) {
-        getClient().inNamespace(resource.getMetadata().getName()).resource(resource).create();
+        getClient().inNamespace(resource.getMetadata().getNamespace()).resource(resource).create();
     }
 
     @Override
     public void delete(KafkaUser resource) {
-        getClient().inNamespace(resource.getMetadata().getName()).withName(resource.getMetadata().getName()).delete();
+        getClient().inNamespace(resource.getMetadata().getNamespace()).withName(resource.getMetadata().getName()).delete();
     }
 
     @Override
     public void update(KafkaUser resource) {
-        getClient().inNamespace(resource.getMetadata().getName()).resource(resource).update();
+        getClient().inNamespace(resource.getMetadata().getNamespace()).resource(resource).update();
     }
 
     @Override
     public void replace(KafkaUser resource, Consumer<KafkaUser> editor) {
-        KafkaUser toBeUpdated = getClient().inNamespace(resource.getMetadata().getName()).withName(resource.getMetadata().getName()).get();
+        KafkaUser toBeUpdated = getClient().inNamespace(resource.getMetadata().getNamespace())
+            .withName(resource.getMetadata().getName()).get();
         editor.accept(toBeUpdated);
         update(toBeUpdated);
     }

@@ -41,17 +41,17 @@ public class KafkaType implements ResourceType<Kafka> {
 
     @Override
     public void delete(Kafka resource) {
-        getClient().inNamespace(resource.getMetadata().getName()).withName(resource.getMetadata().getName()).delete();
+        getClient().inNamespace(resource.getMetadata().getNamespace()).withName(resource.getMetadata().getName()).delete();
     }
 
     @Override
     public void update(Kafka resource) {
-        getClient().inNamespace(resource.getMetadata().getName()).resource(resource).update();
+        getClient().inNamespace(resource.getMetadata().getNamespace()).resource(resource).update();
     }
 
     @Override
     public void replace(Kafka resource, Consumer<Kafka> editor) {
-        Kafka toBeUpdated = getClient().inNamespace(resource.getMetadata().getName()).withName(resource.getMetadata().getName()).get();
+        Kafka toBeUpdated = getClient().inNamespace(resource.getMetadata().getNamespace()).withName(resource.getMetadata().getName()).get();
         editor.accept(toBeUpdated);
         update(toBeUpdated);
     }
