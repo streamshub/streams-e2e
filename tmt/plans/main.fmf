@@ -1,0 +1,119 @@
+# TMT test plan definition
+# https://tmt.readthedocs.io/en/latest/overview.html
+
+# Baseline common for all test plans
+#######################################################################
+summary: Streams-e2e test suite
+discover:
+  how: fmf
+
+# Required HW
+provision:
+  hardware:
+    memory: ">= 24 GiB"
+    cpu:
+      processors: ">= 8"
+
+# Install required packages and scripts for running streams-e2e suite
+prepare:
+  - name: Clean cache
+    how : shell
+    script: |
+        OS=$(cat /etc/redhat-release || true)
+        if [[ ${OS} == *"CentOS"* ]]; then
+            sudo yum -y clean dbcache
+        else
+            sudo dnf -y clean dbcache
+        fi
+
+  - name: Install packages
+    how: install
+    package:
+      - wget
+      - java-17-openjdk-devel
+      - xz
+      - make
+      - git
+      - zip
+      - coreutils
+
+  - name: Install docker-ce
+    how: shell
+    script: |
+      OS=$(cat /etc/redhat-release || true)
+      if [[ ${OS} == *"CentOS"* ]]; then
+        sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+      else
+        sudo dnf config-manager --add-repo https://download.docker.com/linux/fedora/docker-ce.repo
+      fi
+
+      sudo yum install -y docker-ce
+      sudo systemctl enable docker --now
+
+  - name: Install yq
+    how: shell
+    script: |
+      ARCH=$(uname -m)
+      if [[ $ARCH == "x86_64" ]]; then ARCH="amd64"; fi
+      if [[ $ARCH == "aarch64" ]]; then ARCH="arm64"; fi
+      ./tmt/scripts/install_yq.sh ${ARCH}
+
+  - name: Install oc kubectl client
+    how: shell
+    script: |
+      PLATFORM=$(uname -m)
+      URL="http://mirror.openshift.com/pub/openshift-v4/${PLATFORM}/clients/ocp/stable/openshift-client-linux.tar.gz"
+      mkdir -p /tmp/openshift
+      wget ${URL} -O openshift.tar.gz -q
+      tar xzf openshift.tar.gz -C /tmp/openshift
+      sudo cp /tmp/openshift/oc /usr/bin/oc
+      sudo cp /tmp/openshift/kubectl /usr/bin/kubectl
+      sudo rm -rf /tmp/openshift/
+      sudo rm -rf openshift.tar.gz
+
+  - name: Install mvn
+    how: shell
+    script: |
+      mkdir -p /usr/share/maven /usr/share/maven/ref
+      curl -fsSL -o /tmp/apache-maven.tar.gz https://apache.osuosl.org/maven/maven-3/3.9.8/binaries/apache-maven-3.9.8-bin.tar.gz
+      tar -xzf /tmp/apache-maven.tar.gz -C /usr/share/maven --strip-components=1
+      rm -f /tmp/apache-maven.tar.gz
+      ln -s /usr/share/maven/bin/mvn /usr/bin/mvn
+
+  - name: Install kind
+    how: shell
+    script: |
+      ARCH=$(uname -m)
+      if [[ $ARCH == "x86_64" ]]; then ARCH="amd64"; fi
+      if [[ $ARCH == "aarch64" ]]; then ARCH="arm64"; fi
+      ./tmt/scripts/setup-kind.sh ${ARCH}
+
+  - name: Install helm
+    how: shell
+    script: |
+      ./tmt/scripts/setup-helm.sh
+
+  - name: Install operator-sdk
+    how: shell
+    script: |
+      export ARCH=$(case $(uname -m) in x86_64) echo -n amd64 ;; aarch64) echo -n arm64 ;; *) echo -n $(uname -m) ;; esac)
+      export OS=$(uname | awk '{print tolower($0)}')
+      export OPERATOR_SDK_DL_URL=https://github.com/operator-framework/operator-sdk/releases/download/v1.36.0
+      curl -LO ${OPERATOR_SDK_DL_URL}/operator-sdk_${OS}_${ARCH}
+      chmod +x operator-sdk_${OS}_${ARCH} && sudo mv operator-sdk_${OS}_${ARCH} /usr/local/bin/operator-sdk
+
+# Discover tmt defined tests in tests/ folder
+execute:
+  how: tmt
+
+# Post install step to copy logs
+finish:
+  how: shell
+  script: ./tmt/scripts/copy-logs.sh
+#######################################################################
+
+/verify:
+  summary: Run dummy streams-e2e test suite
+  discover+:
+    test:
+      - verify

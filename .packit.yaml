@@ -1,0 +1,26 @@
+# Default packit instance is a prod and only this is used
+# stg instance is present for testing new packit features in forked repositories where stg is installed.
+packit_instances: ["prod", "stg"]
+upstream_project_url: https://github.com/skodjob/streams-e2e
+issue_repository: https://github.com/skodjob/streams-e2e
+jobs:
+  - job: tests
+    trigger: pull_request
+    # Suffix for job name
+    identifier: "verify"
+    targets:
+      # This target is not used at all by our tests, but it has to be one of the available - https://packit.dev/docs/configuration/#aliases
+      - centos-stream-9-x86_64
+      - centos-stream-9-aarch64
+    # We don't need to build any packages for Fedora/RHEL/CentOS, it is not related to streams-e2e tests
+    skip_build: true
+    manual_trigger: true
+    env: { IP_FAMILY: ipv4 }
+    labels:
+      - verify
+      - dummy
+    tf_extra_params:
+      test:
+        tmt:
+          name: verify
+  ###############################################################################################
