@@ -5,4 +5,4 @@ cd ../../../
 
 #run tests
 
-./mvnw verify -P test -Dgroups=${GROUPS}
+./mvnw verify -P test -Dgroups="${TEST_GROUPS}"

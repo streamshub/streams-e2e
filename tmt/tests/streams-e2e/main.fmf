@@ -1,12 +1,12 @@
 test:
   ./test.sh
 duration: 2h
-#environment:
-#  ENV_NAME: envValue
+environment:
+  TEST_ENV_VAR: value
 
 /verify:
   summary: Run dummy streams-e2e suite
   duration: 40m
   tier: 1
   environment+:
-    GROUPS: dummy
+    TEST_GROUPS: dummy

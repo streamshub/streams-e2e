@@ -21,15 +21,7 @@ This definition is composed of hw requirements, prepare steps for created VM exe
 plan defines selectors for [tests](./tests) which should be executed.
 
 ### List of plans
-* smoke
-* upgrade
-* regression-operators
-* regression-brokers-and-security
-* regression-operands
-* sanity
-* performance
-* performance-capacity
-* performance-topic-operator-capacity
+* verify
 
 ## Usage
 
@@ -41,13 +33,13 @@ plan defines selectors for [tests](./tests) which should be executed.
 
 Run all plans
 ```commandline
-testing-farm request --compose Fedora-38 --git-url https://github.com/strimzi/strimzi-kafka-operator.git
+testing-farm request --compose Fedora-38 --git-url https://github.com/skodjob/streams-e2e.git
 ```
 
 Select specific plan and git branch
 ```commandline
 testing-farm request --compose Fedora-38 \
- --git-url https://github.com/strimzi/strimzi-kafka-operator.git \
+ --git-url https://github.com/skodjob/streams-e2e.git \
  --git-ref some-branch \
  --plan smoke
 ```
@@ -55,7 +47,7 @@ testing-farm request --compose Fedora-38 \
 Run multi-arch build
 ```commandline
 testing-farm request --compose Fedora-Rawhide \
- --git-url https://github.com/strimzi/strimzi-kafka-operator.git \
+ --git-url https://github.com/skodjob/streams-e2e.git \
  --git-ref some-branch \
  --plan smoke \
  --arch aarch64,x86_64
@@ -65,7 +57,7 @@ testing-farm request --compose Fedora-Rawhide \
 
 [Packit-as-a-service](https://github.com/marketplace/packit-as-a-service) is a github application
 for running testing-farm jobs from PR requested by command. Definition of the jobs is stored in
-[.packit.yaml](../../.packit.yaml). Packit can be triggered from the PR by comment, but only members of strimzi
+[.packit.yaml](../.packit.yaml). Packit can be triggered from the PR by comment, but only members of strimzi
 organization are able to run tests.
 
 ### Usage
@@ -77,33 +69,5 @@ Run all jobs for PR
 
 Run selected jobs by label
 ```
-/packit test --labels upgrade,kraft-operators
+/packit test --labels verify
 ```
-
-#### Available labels
-Packit jobs has plenty of available labels that you can use in trigger command.
-The jobs are grouped based on specific use-case.
-
-| Group           | Labels                              | Description                                                                                   |
-|-----------------|-------------------------------------|-----------------------------------------------------------------------------------------------|
-| acceptance      | acceptance                          | Acceptance tests                                                                              |
-| acceptance_ipv6 | acceptance_ipv6                     | Acceptance tests with IPv6 configuration for Kube cluster                                     |
-|                 | ipv6                                |                                                                                               |
-| acceptance_dual | acceptance_dual                     | Acceptance tests with dual (IPv4 + IPv6) configuration for Kube cluster                       |
-|                 | dual                                |                                                                                               |
-| upgrade         | upgrade                             | Upgrade tests                                                                                 |
-| sanity          | sanity                              | Sanity tests (plan with 1h execution time)                                                    |
-| smoke           | smoke                               | Smoke tests (just one test)                                                                   |
-| regression      | regression                          | Regression tests (all regression related labels, operators + operands + brokers-and-security) |
-|                 | operands                            | Tests related to operands                                                                     |
-|                 | regression-operands                 |                                                                                               |
-|                 | brokers-and-security                | Tests related to Kafka Brokers and Security (specific test classes)                           |
-|                 | regression-brokers-and-security     |                                                                                               |
-|                 | bas                                 |                                                                                               |
-|                 | operators                           | Tests more related to operators                                                               |
-|                 | regression-operators                |                                                                                               |
-| performance     | performance                         | Performance tests (all performance related labels)                                            |
-|                 | performance-common                  | Common performance tests                                                                      |
-|                 | performance-capacity                | Capacity tests for operators                                                                  |
-|                 | performance-topic-operator-capacity | Capacity tests for Topic Operator only                                                        |
-
