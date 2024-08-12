@@ -11,7 +11,8 @@ jobs:
     targets:
       # This target is not used at all by our tests, but it has to be one of the available - https://packit.dev/docs/configuration/#aliases
       - centos-stream-9-x86_64
-      - centos-stream-9-aarch64
+      # ARM is commented since apicurio-operator upstream is not supported on ARM
+      # - centos-stream-9-aarch64
     # We don't need to build any packages for Fedora/RHEL/CentOS, it is not related to streams-e2e tests
     skip_build: true
     manual_trigger: true
