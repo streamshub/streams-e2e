@@ -178,6 +178,12 @@
             <version>${spotbugs.version}</version>
             <scope>provided</scope>
         </dependency>
+
+        <dependency>
+            <groupId>io.strimzi</groupId>
+            <artifactId>api</artifactId>
+            <version>${strimzi.version}</version>
+        </dependency>
     </dependencies>
 
     <build>
