@@ -6,7 +6,7 @@ package io.streams.operands.strimzi.resources;
 
 import io.fabric8.kubernetes.client.dsl.MixedOperation;
 import io.fabric8.kubernetes.client.dsl.Resource;
-import io.skodjob.testframe.interfaces.NamespacedResourceType;
+import io.skodjob.testframe.interfaces.ResourceType;
 import io.skodjob.testframe.resources.KubeResourceManager;
 import io.strimzi.api.kafka.Crds;
 import io.strimzi.api.kafka.model.mirrormaker2.KafkaMirrorMaker2;
@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.function.Consumer;
 
-public class KafkaMirrorMaker2Type implements NamespacedResourceType<KafkaMirrorMaker2> {
+public class KafkaMirrorMaker2Type implements ResourceType<KafkaMirrorMaker2> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(KafkaMirrorMaker2Type.class);
 
@@ -35,35 +35,13 @@ public class KafkaMirrorMaker2Type implements NamespacedResourceType<KafkaMirror
     }
 
     @Override
-    public void createInNamespace(String namespace, KafkaMirrorMaker2 resource) {
-        getClient().inNamespace(namespace).resource(resource).create();
-    }
-
-    @Override
-    public void updateInNamespace(String namespace, KafkaMirrorMaker2 resource) {
-        getClient().inNamespace(namespace).resource(resource).update();
-    }
-
-    @Override
-    public void deleteFromNamespace(String namespace, String name) {
-        getClient().inNamespace(namespace).withName(name).delete();
-    }
-
-    @Override
-    public void replaceInNamespace(String namespace, String name, Consumer<KafkaMirrorMaker2> consumer) {
-        KafkaMirrorMaker2 toBeUpdated = getClient().inNamespace(namespace).withName(name).get();
-        consumer.accept(toBeUpdated);
-        update(toBeUpdated);
-    }
-
-    @Override
     public void create(KafkaMirrorMaker2 resource) {
         getClient().inNamespace(resource.getMetadata().getNamespace()).resource(resource).create();
     }
 
     @Override
-    public void delete(String name) {
-        getClient().withName(name).delete();
+    public void delete(KafkaMirrorMaker2 resource) {
+        getClient().inNamespace(resource.getMetadata().getNamespace()).withName(resource.getMetadata().getName()).delete();
     }
 
     @Override
@@ -72,14 +50,15 @@ public class KafkaMirrorMaker2Type implements NamespacedResourceType<KafkaMirror
     }
 
     @Override
-    public void replace(String name, Consumer<KafkaMirrorMaker2> editor) {
-        KafkaMirrorMaker2 toBeUpdated = getClient().withName(name).get();
+    public void replace(KafkaMirrorMaker2 resource, Consumer<KafkaMirrorMaker2> editor) {
+        KafkaMirrorMaker2 toBeUpdated = getClient().inNamespace(resource.getMetadata().getNamespace())
+            .withName(resource.getMetadata().getName()).get();
         editor.accept(toBeUpdated);
         update(toBeUpdated);
     }
 
     @Override
-    public boolean waitForReadiness(KafkaMirrorMaker2 resource) {
+    public boolean isReady(KafkaMirrorMaker2 resource) {
         KafkaMirrorMaker2 kafkaMirrorMaker2 = kafkaMirrorMaker2Client().inNamespace(resource.getMetadata().getNamespace())
             .withName(resource.getMetadata().getName())
             .get();
@@ -98,7 +77,7 @@ public class KafkaMirrorMaker2Type implements NamespacedResourceType<KafkaMirror
     }
 
     @Override
-    public boolean waitForDeletion(KafkaMirrorMaker2 resource) {
+    public boolean isDeleted(KafkaMirrorMaker2 resource) {
         return getClient().inNamespace(resource.getMetadata().getNamespace()).withName(resource.getMetadata().getName()).get() == null;
     }
 

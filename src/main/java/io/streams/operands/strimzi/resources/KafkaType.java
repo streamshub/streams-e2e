@@ -6,7 +6,7 @@ package io.streams.operands.strimzi.resources;
 
 import io.fabric8.kubernetes.client.dsl.MixedOperation;
 import io.fabric8.kubernetes.client.dsl.Resource;
-import io.skodjob.testframe.interfaces.NamespacedResourceType;
+import io.skodjob.testframe.interfaces.ResourceType;
 import io.skodjob.testframe.resources.KubeResourceManager;
 import io.strimzi.api.kafka.Crds;
 import io.strimzi.api.kafka.model.kafka.Kafka;
@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.function.Consumer;
 
-public class KafkaType implements NamespacedResourceType<Kafka> {
+public class KafkaType implements ResourceType<Kafka> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(KafkaType.class);
 
@@ -35,51 +35,29 @@ public class KafkaType implements NamespacedResourceType<Kafka> {
     }
 
     @Override
-    public void createInNamespace(String namespace, Kafka resource) {
-        getClient().inNamespace(namespace).resource(resource).create();
-    }
-
-    @Override
-    public void updateInNamespace(String namespace, Kafka resource) {
-        getClient().inNamespace(namespace).resource(resource).update();
-    }
-
-    @Override
-    public void deleteFromNamespace(String namespace, String name) {
-        getClient().inNamespace(namespace).withName(name).delete();
-    }
-
-    @Override
-    public void replaceInNamespace(String namespace, String name, Consumer<Kafka> consumer) {
-        Kafka toBeUpdated = getClient().inNamespace(namespace).withName(name).get();
-        consumer.accept(toBeUpdated);
-        update(toBeUpdated);
-    }
-
-    @Override
     public void create(Kafka resource) {
         getClient().inNamespace(resource.getMetadata().getNamespace()).resource(resource).create();
     }
 
     @Override
-    public void delete(String name) {
-        getClient().withName(name).delete();
+    public void delete(Kafka resource) {
+        getClient().inNamespace(resource.getMetadata().getName()).withName(resource.getMetadata().getName()).delete();
     }
 
     @Override
     public void update(Kafka resource) {
-        getClient().inNamespace(resource.getMetadata().getNamespace()).resource(resource).update();
+        getClient().inNamespace(resource.getMetadata().getName()).resource(resource).update();
     }
 
     @Override
-    public void replace(String name, Consumer<Kafka> editor) {
-        Kafka toBeUpdated = getClient().withName(name).get();
+    public void replace(Kafka resource, Consumer<Kafka> editor) {
+        Kafka toBeUpdated = getClient().inNamespace(resource.getMetadata().getName()).withName(resource.getMetadata().getName()).get();
         editor.accept(toBeUpdated);
         update(toBeUpdated);
     }
 
     @Override
-    public boolean waitForReadiness(Kafka resource) {
+    public boolean isReady(Kafka resource) {
         Kafka kafka = kafkaClient().inNamespace(resource.getMetadata().getNamespace())
             .withName(resource.getMetadata().getName())
             .get();
@@ -98,7 +76,7 @@ public class KafkaType implements NamespacedResourceType<Kafka> {
     }
 
     @Override
-    public boolean waitForDeletion(Kafka resource) {
+    public boolean isDeleted(Kafka resource) {
         return getClient().inNamespace(resource.getMetadata().getNamespace()).withName(resource.getMetadata().getName()).get() == null;
     }
 

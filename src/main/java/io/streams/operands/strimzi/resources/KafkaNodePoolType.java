@@ -6,7 +6,7 @@ package io.streams.operands.strimzi.resources;
 
 import io.fabric8.kubernetes.client.dsl.MixedOperation;
 import io.fabric8.kubernetes.client.dsl.Resource;
-import io.skodjob.testframe.interfaces.NamespacedResourceType;
+import io.skodjob.testframe.interfaces.ResourceType;
 import io.skodjob.testframe.resources.KubeResourceManager;
 import io.strimzi.api.kafka.Crds;
 import io.strimzi.api.kafka.model.nodepool.KafkaNodePool;
@@ -14,7 +14,7 @@ import io.strimzi.api.kafka.model.nodepool.KafkaNodePoolList;
 
 import java.util.function.Consumer;
 
-public class KafkaNodePoolType implements NamespacedResourceType<KafkaNodePool> {
+public class KafkaNodePoolType implements ResourceType<KafkaNodePool> {
 
     public KafkaNodePoolType() {
     }
@@ -30,35 +30,13 @@ public class KafkaNodePoolType implements NamespacedResourceType<KafkaNodePool> 
     }
 
     @Override
-    public void createInNamespace(String namespace, KafkaNodePool resource) {
-        getClient().inNamespace(namespace).resource(resource).create();
-    }
-
-    @Override
-    public void updateInNamespace(String namespace, KafkaNodePool resource) {
-        getClient().inNamespace(namespace).resource(resource).update();
-    }
-
-    @Override
-    public void deleteFromNamespace(String namespace, String name) {
-        getClient().inNamespace(namespace).withName(name).delete();
-    }
-
-    @Override
-    public void replaceInNamespace(String namespace, String name, Consumer<KafkaNodePool> consumer) {
-        KafkaNodePool toBeUpdated = getClient().inNamespace(namespace).withName(name).get();
-        consumer.accept(toBeUpdated);
-        update(toBeUpdated);
-    }
-
-    @Override
     public void create(KafkaNodePool resource) {
         getClient().inNamespace(resource.getMetadata().getNamespace()).resource(resource).create();
     }
 
     @Override
-    public void delete(String name) {
-        getClient().withName(name).delete();
+    public void delete(KafkaNodePool resource) {
+        getClient().inNamespace(resource.getMetadata().getNamespace()).withName(resource.getMetadata().getName()).delete();
     }
 
     @Override
@@ -67,21 +45,22 @@ public class KafkaNodePoolType implements NamespacedResourceType<KafkaNodePool> 
     }
 
     @Override
-    public void replace(String name, Consumer<KafkaNodePool> editor) {
-        KafkaNodePool toBeUpdated = getClient().withName(name).get();
+    public void replace(KafkaNodePool resource, Consumer<KafkaNodePool> editor) {
+        KafkaNodePool toBeUpdated = getClient().inNamespace(resource.getMetadata().getNamespace())
+            .withName(resource.getMetadata().getName()).get();
         editor.accept(toBeUpdated);
         update(toBeUpdated);
     }
 
     @Override
-    public boolean waitForReadiness(KafkaNodePool resource) {
+    public boolean isReady(KafkaNodePool resource) {
         return getClient().inNamespace(resource.getMetadata().getNamespace())
             .withName(resource.getMetadata().getName())
             .get() != null;
     }
 
     @Override
-    public boolean waitForDeletion(KafkaNodePool resource) {
+    public boolean isDeleted(KafkaNodePool resource) {
         return getClient().inNamespace(resource.getMetadata().getNamespace()).withName(resource.getMetadata().getName()).get() == null;
     }
 

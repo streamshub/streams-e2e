@@ -6,7 +6,7 @@ package io.streams.operands.strimzi.resources;
 
 import io.fabric8.kubernetes.client.dsl.MixedOperation;
 import io.fabric8.kubernetes.client.dsl.Resource;
-import io.skodjob.testframe.interfaces.NamespacedResourceType;
+import io.skodjob.testframe.interfaces.ResourceType;
 import io.skodjob.testframe.resources.KubeResourceManager;
 import io.strimzi.api.kafka.Crds;
 import io.strimzi.api.kafka.model.topic.KafkaTopic;
@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.function.Consumer;
 
-public class KafkaTopicType implements NamespacedResourceType<KafkaTopic> {
+public class KafkaTopicType implements ResourceType<KafkaTopic> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(KafkaTopicType.class);
 
@@ -35,35 +35,13 @@ public class KafkaTopicType implements NamespacedResourceType<KafkaTopic> {
     }
 
     @Override
-    public void createInNamespace(String namespace, KafkaTopic resource) {
-        getClient().inNamespace(namespace).resource(resource).create();
-    }
-
-    @Override
-    public void updateInNamespace(String namespace, KafkaTopic resource) {
-        getClient().inNamespace(namespace).resource(resource).update();
-    }
-
-    @Override
-    public void deleteFromNamespace(String namespace, String name) {
-        getClient().inNamespace(namespace).withName(name).delete();
-    }
-
-    @Override
-    public void replaceInNamespace(String namespace, String name, Consumer<KafkaTopic> consumer) {
-        KafkaTopic toBeUpdated = getClient().inNamespace(namespace).withName(name).get();
-        consumer.accept(toBeUpdated);
-        update(toBeUpdated);
-    }
-
-    @Override
     public void create(KafkaTopic resource) {
         getClient().inNamespace(resource.getMetadata().getNamespace()).resource(resource).create();
     }
 
     @Override
-    public void delete(String name) {
-        getClient().withName(name).delete();
+    public void delete(KafkaTopic resource) {
+        getClient().inNamespace(resource.getMetadata().getNamespace()).withName(resource.getMetadata().getName()).delete();
     }
 
     @Override
@@ -72,14 +50,15 @@ public class KafkaTopicType implements NamespacedResourceType<KafkaTopic> {
     }
 
     @Override
-    public void replace(String name, Consumer<KafkaTopic> editor) {
-        KafkaTopic toBeUpdated = getClient().withName(name).get();
+    public void replace(KafkaTopic resource, Consumer<KafkaTopic> editor) {
+        KafkaTopic toBeUpdated = getClient().inNamespace(resource.getMetadata().getNamespace())
+            .withName(resource.getMetadata().getName()).get();
         editor.accept(toBeUpdated);
         update(toBeUpdated);
     }
 
     @Override
-    public boolean waitForReadiness(KafkaTopic resource) {
+    public boolean isReady(KafkaTopic resource) {
         KafkaTopic kafkaTopic = kafkaTopicClient().inNamespace(resource.getMetadata().getNamespace())
             .withName(resource.getMetadata().getName())
             .get();
@@ -98,7 +77,7 @@ public class KafkaTopicType implements NamespacedResourceType<KafkaTopic> {
     }
 
     @Override
-    public boolean waitForDeletion(KafkaTopic resource) {
+    public boolean isDeleted(KafkaTopic resource) {
         return getClient().inNamespace(resource.getMetadata().getNamespace()).withName(resource.getMetadata().getName()).get() == null;
     }
 

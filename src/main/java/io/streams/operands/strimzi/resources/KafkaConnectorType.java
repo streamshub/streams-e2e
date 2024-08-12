@@ -6,7 +6,7 @@ package io.streams.operands.strimzi.resources;
 
 import io.fabric8.kubernetes.client.dsl.MixedOperation;
 import io.fabric8.kubernetes.client.dsl.Resource;
-import io.skodjob.testframe.interfaces.NamespacedResourceType;
+import io.skodjob.testframe.interfaces.ResourceType;
 import io.skodjob.testframe.resources.KubeResourceManager;
 import io.strimzi.api.kafka.Crds;
 import io.strimzi.api.kafka.model.connector.KafkaConnector;
@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.function.Consumer;
 
-public class KafkaConnectorType implements NamespacedResourceType<KafkaConnector> {
+public class KafkaConnectorType implements ResourceType<KafkaConnector> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(KafkaConnectorType.class);
 
@@ -35,35 +35,13 @@ public class KafkaConnectorType implements NamespacedResourceType<KafkaConnector
     }
 
     @Override
-    public void createInNamespace(String namespace, KafkaConnector resource) {
-        getClient().inNamespace(namespace).resource(resource).create();
-    }
-
-    @Override
-    public void updateInNamespace(String namespace, KafkaConnector resource) {
-        getClient().inNamespace(namespace).resource(resource).update();
-    }
-
-    @Override
-    public void deleteFromNamespace(String namespace, String name) {
-        getClient().inNamespace(namespace).withName(name).delete();
-    }
-
-    @Override
-    public void replaceInNamespace(String namespace, String name, Consumer<KafkaConnector> consumer) {
-        KafkaConnector toBeUpdated = getClient().inNamespace(namespace).withName(name).get();
-        consumer.accept(toBeUpdated);
-        update(toBeUpdated);
-    }
-
-    @Override
     public void create(KafkaConnector resource) {
         getClient().inNamespace(resource.getMetadata().getNamespace()).resource(resource).create();
     }
 
     @Override
-    public void delete(String name) {
-        getClient().withName(name).delete();
+    public void delete(KafkaConnector resource) {
+        getClient().inNamespace(resource.getMetadata().getNamespace()).withName(resource.getMetadata().getName()).delete();
     }
 
     @Override
@@ -72,14 +50,15 @@ public class KafkaConnectorType implements NamespacedResourceType<KafkaConnector
     }
 
     @Override
-    public void replace(String name, Consumer<KafkaConnector> editor) {
-        KafkaConnector toBeUpdated = getClient().withName(name).get();
+    public void replace(KafkaConnector resource, Consumer<KafkaConnector> editor) {
+        KafkaConnector toBeUpdated = getClient().inNamespace(resource.getMetadata().getNamespace())
+            .withName(resource.getMetadata().getName()).get();
         editor.accept(toBeUpdated);
         update(toBeUpdated);
     }
 
     @Override
-    public boolean waitForReadiness(KafkaConnector resource) {
+    public boolean isReady(KafkaConnector resource) {
         KafkaConnector kafkaConnector = kafkaConnectorClient().inNamespace(resource.getMetadata().getNamespace())
             .withName(resource.getMetadata().getName())
             .get();
@@ -98,7 +77,7 @@ public class KafkaConnectorType implements NamespacedResourceType<KafkaConnector
     }
 
     @Override
-    public boolean waitForDeletion(KafkaConnector resource) {
+    public boolean isDeleted(KafkaConnector resource) {
         return getClient().inNamespace(resource.getMetadata().getNamespace()).withName(resource.getMetadata().getName()).get() == null;
     }
 
