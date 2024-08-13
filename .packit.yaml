@@ -25,3 +25,15 @@ jobs:
         tmt:
           name: verify
   ###############################################################################################
+  - job: tests
+    trigger: commit
+    branch: main
+    identifier: "verify-main"
+    targets:
+      - centos-stream-9-x86_64
+    skip_build: true
+    env: { IP_FAMILY: ipv4 }
+    tf_extra_params:
+      test:
+        tmt:
+          name: verify
