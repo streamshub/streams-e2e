@@ -46,6 +46,7 @@
 
         <operator.files.destination>operator-install-files</operator.files.destination>
         <flink.files.destination>flink</flink.files.destination>
+        <strimzi.files.destination>strimzi-kafka-operator</strimzi.files.destination>
         <cert.manager.files.destination>cert-manager</cert.manager.files.destination>
         <apicurio.registry.files.destination>apicurio-registry</apicurio.registry.files.destination>
         <debezium.operator.files.destination>debezium</debezium.operator.files.destination>
@@ -334,14 +335,16 @@
                                     <goal>wget</goal>
                                 </goals>
                                 <configuration>
-                                    <url>https://github.com/strimzi/strimzi-kafka-operator/releases/download/${strimzi.version}/strimzi-${strimzi.version}.tar.gz</url>
+                                    <url>
+                                        https://github.com/strimzi/strimzi-kafka-operator/releases/download/${strimzi.version}/strimzi-${strimzi.version}.tar.gz
+                                    </url>
                                     <outputDirectory>${basedir}/${operator.files.destination}/</outputDirectory>
                                     <outputFileName>strimzi.tar.gz</outputFileName>
                                     <unpack>true</unpack>
                                     <fileMappers>
                                         <org.codehaus.plexus.components.io.filemappers.RegExpFileMapper>
                                             <pattern>^strimzi-\d+.\d+.\d+</pattern>
-                                            <replacement>strimzi-kafka-operator</replacement>
+                                            <replacement>${strimzi.files.destination}</replacement>
                                         </org.codehaus.plexus.components.io.filemappers.RegExpFileMapper>
                                     </fileMappers>
                                 </configuration>

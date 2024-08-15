@@ -19,7 +19,14 @@ All operator install files are download into `operator-install-files` folder
 TODO
 
 ## Use own install files
-TDOD
+If you want to use own installation files you need to complete following steps
+
+* Install upstream files to create proper structure
+```bash
+$ ./mvnw install -P get-operator-files
+```
+
+* Replace install files in `operator-install-files` folder
 
 ## Use own operator metadata bundle-container
 TODO
