@@ -68,8 +68,7 @@ public class DebeziumManifestInstaller {
             if (res instanceof Namespaced) {
                 res.getMetadata().setNamespace(OPERATOR_NS);
             }
-            if (res instanceof ClusterRoleBinding) {
-                ClusterRoleBinding crb = (ClusterRoleBinding) res;
+            if (res instanceof ClusterRoleBinding crb) {
                 crb.getSubjects().forEach(sbj -> sbj.setNamespace(OPERATOR_NS));
                 crb.getMetadata().setName(crb.getMetadata().getName() + "." + OPERATOR_NS);
             }

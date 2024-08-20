@@ -67,12 +67,10 @@ public class ApicurioRegistryManifestInstaller {
             if (res instanceof Namespaced) {
                 res.getMetadata().setNamespace(OPERATOR_NS);
             }
-            if (res instanceof ClusterRoleBinding) {
-                ClusterRoleBinding crb = (ClusterRoleBinding) res;
+            if (res instanceof ClusterRoleBinding crb) {
                 crb.getSubjects().forEach(sbj -> sbj.setNamespace(OPERATOR_NS));
                 crb.getMetadata().setName(crb.getMetadata().getName() + "." + OPERATOR_NS);
-            } else if (res instanceof RoleBinding) {
-                RoleBinding rb = (RoleBinding) res;
+            } else if (res instanceof RoleBinding rb) {
                 rb.getSubjects().forEach(sbj -> sbj.setNamespace(OPERATOR_NS));
             }
             KubeResourceManager.getInstance().createOrUpdateResourceWithoutWait(res);
