@@ -4,10 +4,14 @@
  */
 package io.streams.operators.manifests;
 
+import io.fabric8.kubernetes.api.model.Container;
+import io.fabric8.kubernetes.api.model.EnvVar;
+import io.fabric8.kubernetes.api.model.EnvVarBuilder;
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.Namespace;
 import io.fabric8.kubernetes.api.model.NamespaceBuilder;
 import io.fabric8.kubernetes.api.model.Namespaced;
+import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.api.model.rbac.ClusterRoleBinding;
 import io.fabric8.kubernetes.api.model.rbac.RoleBinding;
 import io.skodjob.testframe.TestFrameConstants;
@@ -20,6 +24,8 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -72,12 +78,22 @@ public class ApicurioRegistryManifestInstaller {
                 crb.getMetadata().setName(crb.getMetadata().getName() + "." + OPERATOR_NS);
             } else if (res instanceof RoleBinding rb) {
                 rb.getSubjects().forEach(sbj -> sbj.setNamespace(OPERATOR_NS));
+            } else if (res instanceof Deployment && DEPLOYMENT_NAME.equals(res.getMetadata().getName())) {
+                modifyDeployment((Deployment) res);
             }
             KubeResourceManager.getInstance().createOrUpdateResourceWithoutWait(res);
         });
         LOGGER.info("Apicurio Registry operator installed to namespace: {}", OPERATOR_NS);
         return Wait.untilAsync("Apicurio Registry operator readiness", TestFrameConstants.GLOBAL_POLL_INTERVAL_1_SEC,
             TestFrameConstants.GLOBAL_TIMEOUT, ApicurioRegistryManifestInstaller::isReady);
+    }
+
+    private static void modifyDeployment(Deployment deployment) {
+        Container container = deployment.getSpec().getTemplate().getSpec().getContainers().get(0);
+        List<EnvVar> env = new ArrayList<>(container.getEnv() == null ? Collections.emptyList() : container.getEnv());
+        env.removeIf(envVar -> envVar.getName().equals("WATCH_NAMESPACE"));
+        env.add(new EnvVarBuilder().withName("WATCH_NAMESPACE").withValue("").build());
+        container.setEnv(env);
     }
 
     private static boolean isReady() {
