@@ -78,8 +78,8 @@ public class ApicurioRegistryManifestInstaller {
                 crb.getMetadata().setName(crb.getMetadata().getName() + "." + OPERATOR_NS);
             } else if (res instanceof RoleBinding rb) {
                 rb.getSubjects().forEach(sbj -> sbj.setNamespace(OPERATOR_NS));
-            } else if (res instanceof Deployment && DEPLOYMENT_NAME.equals(res.getMetadata().getName())) {
-                modifyDeployment((Deployment) res);
+            } else if (res instanceof Deployment dep && DEPLOYMENT_NAME.equals(res.getMetadata().getName())) {
+                modifyDeployment(dep);
             }
             KubeResourceManager.getInstance().createOrUpdateResourceWithoutWait(res);
         });
