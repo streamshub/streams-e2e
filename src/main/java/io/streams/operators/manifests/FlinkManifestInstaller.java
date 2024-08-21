@@ -8,7 +8,6 @@ import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.Namespace;
 import io.fabric8.kubernetes.api.model.NamespaceBuilder;
 import io.fabric8.kubernetes.api.model.Namespaced;
-import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.api.model.rbac.ClusterRoleBinding;
 import io.fabric8.kubernetes.api.model.rbac.RoleBinding;
 import io.skodjob.testframe.TestFrameConstants;
@@ -73,8 +72,6 @@ public class FlinkManifestInstaller {
                 crb.getMetadata().setName(crb.getMetadata().getName() + "." + OPERATOR_NS);
             } else if (res instanceof RoleBinding rb) {
                 rb.getSubjects().forEach(sbj -> sbj.setNamespace(OPERATOR_NS));
-            } else if (res instanceof Deployment && DEPLOYMENT_NAME.equals(res.getMetadata().getName())) {
-                modifyDeployment((Deployment) res);
             } else {
                 res.getMetadata().setNamespace(OPERATOR_NS);
             }
@@ -83,10 +80,6 @@ public class FlinkManifestInstaller {
         LOGGER.info("Flink operator installed to namespace: {}", OPERATOR_NS);
         return Wait.untilAsync("Flink operator readiness", TestFrameConstants.GLOBAL_POLL_INTERVAL_1_SEC,
             TestFrameConstants.GLOBAL_TIMEOUT, FlinkManifestInstaller::isReady);
-    }
-
-    private static void modifyDeployment(Deployment deployment) {
-        deployment.getSpec().getTemplate().getSpec().setSecurityContext(null);
     }
 
     private static boolean isReady() {

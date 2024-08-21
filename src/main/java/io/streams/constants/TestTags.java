@@ -6,5 +6,6 @@ package io.streams.constants;
 
 public interface TestTags {
     String SMOKE = "smoke";
+    String SQL_EXAMPLE = "sql-example";
     String DUMMY = "dummy";
 }

@@ -465,7 +465,7 @@
                                     <executable>sh</executable>
                                     <arguments>
                                         <argument>-c</argument>
-                                        <argument>helm template flink-kubernetes-operator flink-operator-repo/flink-kubernetes-operator > ${basedir}/${operator.files.destination}/flink/deploy.yaml</argument>
+                                        <argument>helm template flink-kubernetes-operator flink-operator-repo/flink-kubernetes-operator --set watchNamespaces=""  --set podSecurityContext=null --namespace flink-kubernetes-operator > ${basedir}/${operator.files.destination}/flink/deploy.yaml</argument>
                                     </arguments>
                                 </configuration>
                             </execution>
