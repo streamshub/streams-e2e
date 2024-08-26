@@ -28,6 +28,7 @@
         <fabric8.version>6.13.3</fabric8.version>
         <log4j.version>2.23.1</log4j.version>
         <slf4j.version>2.0.16</slf4j.version>
+        <jackson.version>2.17.1</jackson.version>
 
         <junit.jupiter.version>5.11.0</junit.jupiter.version>
         <junit.platform.version>1.11.0</junit.platform.version>
@@ -55,8 +56,21 @@
         <flink.version>1.9.0</flink.version>
         <cert.manager.version>1.15.2</cert.manager.version>
         <apicurio.registry.version>1.1.2-v2.5.11.final</apicurio.registry.version>
+        <apicurio.api.version>1.1.2</apicurio.api.version>
         <debezium.operator.version>2.7.0</debezium.operator.version>
     </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>io.fabric8</groupId>
+                <artifactId>kubernetes-client-bom-with-deps</artifactId>
+                <version>${fabric8.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <dependencies>
         <dependency>
@@ -92,6 +106,18 @@
         </dependency>
         <dependency>
             <groupId>io.fabric8</groupId>
+            <artifactId>kubernetes-model-common</artifactId>
+            <version>${fabric8.version}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.fabric8</groupId>
+            <artifactId>generator-annotations</artifactId>
+            <version>${fabric8.version}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.fabric8</groupId>
             <artifactId>kubernetes-model</artifactId>
             <version>${fabric8.version}</version>
         </dependency>
@@ -124,6 +150,18 @@
             <groupId>io.fabric8</groupId>
             <artifactId>openshift-client-api</artifactId>
             <version>${fabric8.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>${jackson.version}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+            <version>${jackson.version}</version>
+            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
@@ -174,6 +212,17 @@
         </dependency>
 
         <dependency>
+            <groupId>io.sundr</groupId>
+            <artifactId>builder-annotations</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
             <groupId>com.github.spotbugs</groupId>
             <artifactId>spotbugs-annotations</artifactId>
             <version>${spotbugs.version}</version>
@@ -185,6 +234,13 @@
             <artifactId>api</artifactId>
             <version>${strimzi.version}</version>
         </dependency>
+
+        <dependency>
+            <groupId>io.apicurio</groupId>
+            <artifactId>apicurio-registry-operator-api-model</artifactId>
+            <version>${apicurio.api.version}</version>
+        </dependency>
+
     </dependencies>
 
     <build>
@@ -244,6 +300,9 @@
                                 <!-- Needed for logging in tests used by test-frame (uses SLF4J) -->
                                 <ignoredUnusedDeclaredDependency>org.apache.logging.log4j:log4j-slf4j2-impl</ignoredUnusedDeclaredDependency>
                                 <ignoredUnusedDeclaredDependency>io.fabric8:kubernetes-server-mock</ignoredUnusedDeclaredDependency>
+                                <ignoredUnusedDeclaredDependency>io.fabric8:generator-annotations</ignoredUnusedDeclaredDependency>
+                                <ignoredUnusedDeclaredDependency>io.sundr:builder-annotations</ignoredUnusedDeclaredDependency>
+                                <ignoredUnusedDeclaredDependency>org.projectlombok:lombok</ignoredUnusedDeclaredDependency>
                                 <!-- Temporary exclusion as it will be needed when we start write something -->
                                 <ignoredUnusedDeclaredDependency>io.skodjob:test-frame-metrics-collector</ignoredUnusedDeclaredDependency>
                                 <ignoredUnusedDeclaredDependency>io.fabric8:openshift-client</ignoredUnusedDeclaredDependency>
@@ -413,6 +472,43 @@
                                     <outputFileName>debeziumservers.debezium.io-v1.yaml</outputFileName>
                                 </configuration>
                             </execution>
+                            <!-- Flink SQL Example https://github.com/streamshub/flink-sql-examples -->
+                            <execution>
+                                <id>get-flink-sql-example-flink-deployment</id>
+                                <phase>generate-sources</phase>
+                                <goals>
+                                    <goal>wget</goal>
+                                </goals>
+                                <configuration>
+                                    <url>https://raw.githubusercontent.com/streamshub/flink-sql-examples/main/recommendation-app/flink-deployment.yaml</url>
+                                    <outputDirectory>${basedir}/${operator.files.destination}/examples/sql-example</outputDirectory>
+                                    <outputFileName>flink-deployment.yaml</outputFileName>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>get-flink-sql-example-data-app</id>
+                                <phase>generate-sources</phase>
+                                <goals>
+                                    <goal>wget</goal>
+                                </goals>
+                                <configuration>
+                                    <url>https://raw.githubusercontent.com/streamshub/flink-sql-examples/main/recommendation-app/data-generator.yaml</url>
+                                    <outputDirectory>${basedir}/${operator.files.destination}/examples/sql-example</outputDirectory>
+                                    <outputFileName>data-generator.yaml</outputFileName>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>get-flink-sql-example-data-app-cm</id>
+                                <phase>generate-sources</phase>
+                                <goals>
+                                    <goal>wget</goal>
+                                </goals>
+                                <configuration>
+                                    <url>https://raw.githubusercontent.com/streamshub/flink-sql-examples/main/recommendation-app/productInventory.csv</url>
+                                    <outputDirectory>${basedir}/${operator.files.destination}/examples/sql-example</outputDirectory>
+                                    <outputFileName>productInventory.csv</outputFileName>
+                                </configuration>
+                            </execution>
                         </executions>
                         <configuration>
                             <overwrite>true</overwrite>
@@ -498,6 +594,25 @@
                                 </configuration>
                             </execution>
                         </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>io.fabric8</groupId>
+                        <artifactId>java-generator-maven-plugin</artifactId>
+                        <version>${fabric8.version}</version>
+                        <executions>
+                            <execution>
+                                <phase>generate-sources</phase>
+                                <goals>
+                                    <goal>generate</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <source>${basedir}/${operator.files.destination}/flink</source>
+                            <enumUppercase>false</enumUppercase>
+                            <extraAnnotations>true</extraAnnotations>
+                            <alwaysPreserveUnknown>true</alwaysPreserveUnknown>
+                        </configuration>
                     </plugin>
                 </plugins>
             </build>

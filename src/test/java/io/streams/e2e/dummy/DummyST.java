@@ -4,11 +4,8 @@ import io.fabric8.kubernetes.api.model.NamespaceBuilder;
 import io.skodjob.testframe.resources.KubeResourceManager;
 import io.streams.constants.TestTags;
 import io.streams.e2e.Abstract;
-import io.streams.operands.strimzi.resources.KafkaType;
 import io.streams.operands.strimzi.templates.KafkaBridgeTemplate;
 import io.streams.operands.strimzi.templates.KafkaConnectTemplate;
-import io.streams.operands.strimzi.templates.KafkaConnectorTemplate;
-import io.streams.operands.strimzi.templates.KafkaMirrorMaker2Template;
 import io.streams.operands.strimzi.templates.KafkaNodePoolTemplate;
 import io.streams.operands.strimzi.templates.KafkaTemplate;
 import io.streams.operands.strimzi.templates.KafkaTopicTemplate;
@@ -27,8 +24,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIf;
 
 import java.io.IOException;
-import java.lang.reflect.Array;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
@@ -68,9 +63,9 @@ public class DummyST extends Abstract {
 
         // At first create KafkaNodePools
         KubeResourceManager.getInstance().createResourceWithWait(
-            KafkaNodePoolTemplate.defaultKafkaNodePool(StrimziManifestInstaller.OPERATOR_NS, "controller-source", 1,
+            KafkaNodePoolTemplate.defaultKafkaNodePoolPvc(StrimziManifestInstaller.OPERATOR_NS, "controller-source", 1,
                 kafkaName, List.of(ProcessRoles.CONTROLLER)).build(),
-            KafkaNodePoolTemplate.defaultKafkaNodePool(StrimziManifestInstaller.OPERATOR_NS, "broker-source", 3,
+            KafkaNodePoolTemplate.defaultKafkaNodePoolPvc(StrimziManifestInstaller.OPERATOR_NS, "broker-source", 3,
                 kafkaName, List.of(ProcessRoles.BROKER)).build(),
             KafkaTemplate.defaultKafka(StrimziManifestInstaller.OPERATOR_NS, kafkaName).build()
         );
