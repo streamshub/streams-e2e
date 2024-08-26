@@ -36,9 +36,9 @@
         <!--   Build tools' properties     -->
         <spotbugs.version>4.8.6</spotbugs.version>
         <maven.spotbugs.version>4.8.6.2</maven.spotbugs.version>
-        <maven.checkstyle.version>3.4.0</maven.checkstyle.version>
+        <maven.checkstyle.version>3.5.0</maven.checkstyle.version>
         <maven.compile.plugin.version>3.13.0</maven.compile.plugin.version>
-        <maven.dependency.version>3.7.1</maven.dependency.version>
+        <maven.dependency.version>3.8.0</maven.dependency.version>
         <maven.download.plugin.version>1.9.0</maven.download.plugin.version>
         <maven.exec.plugin.version>3.4.1</maven.exec.plugin.version>
 
@@ -51,7 +51,7 @@
         <apicurio.registry.files.destination>apicurio-registry</apicurio.registry.files.destination>
         <debezium.operator.files.destination>debezium</debezium.operator.files.destination>
         <!-- Operators versions -->
-        <strimzi.version>0.42.0</strimzi.version>
+        <strimzi.version>0.43.0</strimzi.version>
         <flink.version>1.9.0</flink.version>
         <cert.manager.version>1.15.2</cert.manager.version>
         <apicurio.registry.version>1.1.2-v2.5.11.final</apicurio.registry.version>
