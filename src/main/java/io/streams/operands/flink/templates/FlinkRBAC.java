@@ -41,12 +41,19 @@ public class FlinkRBAC {
                 .withRules(
                     new PolicyRuleBuilder()
                         .withApiGroups("")
-                        .withResources("pods", "configmaps")
+                        .withResources(
+                            "pods",
+                            "configmaps",
+                            "pods/finalizers"
+                        )
                         .withVerbs("*")
                         .build(),
                     new PolicyRuleBuilder()
                         .withApiGroups("apps")
-                        .withResources("deployments")
+                        .withResources(
+                            "deployments",
+                            "deployments/finalizers"
+                        )
                         .withVerbs("*")
                         .build()
                 )

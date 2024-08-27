@@ -1,5 +1,6 @@
 package io.streams.e2e.flink.sql;
 
+import io.fabric8.kubernetes.api.model.ConfigMapBuilder;
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.NamespaceBuilder;
 import io.skodjob.testframe.resources.KubeResourceManager;
@@ -21,8 +22,11 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 import static io.streams.constants.TestTags.SQL_EXAMPLE;
@@ -67,13 +71,30 @@ public class SqlExampleST extends Abstract {
             KafkaTemplate.defaultKafka(namespace, "my-cluster")
                 .editSpec()
                 .withCruiseControl(null)
+                .withKafkaExporter(null)
+                .editKafka()
+                .withConfig(Map.of(
+                    "offsets.topic.replication.factor", 1,
+                    "transaction.state.log.replication.factor", 1,
+                    "transaction.state.log.min.isr", 1,
+                    "default.replication.factor", 1,
+                    "min.insync.replicas", 1
+                ))
+                .endKafka()
                 .endSpec()
                 .build());
 
         // Create configMap
-        KubeResourceManager.getKubeCmdClient().inNamespace(namespace)
-            .exec("create", "configmap", "product-inventory", "--from-file",
-                exampleFiles.resolve("productInventory.csv").toAbsolutePath().toString());
+        KubeResourceManager.getInstance().createOrUpdateResourceWithWait(
+            new ConfigMapBuilder()
+                .withNewMetadata()
+                .withName("product-inventory")
+                .withNamespace(namespace)
+                .endMetadata()
+                .withData(
+                    Collections.singletonMap("productInventory.csv",
+                        Files.readString(exampleFiles.resolve("productInventory.csv"))))
+                .build());
 
         // Create data-app
         List<HasMetadata> dataApp = KubeResourceManager.getInstance()
@@ -86,5 +107,7 @@ public class SqlExampleST extends Abstract {
             .load(exampleFiles.resolve("flink-deployment.yaml").toFile()).item();
         flinkApp.getMetadata().setNamespace(namespace);
         KubeResourceManager.getInstance().createOrUpdateResourceWithWait(flinkApp);
+
+        System.out.println("pepa");
     }
 }
