@@ -90,11 +90,11 @@ public class DummyST extends Abstract {
     void installStrimziByOlmCatalogTest() {
         CompletableFuture.allOf(
             StrimziOlmCatalogInstaller.install("strimzi-kafka-operator", "strimzi-olm",
-                "strimzi-cluster-operator.v0.42.0", "stable", "operatorhubio-catalog", "olm")
+                "strimzi-cluster-operator.v0.43.0", "stable", "operatorhubio-catalog", "olm")
         ).join();
         assertTrue(KubeResourceManager.getKubeClient().getClient().apps()
             .deployments().inNamespace("strimzi-olm")
-            .withName("strimzi-cluster-operator-v0.42.0").isReady());
+            .withName("strimzi-cluster-operator-v0.43.0").isReady());
     }
 
     @Test
