@@ -85,22 +85,22 @@ public class DummyST extends Abstract {
     void installStrimziByOlmCatalogTest() {
         CompletableFuture.allOf(
             StrimziOlmCatalogInstaller.install("strimzi-kafka-operator", "strimzi-olm",
-                "strimzi-cluster-operator.v0.42.0", "stable", "operatorhubio-catalog", "olm")
+                "strimzi-cluster-operator.v0.43.0", "stable", "operatorhubio-catalog", "olm")
         ).join();
         assertTrue(KubeResourceManager.getKubeClient().getClient().apps()
             .deployments().inNamespace("strimzi-olm")
-            .withName("strimzi-cluster-operator-v0.42.0").isReady());
+            .withName("strimzi-cluster-operator-v0.43.0").isReady());
     }
 
     @Test
     void installStrimziByOlmBundleTest() {
         CompletableFuture.allOf(
             StrimziOlmBundleInstaller.install("strimzi-kafka-operator", "strimzi-olm",
-                "quay.io/operatorhubio/strimzi-kafka-operator:v0.42.0--20240710T183231")
+                "quay.io/operatorhubio/strimzi-kafka-operator:v0.43.0--20240823T152242")
         ).join();
         assertTrue(KubeResourceManager.getKubeClient().getClient().apps()
             .deployments().inNamespace("strimzi-olm")
-            .withName("strimzi-cluster-operator-v0.42.0").isReady());
+            .withName("strimzi-cluster-operator-v0.43.0").isReady());
     }
 
     @Test
