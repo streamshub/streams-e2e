@@ -3,4 +3,7 @@
   <Match>
     <Class name="~io\.skodjob\.datagenerator\.models\..+(\$.*)?" />
   </Match>
+  <Match>
+    <Package name="~org\.apache\.flink.*"/>
+  </Match>
 </FindBugsFilter>

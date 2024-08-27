@@ -12,6 +12,8 @@ import io.skodjob.testframe.resources.SubscriptionType;
 import io.skodjob.testframe.utils.KubeUtils;
 import io.streams.constants.TestConstants;
 import io.streams.listeners.TestExceptionCallbackListener;
+import io.streams.operands.apicurio.resources.ApicurioRegistryType;
+import io.streams.operands.flink.resoruces.FlinkDeploymentType;
 import io.streams.operands.strimzi.resources.KafkaBridgeType;
 import io.streams.operands.strimzi.resources.KafkaConnectType;
 import io.streams.operands.strimzi.resources.KafkaConnectorType;
@@ -45,7 +47,9 @@ public class Abstract {
             new KafkaConnectorType(),
             new KafkaMirrorMaker2Type(),
             new KafkaRebalanceType(),
-            new KafkaBridgeType()
+            new KafkaBridgeType(),
+            new FlinkDeploymentType(),
+            new ApicurioRegistryType()
         );
         KubeResourceManager.getInstance().addCreateCallback(r -> {
             if (r.getKind().equals("Namespace")) {

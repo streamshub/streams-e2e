@@ -118,3 +118,9 @@ finish:
   discover+:
     test:
       - verify
+
+/sql-example:
+  summary: Run SQL example tests
+  discover+:
+    test:
+      - sql-example

@@ -10,3 +10,10 @@ environment:
   tier: 1
   environment+:
     TEST_GROUPS: dummy
+
+/sql-example:
+  summary: Run flink sql example streams-e2e suite
+  duration: 60m
+  tier: 1
+  environment+:
+    TEST_GROUPS: sql-example
