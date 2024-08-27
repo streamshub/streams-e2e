@@ -3,6 +3,7 @@ package io.streams.e2e.flink.sql;
 import io.fabric8.kubernetes.api.model.ConfigMapBuilder;
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.NamespaceBuilder;
+import io.skodjob.testframe.executor.ExecResult;
 import io.skodjob.testframe.resources.KubeResourceManager;
 import io.streams.constants.TestConstants;
 import io.streams.e2e.Abstract;
@@ -30,6 +31,7 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 import static io.streams.constants.TestTags.SQL_EXAMPLE;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Tag(SQL_EXAMPLE)
 public class SqlExampleST extends Abstract {
@@ -108,6 +110,13 @@ public class SqlExampleST extends Abstract {
         flinkApp.getMetadata().setNamespace(namespace);
         KubeResourceManager.getInstance().createOrUpdateResourceWithWait(flinkApp);
 
-        System.out.println("pepa");
+        // Run internal consumer and check if topic contains messages
+        // TODO: Use strimzi test clients in future
+        ExecResult res = KubeResourceManager.getKubeCmdClient().inNamespace(namespace)
+            .execInPod("my-cluster-dual-role-0", "/bin/bash",
+                "./bin/kafka-console-consumer.sh", "--bootstrap-server", "localhost:9092",
+                "--topic", "flink.recommended.products", "--from-beginning", "--group", "test-1", "--max-messages", "10");
+
+        assertTrue(res.out().contains("user-"));
     }
 }
