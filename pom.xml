@@ -373,6 +373,28 @@
             <activation>
                 <activeByDefault>false</activeByDefault>
             </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>io.fabric8</groupId>
+                        <artifactId>java-generator-maven-plugin</artifactId>
+                        <version>${fabric8.version}</version>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>generate</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <source>${basedir}/${operator.files.destination}/flink</source>
+                            <enumUppercase>false</enumUppercase>
+                            <extraAnnotations>true</extraAnnotations>
+                            <alwaysPreserveUnknown>true</alwaysPreserveUnknown>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
         </profile>
         <profile>
             <id>get-operator-files</id>
@@ -601,7 +623,6 @@
                         <version>${fabric8.version}</version>
                         <executions>
                             <execution>
-                                <phase>generate-sources</phase>
                                 <goals>
                                     <goal>generate</goal>
                                 </goals>
