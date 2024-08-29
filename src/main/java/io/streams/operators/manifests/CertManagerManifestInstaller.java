@@ -23,6 +23,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.LockSupport;
 
 /**
  * Installer of Cert-manager using yaml manifests files
@@ -36,6 +38,8 @@ public class CertManagerManifestInstaller {
      * Deployment name for Cert-manager
      */
     public static final String DEPLOYMENT_NAME = "cert-manager";
+    public static final String WEBHOOK_DEPLOYMENT_NAME = "cert-manager-webhook";
+    public static final String CA_INJECTION_DEPLOYMENT_NAME = "cert-manager-cainjector";
 
     /**
      * Operator namespace
@@ -83,7 +87,12 @@ public class CertManagerManifestInstaller {
 
     private static boolean isReady() {
         if (KubeResourceManager.getKubeClient().getClient().apps()
-            .deployments().inNamespace(OPERATOR_NS).withName(DEPLOYMENT_NAME).isReady()) {
+            .deployments().inNamespace(OPERATOR_NS).withName(DEPLOYMENT_NAME).isReady() &&
+            KubeResourceManager.getKubeClient().getClient().apps()
+                .deployments().inNamespace(OPERATOR_NS).withName(WEBHOOK_DEPLOYMENT_NAME).isReady() &&
+            KubeResourceManager.getKubeClient().getClient().apps()
+                .deployments().inNamespace(OPERATOR_NS).withName(CA_INJECTION_DEPLOYMENT_NAME).isReady()) {
+            LockSupport.parkNanos(TimeUnit.SECONDS.toNanos(60));
             LOGGER.info("Cert-manager {}/{} is ready", OPERATOR_NS, DEPLOYMENT_NAME);
             return true;
         } else {
