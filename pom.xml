@@ -63,6 +63,11 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>common</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>io.fabric8</groupId>
                 <artifactId>kubernetes-client-bom-with-deps</artifactId>
                 <version>${fabric8.version}</version>
@@ -361,6 +366,28 @@
                     <excludeFilterFile>${project.basedir}/.spotbugs/spotbugs-exclude.xml</excludeFilterFile>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>io.fabric8</groupId>
+                <artifactId>java-generator-maven-plugin</artifactId>
+                <version>${fabric8.version}</version>
+                <executions>
+                    <execution>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <urls>
+                        https://raw.githubusercontent.com/apache/flink-kubernetes-operator/release-${flink.version}/helm/flink-kubernetes-operator/crds/flinkdeployments.flink.apache.org-v1.yml,
+                        https://raw.githubusercontent.com/apache/flink-kubernetes-operator/release-${flink.version}/helm/flink-kubernetes-operator/crds/flinksessionjobs.flink.apache.org-v1.yml
+                    </urls>
+                    <enumUppercase>false</enumUppercase>
+                    <extraAnnotations>true</extraAnnotations>
+                    <alwaysPreserveUnknown>true</alwaysPreserveUnknown>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 
@@ -373,28 +400,6 @@
             <activation>
                 <activeByDefault>false</activeByDefault>
             </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>io.fabric8</groupId>
-                        <artifactId>java-generator-maven-plugin</artifactId>
-                        <version>${fabric8.version}</version>
-                        <executions>
-                            <execution>
-                                <goals>
-                                    <goal>generate</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                        <configuration>
-                            <source>${basedir}/${operator.files.destination}/flink</source>
-                            <enumUppercase>false</enumUppercase>
-                            <extraAnnotations>true</extraAnnotations>
-                            <alwaysPreserveUnknown>true</alwaysPreserveUnknown>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
         </profile>
         <profile>
             <id>get-operator-files</id>
@@ -616,24 +621,6 @@
                                 </configuration>
                             </execution>
                         </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>io.fabric8</groupId>
-                        <artifactId>java-generator-maven-plugin</artifactId>
-                        <version>${fabric8.version}</version>
-                        <executions>
-                            <execution>
-                                <goals>
-                                    <goal>generate</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                        <configuration>
-                            <source>${basedir}/${operator.files.destination}/flink</source>
-                            <enumUppercase>false</enumUppercase>
-                            <extraAnnotations>true</extraAnnotations>
-                            <alwaysPreserveUnknown>true</alwaysPreserveUnknown>
-                        </configuration>
                     </plugin>
                 </plugins>
             </build>
