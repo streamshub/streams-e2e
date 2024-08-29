@@ -46,8 +46,8 @@ public class SqlExampleST extends Abstract {
 
         CompletableFuture.allOf(
             StrimziManifestInstaller.install(),
-            FlinkManifestInstaller.install(),
-            ApicurioRegistryManifestInstaller.install()).join();
+            ApicurioRegistryManifestInstaller.install(),
+            FlinkManifestInstaller.install()).join();
     }
 
     @Test
