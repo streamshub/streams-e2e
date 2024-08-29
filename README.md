@@ -39,14 +39,21 @@ $ ./mvnw verify -P test
 
 Run specific tag.
 ```bash
-$ ./mvnw verify -P test -Dgroups=smoke
+$ ./mvnw verify -P test -Dgroups=sql-example
 ```
 
 Run specific test class or test
 ```bash
-$ ./mvnw verify -P test -Dit.tests=io.streams.e2e.dummy.DummyST
-$ ./mvnw verify -P test -Dit.tests=io.streams.e2e.dummy.DummyST#dummyTest
+$ ./mvnw verify -P test -Dit.tests=io.streams.e2e.flink.sql.SqlExampleST
+$ ./mvnw verify -P test -Dit.tests=io.streams.e2e.flink.sql.SqlExampleST#testFlinkSqlExample
 ```
 
 ## Test configuration
 TODO
+
+## Run Packit CI
+If PR is opened, you can use packit for run you tests on top of kind cluster.
+To run Packit CI, just make comment with following text...
+```
+/packit test --labels sql-example
+```
