@@ -24,15 +24,15 @@
         <maven.compiler.release>17</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <test-frame.version>0.5.0</test-frame.version>
+        <test-frame.version>0.6.0</test-frame.version>
         <fabric8.version>6.13.3</fabric8.version>
         <log4j.version>2.23.1</log4j.version>
         <slf4j.version>2.0.16</slf4j.version>
-        <jackson.version>2.17.1</jackson.version>
+        <jackson.version>2.17.2</jackson.version>
 
         <junit.jupiter.version>5.11.0</junit.jupiter.version>
         <junit.platform.version>1.11.0</junit.platform.version>
-        <maven.surefire.version>3.4.0</maven.surefire.version>
+        <maven.surefire.version>3.5.0</maven.surefire.version>
 
         <!--   Build tools' properties     -->
         <spotbugs.version>4.8.6</spotbugs.version>
