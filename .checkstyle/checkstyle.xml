@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <!--
-~    Copyright Skodjob Authors.
+~    Copyright streamshub authors.
 ~
 ~    Licensed under the Apache Software License version 2.0, available at http://www.apache.org/licenses/LICENSE-2.0
 -->
@@ -20,7 +20,7 @@
 
     <module name="Header">
         <property name="header"
-                  value="/*\n * Copyright Skodjob authors.\n * License: Apache License 2.0 (see the file LICENSE or http://apache.org/licenses/LICENSE-2.0.html).\n */"/>
+                  value="/*\n * Copyright streamshub authors.\n * License: Apache License 2.0 (see the file LICENSE or http://apache.org/licenses/LICENSE-2.0.html).\n */"/>
         <property name="fileExtensions" value="java"/>
     </module>
 
