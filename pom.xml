@@ -501,18 +501,6 @@
                             </execution>
                             <!-- Flink SQL Example https://github.com/streamshub/flink-sql-examples -->
                             <execution>
-                                <id>get-flink-sql-example-flink-deployment</id>
-                                <phase>generate-sources</phase>
-                                <goals>
-                                    <goal>wget</goal>
-                                </goals>
-                                <configuration>
-                                    <url>https://raw.githubusercontent.com/streamshub/flink-sql-examples/main/recommendation-app/flink-deployment.yaml</url>
-                                    <outputDirectory>${basedir}/${operator.files.destination}/examples/sql-example</outputDirectory>
-                                    <outputFileName>flink-deployment.yaml</outputFileName>
-                                </configuration>
-                            </execution>
-                            <execution>
                                 <id>get-flink-sql-example-data-app</id>
                                 <phase>generate-sources</phase>
                                 <goals>
