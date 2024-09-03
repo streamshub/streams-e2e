@@ -19,6 +19,8 @@ import io.streams.operators.olm.bundle.StrimziOlmBundleInstaller;
 import io.streams.operators.olm.catalog.StrimziOlmCatalogInstaller;
 import io.strimzi.api.kafka.model.kafka.KafkaResources;
 import io.strimzi.api.kafka.model.nodepool.ProcessRoles;
+import io.strimzi.api.kafka.model.topic.KafkaTopic;
+import io.strimzi.api.kafka.model.user.KafkaUser;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIf;
@@ -70,15 +72,23 @@ public class DummyST extends Abstract {
             KafkaTemplate.defaultKafka(StrimziManifestInstaller.OPERATOR_NS, kafkaName).build()
         );
 
+        KafkaTopic topic = KafkaTopicTemplate.defaultKafkaTopic(
+            StrimziManifestInstaller.OPERATOR_NS, kafkaTopicName, kafkaName).build();
+        KafkaUser user = KafkaUserTemplate.defaultKafkaUser(
+            StrimziManifestInstaller.OPERATOR_NS, kafkaUserName, kafkaName).build();
+
         // Now rest of the operands
         KubeResourceManager.getInstance().createResourceWithWait(
-            KafkaTopicTemplate.defaultKafkaTopic(StrimziManifestInstaller.OPERATOR_NS, kafkaTopicName, kafkaName).build(),
-            KafkaUserTemplate.defaultKafkaUser(StrimziManifestInstaller.OPERATOR_NS, kafkaUserName, kafkaName).build(),
+            topic,
+            user,
             KafkaBridgeTemplate.defaultKafkaBridge(StrimziManifestInstaller.OPERATOR_NS, kafkaBridgeName,
                 KafkaResources.tlsBootstrapAddress(kafkaName)).build(),
             KafkaConnectTemplate.defaultKafkaConnectWithConnector(StrimziManifestInstaller.OPERATOR_NS,
                 kafkaConnectName, kafkaName, KafkaResources.tlsBootstrapAddress(kafkaName)).build()
         );
+
+        // Try deleting some resources
+        KubeResourceManager.getInstance().deleteResource(topic, user);
     }
 
     @Test
@@ -114,9 +124,8 @@ public class DummyST extends Abstract {
 
     @Test
     void installFlinkAndCertManagerFromManifestsTest() throws IOException {
-        CompletableFuture.allOf(
-            CertManagerManifestInstaller.install(),
-            FlinkManifestInstaller.install()).join();
+        CompletableFuture.allOf(CertManagerManifestInstaller.install()).join();
+        CompletableFuture.allOf(FlinkManifestInstaller.install()).join();
 
         assertTrue(KubeResourceManager.getKubeClient().getClient().apps()
             .deployments().inNamespace(CertManagerManifestInstaller.OPERATOR_NS)
