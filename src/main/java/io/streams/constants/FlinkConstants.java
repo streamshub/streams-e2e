@@ -13,14 +13,14 @@ public interface FlinkConstants {
             "WATERMARK FOR event_time AS event_time - INTERVAL '1' SECOND ) WITH ( 'connector' = 'kafka', " +
             "'topic' = 'flink.click.streams', 'properties.bootstrap.servers' = " +
             "'my-cluster-kafka-bootstrap.flink.svc:9092', 'properties.group.id' = 'click-stream-group', " +
-            "'value.format' = 'avro-confluent', 'value.avro-confluent.schema-registry.url' = " +
+            "'value.format' = 'avro-confluent', 'value.avro-confluent.url' = " +
             "'http://apicurio-registry-service.flink.svc:8080/apis/ccompat/v6', 'scan.startup.mode' = " +
             "'latest-offset' ); CREATE TABLE SalesRecordTable ( invoice_id STRING, user_id STRING, product_id STRING, " +
             "quantity STRING, unit_cost STRING, `purchase_time` TIMESTAMP(3) METADATA FROM 'timestamp', " +
             "WATERMARK FOR purchase_time AS purchase_time - INTERVAL '1' SECOND ) WITH ( 'connector' = 'kafka', " +
             "'topic' = 'flink.sales.records', 'properties.bootstrap.servers' = " +
             "'my-cluster-kafka-bootstrap.flink.svc:9092', 'properties.group.id' = 'sales-record-group', " +
-            "'value.format' = 'avro-confluent', 'value.avro-confluent.schema-registry.url' = " +
+            "'value.format' = 'avro-confluent', 'value.avro-confluent.url' = " +
             "'http://apicurio-registry-service.flink.svc:8080/apis/ccompat/v6', 'scan.startup.mode' = " +
             "'latest-offset' ); CREATE TABLE CsvSinkTable ( user_id STRING, top_product_ids STRING, " +
             "`event_time` TIMESTAMP(3), PRIMARY KEY(`user_id`) NOT ENFORCED ) WITH ( 'connector' = 'upsert-kafka', " +
