@@ -58,6 +58,7 @@
         <apicurio.registry.version>1.1.2-v2.5.11.final</apicurio.registry.version>
         <apicurio.api.version>1.1.2</apicurio.api.version>
         <debezium.operator.version>2.7.0</debezium.operator.version>
+        <kafka.version>3.8.0</kafka.version>
     </properties>
 
     <dependencyManagement>
@@ -157,6 +158,11 @@
             <version>${fabric8.version}</version>
         </dependency>
         <dependency>
+            <groupId>io.fabric8</groupId>
+            <artifactId>kubernetes-model-batch</artifactId>
+            <version>${fabric8.version}</version>
+        </dependency>
+        <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
             <version>${jackson.version}</version>
@@ -215,6 +221,11 @@
             <artifactId>log4j-slf4j2-impl</artifactId>
             <version>${log4j.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-api</artifactId>
+            <version>${log4j.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>io.sundr</groupId>
@@ -244,6 +255,13 @@
             <groupId>io.apicurio</groupId>
             <artifactId>apicurio-registry-operator-api-model</artifactId>
             <version>${apicurio.api.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.kafka</groupId>
+            <artifactId>kafka-clients</artifactId>
+            <version>${kafka.version}</version>
+            <scope>compile</scope>
         </dependency>
 
     </dependencies>
