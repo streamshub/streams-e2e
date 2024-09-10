@@ -1,3 +1,7 @@
+/*
+ * Copyright streamshub authors.
+ * License: Apache License 2.0 (see the file LICENSE or http://apache.org/licenses/LICENSE-2.0.html).
+ */
 package io.streams.e2e.flink.sql;
 
 import io.fabric8.kubernetes.api.model.ConfigMapBuilder;
@@ -130,8 +134,10 @@ public class SqlExampleST extends Abstract {
         KubeResourceManager.getInstance().createResourceWithWait(
             strimziKafkaClients.consumerStrimzi()
         );
-        JobUtils.waitForJobSuccess(namespace, strimziKafkaClients.getConsumerName(), TestFrameConstants.GLOBAL_TIMEOUT_MEDIUM);
-        String consumerPodName = KubeResourceManager.getKubeClient().listPodsByPrefixInName(namespace, consumerName).get(0).getMetadata().getName();
+        JobUtils.waitForJobSuccess(namespace, strimziKafkaClients.getConsumerName(),
+            TestFrameConstants.GLOBAL_TIMEOUT_MEDIUM);
+        String consumerPodName = KubeResourceManager.getKubeClient().listPodsByPrefixInName(namespace, consumerName)
+            .get(0).getMetadata().getName();
 
         String log = KubeResourceManager.getKubeClient().getLogsFromPod(namespace, consumerPodName);
         assertTrue(log.contains("user-9"));
