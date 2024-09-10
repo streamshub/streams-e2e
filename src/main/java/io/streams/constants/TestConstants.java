@@ -12,4 +12,12 @@ import java.nio.file.Paths;
 public interface TestConstants {
     String LOG_COLLECT_LABEL = "streams-e2e";
     Path YAML_MANIFEST_PATH = Paths.get(Environment.USER_PATH, "operator-install-files");
+
+    String ALWAYS_IMAGE_PULL_POLICY = "Always";
+    String IF_NOT_PRESENT_IMAGE_PULL_POLICY = "IfNotPresent";
+
+    String STRIMZI_TEST_CLIENTS_IMAGE = "quay.io/strimzi-test-clients/test-clients:latest-kafka-3.8.0";
+
+    String STRIMZI_TEST_CLIENTS_LABEL_KEY = "strimzi-test-clients";
+    String STRIMZI_TEST_CLIENTS_LABEL_VALUE = "true";
 }

@@ -3,20 +3,25 @@ package io.streams.e2e.flink.sql;
 import io.fabric8.kubernetes.api.model.ConfigMapBuilder;
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.NamespaceBuilder;
+import io.skodjob.testframe.TestFrameConstants;
 import io.skodjob.testframe.executor.ExecResult;
 import io.skodjob.testframe.resources.KubeResourceManager;
+import io.streams.clients.kafka.StrimziKafkaClients;
+import io.streams.clients.kafka.StrimziKafkaClientsBuilder;
 import io.streams.constants.FlinkConstants;
 import io.streams.constants.TestConstants;
 import io.streams.e2e.Abstract;
 import io.streams.operands.apicurio.templates.ApicurioRegistryTemplate;
 import io.streams.operands.flink.templates.FlinkDeploymentTemplate;
 import io.streams.operands.flink.templates.FlinkRBAC;
+import io.streams.operands.strimzi.resources.KafkaType;
 import io.streams.operands.strimzi.templates.KafkaNodePoolTemplate;
 import io.streams.operands.strimzi.templates.KafkaTemplate;
 import io.streams.operators.manifests.ApicurioRegistryManifestInstaller;
 import io.streams.operators.manifests.CertManagerManifestInstaller;
 import io.streams.operators.manifests.FlinkManifestInstaller;
 import io.streams.operators.manifests.StrimziManifestInstaller;
+import io.streams.utils.kube.JobUtils;
 import io.strimzi.api.kafka.model.nodepool.ProcessRoles;
 import org.apache.flink.v1beta1.FlinkDeployment;
 import org.junit.jupiter.api.BeforeAll;
@@ -111,12 +116,25 @@ public class SqlExampleST extends Abstract {
         KubeResourceManager.getInstance().createOrUpdateResourceWithWait(flinkApp);
 
         // Run internal consumer and check if topic contains messages
-        // TODO: Use strimzi test clients in future
-        ExecResult res = KubeResourceManager.getKubeCmdClient().inNamespace(namespace)
-            .execInPod("my-cluster-dual-role-0", "/bin/bash",
-                "./bin/kafka-console-consumer.sh", "--bootstrap-server", "localhost:9092",
-                "--topic", "flink.recommended.products", "--from-beginning", "--group", "test-1", "--max-messages", "10");
+        String bootstrapServer = KafkaType.kafkaClient().inNamespace(namespace).withName("my-cluster").get()
+            .getStatus().getListeners().get(0).getBootstrapServers();
 
-        assertTrue(res.out().contains("user-"));
+        String consumerName = "kafka-consumer";
+        StrimziKafkaClients strimziKafkaClients = new StrimziKafkaClientsBuilder()
+            .withConsumerName(consumerName)
+            .withNamespaceName(namespace)
+            .withTopicName("flink.recommended.products")
+            .withBootstrapAddress(bootstrapServer)
+            .withMessageCount(10)
+            .withConsumerGroup("my-group").build();
+
+        KubeResourceManager.getInstance().createResourceWithWait(
+            strimziKafkaClients.consumerStrimzi()
+        );
+        JobUtils.waitForJobSuccess(namespace, strimziKafkaClients.getConsumerName(), TestFrameConstants.GLOBAL_TIMEOUT_MEDIUM);
+        String consumerPodName = KubeResourceManager.getKubeClient().listPodsByPrefixInName(namespace, consumerName).get(0).getMetadata().getName();
+
+        String log = KubeResourceManager.getKubeClient().getLogsFromPod(namespace, consumerPodName);
+        assertTrue(log.contains("user-9"));
     }
 }
