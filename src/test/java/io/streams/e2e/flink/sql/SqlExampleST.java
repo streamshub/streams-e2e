@@ -11,7 +11,6 @@ import io.skodjob.testframe.TestFrameConstants;
 import io.skodjob.testframe.resources.KubeResourceManager;
 import io.streams.clients.kafka.StrimziKafkaClients;
 import io.streams.clients.kafka.StrimziKafkaClientsBuilder;
-import io.streams.constants.FlinkConstants;
 import io.streams.constants.TestConstants;
 import io.streams.e2e.Abstract;
 import io.streams.operands.apicurio.templates.ApicurioRegistryTemplate;
@@ -39,9 +38,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
+import static io.streams.constants.TestTags.FLINK;
 import static io.streams.constants.TestTags.SQL_EXAMPLE;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@Tag(FLINK)
 @Tag(SQL_EXAMPLE)
 public class SqlExampleST extends Abstract {
 
@@ -114,8 +115,8 @@ public class SqlExampleST extends Abstract {
         KubeResourceManager.getInstance().createOrUpdateResourceWithWait(dataApp.toArray(new HasMetadata[0]));
 
         // Deploy flink
-        FlinkDeployment flinkApp = FlinkDeploymentTemplate.defaultFlinkDeployment(namespace,
-            "recommendation-app", List.of(FlinkConstants.TEST_SQL_EXAMPLE_STATEMENT)).build();
+        FlinkDeployment flinkApp = FlinkDeploymentTemplate.flinkExampleDeployment(namespace,
+            "recommendation-app").build();
         KubeResourceManager.getInstance().createOrUpdateResourceWithWait(flinkApp);
 
         // Run internal consumer and check if topic contains messages
