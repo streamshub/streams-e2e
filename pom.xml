@@ -59,6 +59,9 @@
         <apicurio.api.version>1.1.2</apicurio.api.version>
         <debezium.operator.version>2.7.0</debezium.operator.version>
         <kafka.version>3.8.0</kafka.version>
+
+        <!-- Tools -->
+        <jooq.version>3.19.11</jooq.version>
     </properties>
 
     <dependencyManagement>
@@ -262,6 +265,16 @@
             <artifactId>kafka-clients</artifactId>
             <version>${kafka.version}</version>
             <scope>compile</scope>
+        </dependency>
+
+        <!-- SQL manipulation -->
+        <!-- https://mvnrepository.com/artifact/org.jooq/jooq -->
+        <dependency>
+            <groupId>org.jooq</groupId>
+            <artifactId>jooq</artifactId>
+            <version>${jooq.version}</version>
+            <!-- Currently it is used just in tests -->
+            <scope>test</scope>
         </dependency>
 
     </dependencies>
