@@ -4,7 +4,6 @@ import io.fabric8.kubernetes.api.model.ConfigMapBuilder;
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.NamespaceBuilder;
 import io.skodjob.testframe.TestFrameConstants;
-import io.skodjob.testframe.executor.ExecResult;
 import io.skodjob.testframe.resources.KubeResourceManager;
 import io.streams.clients.kafka.StrimziKafkaClients;
 import io.streams.clients.kafka.StrimziKafkaClientsBuilder;
