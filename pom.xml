@@ -263,7 +263,6 @@
             <version>${kafka.version}</version>
             <scope>compile</scope>
         </dependency>
-
     </dependencies>
 
     <build>
