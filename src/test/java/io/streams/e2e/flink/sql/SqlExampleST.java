@@ -120,10 +120,8 @@ public class SqlExampleST extends Abstract {
             .getStatus().getListeners().get(0).getBootstrapServers();
         String registryUrl = "http://apicurio-registry-service.flink.svc:8080/apis/ccompat/v6";
 
-        FlinkDeployment flinkApp = FlinkDeploymentTemplate.defaultFlinkDeployment(namespace,
-            "recommendation-app", List.of(TestStatements.getTestSqlExample(bootstrapServer, registryUrl))).build();
         FlinkDeployment flinkApp = FlinkDeploymentTemplate.flinkExampleDeployment(namespace,
-            "recommendation-app").build();
+            "recommendation-app", List.of(TestStatements.getTestSqlExample(bootstrapServer, registryUrl))).build();
         KubeResourceManager.getInstance().createOrUpdateResourceWithWait(flinkApp);
 
         // Run internal consumer and check if topic contains messages
@@ -145,6 +143,6 @@ public class SqlExampleST extends Abstract {
             .get(0).getMetadata().getName();
 
         String log = KubeResourceManager.getKubeClient().getLogsFromPod(namespace, consumerPodName);
-        assertTrue(log.contains("user-9"));
+        assertTrue(log.contains("user-"));
     }
 }

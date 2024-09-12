@@ -4,7 +4,6 @@
  */
 package io.streams.operands.flink.templates;
 
-import io.streams.constants.FlinkConstants;
 import org.apache.flink.v1beta1.FlinkDeploymentBuilder;
 import org.apache.flink.v1beta1.FlinkDeploymentSpec;
 import org.apache.flink.v1beta1.flinkdeploymentspec.Job;
@@ -93,12 +92,13 @@ public class FlinkDeploymentTemplate {
     /**
      * Return default flink deployment for sql runner
      *
-     * @param namespace namespace of flink deployment
-     * @param name      name of deployment
+     * @param namespace     namespace of flink deployment
+     * @param name          name of deployment
+     * @param sqlStatements list of SQL statements that will be executed
      * @return flink deployment builder
      */
-    public static FlinkDeploymentBuilder flinkExampleDeployment(String namespace, String name) {
-        return defaultFlinkDeployment(namespace, name, List.of(FlinkConstants.TEST_SQL_EXAMPLE_STATEMENT))
+    public static FlinkDeploymentBuilder flinkExampleDeployment(String namespace, String name, List<String> sqlStatements) {
+        return defaultFlinkDeployment(namespace, name, sqlStatements)
             .editSpec()
             .editPodTemplate()
             .editFlinkdeploymentspecSpec()
