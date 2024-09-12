@@ -9,7 +9,6 @@ import io.sundr.builder.annotations.Buildable;
 import java.security.InvalidParameterException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.StringJoiner;
 
 @Buildable(editableEnabled = false, builderPackage = "io.fabric8.kubernetes.api.builder")
@@ -37,7 +36,7 @@ public class SqlWith {
 
     public void setConnector(String connector) {
         if (connector == null || connector.isEmpty()) {
-            throw new InvalidParameterException("Connector is not set.");
+            throw new InvalidParameterException("Connector cannot be empty!");
         }
         this.connector = connector;
     }
@@ -47,9 +46,6 @@ public class SqlWith {
     }
 
     public void setBootstrapServer(String bootstrapServer) {
-        if (!Objects.equals(connector, "kafka")) {
-            throw new InvalidParameterException("Bootstrap server shouldn't be used without 'Kafka' connector");
-        }
         this.bootstrapServer = bootstrapServer;
     }
 
@@ -58,9 +54,6 @@ public class SqlWith {
     }
 
     public void setTopic(String topic) {
-        if (!Objects.equals(connector, "kafka")) {
-            throw new InvalidParameterException("Topic shouldn't be used without 'Kafka' connector");
-        }
         this.topic = topic;
     }
 
@@ -78,10 +71,10 @@ public class SqlWith {
         // Add connector
         withClause.add("'connector' = '" + connector + "'");
         // Add Kafka specific info if set
-        if (!bootstrapServer.isEmpty()) {
+        if (bootstrapServer != null && !bootstrapServer.isEmpty()) {
             withClause.add("'properties.bootstrap.servers' = '" + bootstrapServer + "'");
         }
-        if (!topic.isEmpty()) {
+        if (topic != null && !topic.isEmpty()) {
             withClause.add("'topic' = '" + topic + "'");
         }
         // Add additional properties

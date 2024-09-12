@@ -23,6 +23,7 @@ import io.streams.operators.manifests.ApicurioRegistryManifestInstaller;
 import io.streams.operators.manifests.CertManagerManifestInstaller;
 import io.streams.operators.manifests.FlinkManifestInstaller;
 import io.streams.operators.manifests.StrimziManifestInstaller;
+import io.streams.sql.TestStatements;
 import io.streams.utils.kube.JobUtils;
 import io.strimzi.api.kafka.model.nodepool.ProcessRoles;
 import org.apache.flink.v1beta1.FlinkDeployment;
@@ -115,14 +116,17 @@ public class SqlExampleST extends Abstract {
         KubeResourceManager.getInstance().createOrUpdateResourceWithWait(dataApp.toArray(new HasMetadata[0]));
 
         // Deploy flink
+        String bootstrapServer = KafkaType.kafkaClient().inNamespace(namespace).withName("my-cluster").get()
+            .getStatus().getListeners().get(0).getBootstrapServers();
+        String registryUrl = "http://apicurio-registry-service.flink.svc:8080/apis/ccompat/v6";
+
+        FlinkDeployment flinkApp = FlinkDeploymentTemplate.defaultFlinkDeployment(namespace,
+            "recommendation-app", List.of(TestStatements.getTestSqlExample(bootstrapServer, registryUrl))).build();
         FlinkDeployment flinkApp = FlinkDeploymentTemplate.flinkExampleDeployment(namespace,
             "recommendation-app").build();
         KubeResourceManager.getInstance().createOrUpdateResourceWithWait(flinkApp);
 
         // Run internal consumer and check if topic contains messages
-        String bootstrapServer = KafkaType.kafkaClient().inNamespace(namespace).withName("my-cluster").get()
-            .getStatus().getListeners().get(0).getBootstrapServers();
-
         String consumerName = "kafka-consumer";
         StrimziKafkaClients strimziKafkaClients = new StrimziKafkaClientsBuilder()
             .withConsumerName(consumerName)

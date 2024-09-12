@@ -6,52 +6,77 @@ package io.streams.unit;
 
 import io.streams.sql.SqlWith;
 import io.streams.sql.SqlWithBuilder;
-import org.jooq.DSLContext;
-import org.jooq.SQLDialect;
-import org.jooq.conf.RenderKeywordCase;
-import org.jooq.conf.RenderQuotedNames;
-import org.jooq.conf.Settings;
-import org.jooq.impl.DSL;
-import org.jooq.impl.SQLDataType;
 import org.junit.jupiter.api.Test;
 
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class SqlWithTest {
     @Test
-    void testCreateTableWith() {
-        String expectedSql = "CREATE TABLE ProductInventoryTable (product_id varchar(255), category varchar(255), " +
-            "stock varchar(255), rating varchar(255)) WITH ('connector' = 'kafka', " +
-            "'properties.bootstrap.servers' = 'fake-bootstrap', 'topic' = 'fake-topic', 'avro.config' = 'apicurio-registry-service');";
+    void testCreateTableWithFilesystemConnector() {
+        String expectedSql = "CREATE TABLE ProductInventoryTable ( product_id STRING, category STRING, stock STRING, rating STRING ) " +
+            "WITH ('connector' = 'filesystem', 'path' = '/opt/flink/data/productInventory.csv', " +
+            "'csv.ignore-parse-errors' = 'true', 'format' = 'csv');";
 
-        Settings settings = new Settings()
-            .withRenderFormatted(false) // Do not add new lines for pretty print SQL
-            .withRenderKeywordCase(RenderKeywordCase.UPPER)
-            .withRenderQuotedNames(RenderQuotedNames.NEVER); // Render names as-is without quoting
+        // CREATE TABLE ProductInventoryTable ( product_id STRING, category STRING, stock STRING, rating STRING ) " +
+        // "WITH ( 'connector' = 'filesystem', 'path' = '/opt/flink/data/productInventory.csv', " +
+        // "'format' = 'csv', 'csv.ignore-parse-errors' = 'true' )
+        StringBuilder builder = new StringBuilder();
+        builder.append("CREATE TABLE ProductInventoryTable ( product_id STRING, category STRING, stock STRING, rating STRING )");
 
-        DSLContext dsl = DSL.using(SQLDialect.DEFAULT, settings);
+        Map<String, String> additionalProperties = new HashMap<>();
+        additionalProperties.put("path", "/opt/flink/data/productInventory.csv");
+        additionalProperties.put("format", "csv");
+        additionalProperties.put("csv.ignore-parse-errors", "true");
 
-        // Generate a SQL statement using JOOQ
-        String createTableSQL = dsl.createTable("ProductInventoryTable")
-            .column("product_id", SQLDataType.VARCHAR.length(255))
-            .column("category", SQLDataType.VARCHAR.length(255))
-            .column("stock", SQLDataType.VARCHAR.length(255))
-            .column("rating", SQLDataType.VARCHAR.length(255))
-            .getSQL();
-
-        Map<String, String> additionalProperties = Map.of("avro.config", "apicurio-registry-service");
         SqlWith sqlWith = new SqlWithBuilder()
-            .withSqlStatement(createTableSQL)
-            .withConnector("kafka")
-            .withBootstrapServer("fake-bootstrap")
-            .withTopic("fake-topic")
+            .withSqlStatement(builder.toString())
+            .withConnector("filesystem")
             .withAdditionalProperties(additionalProperties)
             .build();
 
-        String finalSql = sqlWith.generateSql();
+        assertTrue(Objects.equals(sqlWith.generateSql(), expectedSql));
+    }
 
-        assertTrue(finalSql.equals(expectedSql));
+    @Test
+    void testCreateTableWithKafkaConnector() {
+        String expectedSql = "CREATE TABLE ClickStreamTable (user_id STRING, product_id STRING, " +
+            "`event_time` TIMESTAMP(3) METADATA FROM 'timestamp', " +
+            "WATERMARK FOR event_time AS event_time - INTERVAL '1' SECOND ) " +
+            "WITH ('connector' = 'kafka', 'properties.bootstrap.servers' = 'my-kafka.bootstrap', 'topic' = 'flink.click.streams', " +
+            "'value.format' = 'avro-confluent', 'properties.group.id' = 'click-stream-group', " +
+            "'value.avro-confluent.url' = 'https://apicurio.registry', 'scan.startup.mode' = 'latest-offset');";
+
+        // CREATE TABLE ClickStreamTable " +
+        // "( user_id STRING, product_id STRING, `event_time` TIMESTAMP(3) METADATA FROM 'timestamp', " +
+        //     "WATERMARK FOR event_time AS event_time - INTERVAL '1' SECOND ) WITH ( 'connector' = 'kafka', " +
+        //     "'topic' = 'flink.click.streams', 'properties.bootstrap.servers' = " +
+        //     "'my-cluster-kafka-bootstrap.flink.svc:9092', 'properties.group.id' = 'click-stream-group', " +
+        //     "'value.format' = 'avro-confluent', 'value.avro-confluent.url' = " +
+        //     "'http://apicurio-registry-service.flink.svc:8080/apis/ccompat/v6', 'scan.startup.mode' = " +
+        //     "'latest-offset' )
+        StringBuilder builder = new StringBuilder();
+        builder.append("CREATE TABLE ClickStreamTable (");
+        builder.append("user_id STRING, product_id STRING, `event_time` TIMESTAMP(3) METADATA FROM 'timestamp', ");
+        builder.append("WATERMARK FOR event_time AS event_time - INTERVAL '1' SECOND )");
+
+        Map<String, String>  additionalProperties = new HashMap<>();
+        additionalProperties.put("properties.group.id", "click-stream-group");
+        additionalProperties.put("value.format", "avro-confluent");
+        additionalProperties.put("value.avro-confluent.url", "https://apicurio.registry");
+        additionalProperties.put("scan.startup.mode", "latest-offset");
+
+        SqlWith sqlWith = new SqlWithBuilder()
+            .withSqlStatement(builder.toString())
+            .withConnector("kafka")
+            .withTopic("flink.click.streams")
+            .withBootstrapServer("my-kafka.bootstrap")
+            .withAdditionalProperties(additionalProperties)
+            .build();
+
+        assertTrue(Objects.equals(sqlWith.generateSql(), expectedSql));
     }
 }
