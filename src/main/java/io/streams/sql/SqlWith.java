@@ -18,7 +18,7 @@ public class SqlWith {
     private String connector;
     private String bootstrapServer;
     private String topic;
-    private Map<String, String> additionalProperties;
+    private Map<String, String> additionalProperties = new HashMap<>();
 
     public String getSqlStatement() {
         return sqlStatement;
