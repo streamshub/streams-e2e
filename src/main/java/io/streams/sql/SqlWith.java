@@ -7,6 +7,7 @@ package io.streams.sql;
 import io.sundr.builder.annotations.Buildable;
 
 import java.security.InvalidParameterException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.StringJoiner;
@@ -58,7 +59,7 @@ public class SqlWith {
     }
 
     public Map<String, String> getAdditionalProperties() {
-        return additionalProperties;
+        return Collections.unmodifiableMap(additionalProperties);
     }
 
     public void setAdditionalProperties(Map<String, String> additionalProperties) {
