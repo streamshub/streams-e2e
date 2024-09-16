@@ -4,6 +4,7 @@
  */
 package io.streams.operands.flink.templates;
 
+import io.streams.Environment;
 import org.apache.flink.v1beta1.FlinkDeploymentBuilder;
 import org.apache.flink.v1beta1.FlinkDeploymentSpec;
 import org.apache.flink.v1beta1.flinkdeploymentspec.Job;
@@ -31,7 +32,7 @@ public class FlinkDeploymentTemplate {
             .withNamespace(namespace)
             .endMetadata()
             .withNewSpec()
-            .withImage("quay.io/streamshub/flink-sql-runner:latest")
+            .withImage(Environment.FLINK_SQL_RUNNER_IMAGE)
             .withFlinkVersion(FlinkDeploymentSpec.FlinkVersion.v1_19)
             .withFlinkConfiguration(
                 Map.of("taskmanager.numberOfTaskSlots", "1")
@@ -45,7 +46,7 @@ public class FlinkDeploymentTemplate {
             .withNewSpec()
             .addNewContainer()
             .withName("flink-main-container")
-            .withImage("quay.io/streamshub/flink-sql-runner:latest")
+            .withImage(Environment.FLINK_SQL_RUNNER_IMAGE)
             .withImagePullPolicy("Always")
             .addNewVolumeMount()
             .withName("flink-logs")
