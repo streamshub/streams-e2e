@@ -96,7 +96,7 @@ public class SqlJobRunnerST extends Abstract {
             .withNamespaceName(namespace)
             .withTopicName("flink.payment.data")
             .withBootstrapAddress(bootstrapServer)
-            .withMessageCount(2000)
+            .withMessageCount(10000)
             .withDelayMs(10)
             .withMessageTemplate("payment_fiat")
             .withAdditionalConfig(
