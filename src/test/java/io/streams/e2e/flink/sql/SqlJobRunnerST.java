@@ -39,6 +39,7 @@ import java.util.concurrent.CompletableFuture;
 
 import static io.streams.constants.TestTags.FLINK;
 import static io.streams.constants.TestTags.SQL_RUNNER;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Tag(FLINK)
@@ -152,5 +153,6 @@ public class SqlJobRunnerST extends Abstract {
             .get(0).getMetadata().getName();
         String log = KubeResourceManager.getKubeClient().getLogsFromPod(namespace, consumerPodName);
         assertTrue(log.contains("\"type\":\"paypal\""));
+        assertFalse(log.contains("\"type\":\"creditCard\""));
     }
 }
