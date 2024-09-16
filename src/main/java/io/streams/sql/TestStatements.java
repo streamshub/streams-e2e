@@ -163,4 +163,61 @@ public class TestStatements {
 
         return part1 + part2 + part3 + part4 + part5 + part6 + part7 + part8;
     }
+
+    public static String getTestFlinkFilter(String bootstrap, String registryUrl) {
+        StringBuilder builder = new StringBuilder();
+        builder.append("CREATE TABLE payment_fiat (paymentDetails ROW<transactionId STRING, type STRING, " +
+            "amount DOUBLE, currency STRING, `date` STRING, status STRING>, payer ROW<name STRING, payerType STRING, " +
+            "accountNumber STRING, bank STRING, billingAddress ROW<street STRING, city STRING, state STRING, " +
+            "country STRING, postalCode STRING>, cardNumber STRING, cardType STRING, expiryDate STRING>, " +
+            "payee ROW<name STRING, payeeType STRING, accountNumber STRING, bank STRING, address ROW<street STRING, " +
+            "city STRING, state STRING, country STRING, postalCode STRING>>)");
+
+        Map<String, String> additionalProperties = new HashMap<>();
+        additionalProperties.put("properties.group.id", "flink-filter-group");
+        additionalProperties.put("value.format", "avro-confluent");
+        additionalProperties.put("value.avro-confluent.url", registryUrl);
+        additionalProperties.put("scan.startup.mode", "latest-offset");
+
+        SqlWith sqlWith = new SqlWithBuilder()
+            .withSqlStatement(builder.toString())
+            .withConnector("kafka")
+            .withTopic("flink.payment.data")
+            .withBootstrapServer(bootstrap)
+            .withAdditionalProperties(additionalProperties)
+            .build();
+
+        String part1 = sqlWith.generateSql();
+
+        builder = new StringBuilder();
+        builder.append("CREATE TABLE paypal ( transactionId STRING, type STRING )");
+
+        additionalProperties = new HashMap<>();
+        additionalProperties.put("properties.client.id", "flink-filter-paypal");
+        additionalProperties.put("properties.transaction.timeout.ms", "800000");
+        additionalProperties.put("key.format", "raw");
+        additionalProperties.put("key.fields", "transactionId");
+        additionalProperties.put("value.format", "json");
+        additionalProperties.put("value.fields-include", "ALL");
+
+        sqlWith = new SqlWithBuilder()
+            .withSqlStatement(builder.toString())
+            .withConnector("kafka")
+            .withBootstrapServer(bootstrap)
+            .withTopic("flink.payment.paypal")
+            .withAdditionalProperties(additionalProperties)
+            .build();
+
+        String part2 = sqlWith.generateSql();
+
+
+        builder = new StringBuilder();
+        builder.append("INSERT INTO paypal" +
+            " SELECT paymentDetails.transactionId, paymentDetails.type " +
+            "FROM payment_fiat WHERE paymentDetails.type = 'paypal';");
+
+        String part3 = builder.toString();
+
+        return part1 + part2 + part3;
+    }
 }
