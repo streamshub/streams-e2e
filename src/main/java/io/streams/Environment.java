@@ -22,8 +22,12 @@ public class Environment {
 
 
     public static final Path LOG_DIR = ENVIRONMENT_VARIABLES.getOrDefault("LOG_DIR",
-        Paths::get, Paths.get(USER_PATH, "target", "logs"))
+            Paths::get, Paths.get(USER_PATH, "target", "logs"))
         .resolve("test-run-" + DATE_FORMAT.format(LocalDateTime.now()));
+
+    public static final String FLINK_SQL_RUNNER_IMAGE =
+        ENVIRONMENT_VARIABLES.getOrDefault("SQL_RUNNER_IMAGE",
+            "quay.io/streamshub/flink-sql-runner:latest");
 
     public static void printEnvVars() {
         LOGGER.info("Streams-e2e environment variables");
