@@ -35,6 +35,7 @@ public class StrimziKafkaClients extends BaseClients {
     private String username;
     private String caCertSecretName;
     private String headers;
+    private String messageTemplate;
 
     public String getProducerName() {
         return producerName;
@@ -125,6 +126,14 @@ public class StrimziKafkaClients extends BaseClients {
         this.headers = headers;
     }
 
+    public String getMessageTemplate() {
+        return this.messageTemplate;
+    }
+
+    public void setMessageTemplate(String template) {
+        this.messageTemplate = template;
+    }
+
     public Job producerStrimzi() {
         return defaultProducerStrimzi().build();
     }
@@ -171,10 +180,9 @@ public class StrimziKafkaClients extends BaseClients {
             .endMetadata()
             .withNewSpec()
             .withRestartPolicy("Never")
-            .withContainers()
             .addNewContainer()
             .withName(producerName)
-            .withImagePullPolicy(TestConstants.IF_NOT_PRESENT_IMAGE_PULL_POLICY)
+            .withImagePullPolicy(TestConstants.ALWAYS_IMAGE_PULL_POLICY)
             .withImage(TestConstants.STRIMZI_TEST_CLIENTS_IMAGE)
             .addNewEnv()
             .withName("BOOTSTRAP_SERVERS")
@@ -237,6 +245,22 @@ public class StrimziKafkaClients extends BaseClients {
                 .endSpec();
         }
 
+        if (this.messageTemplate != null) {
+            builder
+                .editSpec()
+                .editTemplate()
+                .editSpec()
+                .editFirstContainer()
+                .addNewEnv()
+                .withName("MESSAGE_TEMPLATE")
+                .withValue(this.getMessageTemplate())
+                .endEnv()
+                .endContainer()
+                .endSpec()
+                .endTemplate()
+                .endSpec();
+        }
+
         return builder;
     }
 
@@ -287,7 +311,6 @@ public class StrimziKafkaClients extends BaseClients {
             .endMetadata()
             .withNewSpec()
             .withRestartPolicy("Never")
-            .withContainers()
             .addNewContainer()
             .withName(consumerName)
             .withImagePullPolicy(TestConstants.IF_NOT_PRESENT_IMAGE_PULL_POLICY)
