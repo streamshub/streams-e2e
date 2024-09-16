@@ -39,12 +39,11 @@ jobs:
     manual_trigger: true
     env: { IP_FAMILY: ipv4 }
     labels:
-      - flink-sql-example
       - sql-example
     tf_extra_params:
       test:
         tmt:
-          name: flink-sql-example
+          name: sql-example
   ###############################################################################################
   - job: tests
     trigger: pull_request
@@ -61,6 +60,22 @@ jobs:
       test:
         tmt:
           name: flink
+  ###############################################################################################
+  - job: tests
+    trigger: pull_request
+    # Suffix for job name
+    identifier: "smoke"
+    targets:
+      - centos-stream-9-x86_64
+    skip_build: true
+    manual_trigger: true
+    env: { IP_FAMILY: ipv4 }
+    labels:
+      - smoke
+    tf_extra_params:
+      test:
+        tmt:
+          name: smoke
   ###############################################################################################
   - job: tests
     trigger: commit
