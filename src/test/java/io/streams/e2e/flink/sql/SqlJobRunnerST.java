@@ -38,12 +38,13 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 import static io.streams.constants.TestTags.FLINK;
-import static io.streams.constants.TestTags.SQL_RUNNER;
+import static io.streams.constants.TestTags.FLINK_SQL_RUNNER;
+import static io.streams.constants.TestTags.SMOKE;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Tag(FLINK)
-@Tag(SQL_RUNNER)
+@Tag(FLINK_SQL_RUNNER)
 public class SqlJobRunnerST extends Abstract {
 
     String namespace = "flink-filter";
@@ -60,6 +61,7 @@ public class SqlJobRunnerST extends Abstract {
     }
 
     @Test
+    @Tag(SMOKE)
     void testFlinkSqlRunnerSimpleFilter() {
         // Create namespace
         KubeResourceManager.getInstance().createOrUpdateResourceWithWait(

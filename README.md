@@ -39,7 +39,7 @@ $ ./mvnw verify -P test
 
 Run specific tag.
 ```bash
-$ ./mvnw verify -P test -Dgroups=sql-example
+$ ./mvnw verify -P test -Dgroups=flink-sql-example
 ```
 
 Run specific test class or test
@@ -55,5 +55,9 @@ TODO
 If PR is opened, you can use packit for run you tests on top of kind cluster.
 To run Packit CI, just make comment with following text...
 ```
-/packit test --labels sql-example
+# run sql example test
+/packit test --labels flink-sql-example
+
+# run all flink tests
+/packit test --labels flink
 ```

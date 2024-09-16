@@ -119,8 +119,20 @@ finish:
     test:
       - verify
 
-/sql-example:
-  summary: Run SQL example tests
+/smoke:
+  summary: Run smoke tests
   discover+:
     test:
-      - sql-example
+      - smoke
+
+/flink-sql-example:
+  summary: Run Flink SQL example tests
+  discover+:
+    test:
+      - flink-sql-example
+
+/flink:
+  summary: Run all flink related tests
+  discover+:
+    test:
+      - flink
