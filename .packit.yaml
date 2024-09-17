@@ -59,7 +59,7 @@ jobs:
     tf_extra_params:
       test:
         tmt:
-          name: flink
+          name: flink-all
   ###############################################################################################
   - job: tests
     trigger: pull_request
