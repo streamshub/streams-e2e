@@ -113,12 +113,6 @@ finish:
   script: ./tmt/scripts/copy-logs.sh
 #######################################################################
 
-/verify:
-  summary: Run dummy streams-e2e test suite
-  discover+:
-    test:
-      - verify
-
 /smoke:
   summary: Run smoke tests
   discover+:

@@ -9,5 +9,4 @@ public interface TestTags {
     String FLINK_SQL_EXAMPLE = "flink-sql-example";
     String FLINK_SQL_RUNNER = "flink-sql-runner";
     String FLINK = "flink";
-    String DUMMY = "dummy";
 }
