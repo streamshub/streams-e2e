@@ -25,7 +25,7 @@ environment:
   environment+:
     TEST_GROUPS: flink-sql-example
 
-/flink:
+/flink-all:
   summary: Run flink streams-e2e suite
   duration: 180m
   tier: 1

@@ -125,14 +125,14 @@ finish:
     test:
       - smoke
 
-/sql-example:
+/flink-sql-example:
   summary: Run Flink SQL example tests
   discover+:
     test:
       - flink-sql-example
 
-/flink:
+/flink-all:
   summary: Run all flink related tests
   discover+:
     test:
-      - flink
+      - flink-all

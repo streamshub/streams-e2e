@@ -39,23 +39,23 @@ jobs:
     manual_trigger: true
     env: { IP_FAMILY: ipv4 }
     labels:
-      - sql-example
+      - flink-sql-example
     tf_extra_params:
       test:
         tmt:
-          name: sql-example
+          name: flink-sql-example
   ###############################################################################################
   - job: tests
     trigger: pull_request
     # Suffix for job name
-    identifier: "flink"
+    identifier: "flink-all"
     targets:
       - centos-stream-9-x86_64
     skip_build: true
     manual_trigger: true
     env: { IP_FAMILY: ipv4 }
     labels:
-      - flink
+      - flink-all
     tf_extra_params:
       test:
         tmt:
