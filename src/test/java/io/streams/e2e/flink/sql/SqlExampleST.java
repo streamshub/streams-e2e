@@ -40,11 +40,11 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 import static io.streams.constants.TestTags.FLINK;
-import static io.streams.constants.TestTags.SQL_EXAMPLE;
+import static io.streams.constants.TestTags.FLINK_SQL_EXAMPLE;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Tag(FLINK)
-@Tag(SQL_EXAMPLE)
+@Tag(FLINK_SQL_EXAMPLE)
 public class SqlExampleST extends Abstract {
 
     String namespace = "flink";

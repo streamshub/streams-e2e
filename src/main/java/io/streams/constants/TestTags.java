@@ -6,8 +6,8 @@ package io.streams.constants;
 
 public interface TestTags {
     String SMOKE = "smoke";
-    String SQL_EXAMPLE = "sql-example";
-    String SQL_RUNNER = "sql-runner";
+    String FLINK_SQL_EXAMPLE = "flink-sql-example";
+    String FLINK_SQL_RUNNER = "flink-sql-runner";
     String FLINK = "flink";
     String DUMMY = "dummy";
 }
