@@ -4,13 +4,6 @@ duration: 2h
 environment:
   TEST_ENV_VAR: value
 
-/verify:
-  summary: Run dummy streams-e2e suite
-  duration: 40m
-  tier: 1
-  environment+:
-    TEST_GROUPS: dummy
-
 /smoke:
   summary: Run smoke tests
   duration: 60m
