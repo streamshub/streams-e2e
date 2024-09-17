@@ -49,7 +49,7 @@ $ ./mvnw verify -P test -Dit.tests=io.streams.e2e.flink.sql.SqlExampleST#testFli
 ```
 
 ## Test configuration
-TODO
+- To configure sql runner image set env var `SQL_RUNNER_IMAGE`
 
 ## Run Packit CI
 If PR is opened, you can use packit for run you tests on top of kind cluster.
@@ -59,5 +59,8 @@ To run Packit CI, just make comment with following text...
 /packit test --labels flink-sql-example
 
 # run all flink tests
-/packit test --labels flink
+/packit test --labels flink-all
+
+# run smoke tests
+/packit test --labels smoke
 ```
