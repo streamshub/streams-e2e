@@ -10,9 +10,8 @@ import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class SqlWithTest {
     @Test
@@ -38,7 +37,7 @@ public class SqlWithTest {
             .withAdditionalProperties(additionalProperties)
             .build();
 
-        assertTrue(Objects.equals(sqlWith.generateSql(), expectedSql));
+        assertEquals(sqlWith.generateSql(), expectedSql);
     }
 
     @Test
@@ -77,6 +76,6 @@ public class SqlWithTest {
             .withAdditionalProperties(additionalProperties)
             .build();
 
-        assertTrue(Objects.equals(sqlWith.generateSql(), expectedSql));
+        assertEquals(sqlWith.generateSql(), expectedSql);
     }
 }
