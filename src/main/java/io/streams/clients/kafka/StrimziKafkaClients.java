@@ -24,7 +24,7 @@ import java.util.Random;
 @Buildable(editableEnabled = false, builderPackage = "io.fabric8.kubernetes.api.builder")
 public class StrimziKafkaClients extends BaseClients {
     private static final Logger LOGGER = LogManager.getLogger(StrimziKafkaClients.class);
-    private static Random rng = new Random();
+    private static final Random RNG = new Random();
 
     private String producerName;
     private String consumerName;
@@ -295,7 +295,7 @@ public class StrimziKafkaClients extends BaseClients {
         consumerLabels.put(TestConstants.STRIMZI_TEST_CLIENTS_LABEL_KEY, TestConstants.STRIMZI_TEST_CLIENTS_LABEL_VALUE);
 
 
-        final JobBuilder builder = new JobBuilder()
+        return new JobBuilder()
             .withNewMetadata()
             .withNamespace(this.getNamespaceName())
             .withLabels(consumerLabels)
@@ -351,8 +351,6 @@ public class StrimziKafkaClients extends BaseClients {
             .endSpec()
             .endTemplate()
             .endSpec();
-
-        return builder;
     }
 
     private EnvVar getClusterCaCertEnv(String clusterName) {
@@ -410,7 +408,7 @@ public class StrimziKafkaClients extends BaseClients {
      * @return consumer group name with pattern: my-consumer-group-*-*
      */
     private static String generateRandomConsumerGroup() {
-        int salt = rng.nextInt(Integer.MAX_VALUE);
+        int salt = RNG.nextInt(Integer.MAX_VALUE);
 
         return "my-group" + salt;
     }
