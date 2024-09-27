@@ -269,14 +269,14 @@
             <groupId>io.apicurio</groupId>
             <artifactId>apicurio-registry-common</artifactId>
             <version>${apicurio.lib.version}</version>
-            <scope>test</scope>
+            <scope>compile</scope>
         </dependency>
 
         <dependency>
             <groupId>io.apicurio</groupId>
             <artifactId>apicurio-registry-serde-common</artifactId>
             <version>${apicurio.lib.version}</version>
-            <scope>test</scope>
+            <scope>compile</scope>
         </dependency>
 
         <dependency>
