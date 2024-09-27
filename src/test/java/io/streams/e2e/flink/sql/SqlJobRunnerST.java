@@ -4,10 +4,7 @@
  */
 package io.streams.e2e.flink.sql;
 
-import io.apicurio.registry.rest.v2.beans.IfExists;
-import io.apicurio.registry.serde.SerdeConfig;
 import io.apicurio.registry.serde.avro.AvroKafkaSerializer;
-import io.apicurio.registry.serde.config.IdOption;
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.NamespaceBuilder;
 import io.skodjob.testframe.TestFrameConstants;
@@ -26,6 +23,7 @@ import io.streams.operators.manifests.CertManagerManifestInstaller;
 import io.streams.operators.manifests.FlinkManifestInstaller;
 import io.streams.operators.manifests.StrimziManifestInstaller;
 import io.streams.sql.TestStatements;
+import io.streams.utils.StrimziClientUtils;
 import io.streams.utils.kube.JobUtils;
 import io.strimzi.api.kafka.model.nodepool.ProcessRoles;
 import org.apache.flink.v1beta1.FlinkDeployment;
@@ -102,22 +100,8 @@ public class SqlJobRunnerST extends Abstract {
             .withDelayMs(10)
             .withMessageTemplate("payment_fiat")
             .withAdditionalConfig(
-                new StringBuilder()
-                    .append("value.serializer").append("=").append(AvroKafkaSerializer.class.getName())
-                    .append(System.lineSeparator())
-                    .append(SerdeConfig.REGISTRY_URL).append("=")
-                    .append("http://apicurio-registry-service.flink-filter.svc:8080/apis/registry/v2")
-                    .append(System.lineSeparator())
-                    .append(SerdeConfig.ENABLE_CONFLUENT_ID_HANDLER).append("=").append(Boolean.TRUE)
-                    .append(System.lineSeparator())
-                    .append(SerdeConfig.USE_ID).append("=").append(IdOption.contentId)
-                    .append(System.lineSeparator())
-                    .append(SerdeConfig.ENABLE_HEADERS).append("=").append(Boolean.FALSE)
-                    .append(System.lineSeparator())
-                    .append(SerdeConfig.AUTO_REGISTER_ARTIFACT).append("=").append(Boolean.TRUE)
-                    .append(System.lineSeparator())
-                    .append(SerdeConfig.AUTO_REGISTER_ARTIFACT_IF_EXISTS).append("=").append(IfExists.RETURN.name())
-                    .toString()
+                StrimziClientUtils.getApicurioAdditionalProperties(AvroKafkaSerializer.class.getName(),
+                    "http://apicurio-registry-service.flink-filter.svc:8080/apis/registry/v2")
             )
             .build();
 
