@@ -29,7 +29,9 @@ import io.streams.sql.TestStatements;
 import io.streams.utils.StrimziClientUtils;
 import io.streams.utils.TestUtils;
 import io.streams.utils.kube.JobUtils;
+import io.strimzi.api.kafka.model.kafka.listener.GenericKafkaListenerBuilder;
 import io.strimzi.api.kafka.model.kafka.listener.KafkaListenerAuthenticationScramSha512;
+import io.strimzi.api.kafka.model.kafka.listener.KafkaListenerType;
 import io.strimzi.api.kafka.model.nodepool.ProcessRoles;
 import io.strimzi.api.kafka.model.user.KafkaUserScramSha512ClientAuthentication;
 import org.apache.flink.v1beta1.FlinkDeployment;
@@ -88,20 +90,34 @@ public class SqlJobRunnerST extends Abstract {
             KafkaTemplate.defaultKafka(namespace, "my-cluster")
                 .editSpec()
                 .editKafka()
-                .editFirstListener()
-                .withAuth(new KafkaListenerAuthenticationScramSha512())
-                .endListener()
+                .withListeners(
+                    new GenericKafkaListenerBuilder()
+                        .withName("plain")
+                        .withTls(false)
+                        .withType(KafkaListenerType.INTERNAL)
+                        .withPort((9092))
+                        .withAuth(new KafkaListenerAuthenticationScramSha512())
+                        .build(),
+                    new GenericKafkaListenerBuilder()
+                        .withName("tls")
+                        .withTls(true)
+                        .withType(KafkaListenerType.INTERNAL)
+                        .withPort((9093))
+                        .build()
+                )
                 .endKafka()
                 .endSpec()
                 .build());
 
+        // Create kafka scram sha user
         KubeResourceManager.getInstance().createOrUpdateResourceWithWait(
-            KafkaUserTemplate.defaultKafkaUser(namespace, "test-user", "my-cluster")
+            KafkaUserTemplate.defaultKafkaUser(namespace, kafkaUser, "my-cluster")
                 .editSpec()
                 .withAuthentication(new KafkaUserScramSha512ClientAuthentication())
                 .endSpec()
                 .build());
 
+        // Get user secret jaas configuration
         final String saslJaasConfigEncrypted = KubeResourceManager.getKubeClient().getClient().secrets()
             .inNamespace(namespace).withName(kafkaUser).get().getData().get("sasl.jaas.config");
         final String saslJaasConfigDecrypted = TestUtils.decodeFromBase64(saslJaasConfigEncrypted);
@@ -117,7 +133,7 @@ public class SqlJobRunnerST extends Abstract {
             .withTopicName("flink.payment.data")
             .withBootstrapAddress(bootstrapServer)
             .withMessageCount(10000)
-            .withUsername("test-user")
+            .withUsername(kafkaUser)
             .withDelayMs(10)
             .withMessageTemplate("payment_fiat")
             .withAdditionalConfig(
@@ -135,6 +151,7 @@ public class SqlJobRunnerST extends Abstract {
 
         String registryUrl = "http://apicurio-registry-service.flink-filter.svc:8080/apis/ccompat/v6";
 
+        // Deploy flink with test filter sql statement which filter to specific topic only payment type paypal
         FlinkDeployment flink = FlinkDeploymentTemplate.defaultFlinkDeployment(namespace,
                 "flink-filter", List.of(TestStatements.getTestFlinkFilter(
                     bootstrapServer, registryUrl, kafkaUser, namespace)))
