@@ -182,7 +182,7 @@ public class TestStatements {
         additionalProperties.put("properties.sasl.mechanism", "SCRAM-SHA-512");
         additionalProperties.put("properties.sasl.jaas.config",
             "org.apache.flink.kafka.shaded.org.apache.kafka.common.security.scram.ScramLoginModule required " +
-                "username=" + kafkaUser + " password={{secret:" + namespace + "/" + kafkaUser + "/password}}%;");
+                "username=" + kafkaUser + " password={{secret:" + namespace + "/" + kafkaUser + "/password}}\\;");
 
         SqlWith sqlWith = new SqlWithBuilder()
             .withSqlStatement(builder.toString())
@@ -208,7 +208,7 @@ public class TestStatements {
         additionalProperties.put("properties.sasl.mechanism", "SCRAM-SHA-512");
         additionalProperties.put("properties.sasl.jaas.config",
             "org.apache.flink.kafka.shaded.org.apache.kafka.common.security.scram.ScramLoginModule required " +
-                "username=" + kafkaUser + " password={{secret:" + namespace + "/" + kafkaUser + "/password}}%;");
+                "username=" + kafkaUser + " password={{secret:" + namespace + "/" + kafkaUser + "/password}}\\;");
 
         sqlWith = new SqlWithBuilder()
             .withSqlStatement(builder.toString())
