@@ -230,4 +230,33 @@ public class TestStatements {
 
         return part1 + part2 + part3;
     }
+
+    public static String getWrongConnectionSql() {
+        StringBuilder builder = new StringBuilder();
+        builder.append("CREATE TABLE test (message STRING)");
+
+        Map<String, String> additionalProperties = new HashMap<>();
+        additionalProperties.put("properties.group.id", "flink-filter-group");
+        additionalProperties.put("value.format", "avro-confluent");
+        additionalProperties.put("value.avro-confluent.url", "not-exists-sr.cluster.local:5001");
+        additionalProperties.put("scan.startup.mode", "latest-offset");
+
+        SqlWith sqlWith = new SqlWithBuilder()
+            .withSqlStatement(builder.toString())
+            .withConnector("kafka")
+            .withTopic("topic.not.exists")
+            .withBootstrapServer("not-exists-kafka.cluster.local:9092")
+            .withAdditionalProperties(additionalProperties)
+            .build();
+
+        String part1 = sqlWith.generateSql();
+
+        builder = new StringBuilder();
+        builder.append("CREATE TABLE print_table ( message STRING ) WITH ('connector' = 'print');" +
+            "INSERT INTO print_table SELECT * FROM test;");
+
+        String part2 = builder.toString();
+
+        return part1 + part2;
+    }
 }
