@@ -223,4 +223,38 @@ public class SqlJobRunnerST extends Abstract {
                 KubeResourceManager.getKubeClient()
                     .getLogsFromPod(namespace, podName).contains("SQL parse failed"));
     }
+
+    @Test
+    @Tag(SMOKE)
+    void testWrongConnectionInfo() {
+        String namespace = "flink-wrong-connection";
+        String flinkDeploymentName = namespace;
+
+        // Create namespace
+        KubeResourceManager.getInstance().createOrUpdateResourceWithWait(
+            new NamespaceBuilder().withNewMetadata().withName(namespace).endMetadata().build());
+
+        // Add flink RBAC
+        KubeResourceManager.getInstance().createOrUpdateResourceWithWait(
+            FlinkRBAC.getFlinkRbacResources(namespace).toArray(new HasMetadata[0]));
+
+        // Deploy flink with not valid sql
+        FlinkDeployment flink = FlinkDeploymentTemplate.defaultFlinkDeployment(namespace,
+            flinkDeploymentName, List.of(TestStatements.getWrongConnectionSql())).build();
+        KubeResourceManager.getInstance().createOrUpdateResourceWithoutWait(flink);
+
+        // Check if no task is deployed and error is proper in flink deployment
+        Wait.until("Flink deployment starts", TestFrameConstants.GLOBAL_POLL_INTERVAL_1_SEC,
+            TestFrameConstants.GLOBAL_TIMEOUT_MEDIUM, () ->
+                !KubeResourceManager.getKubeClient().listPodsByPrefixInName(namespace, flinkDeploymentName).isEmpty());
+
+        String podName = KubeResourceManager.getKubeClient().listPodsByPrefixInName(namespace, flinkDeploymentName)
+            .get(0).getMetadata().getName();
+
+        Wait.until("Flink deployment contains error message", TestFrameConstants.GLOBAL_POLL_INTERVAL_1_SEC,
+            TestFrameConstants.GLOBAL_TIMEOUT_MEDIUM, () ->
+                KubeResourceManager.getKubeClient()
+                    .getLogsFromPod(namespace, podName)
+                    .contains("No resolvable bootstrap urls given in bootstrap.servers"));
+    }
 }
