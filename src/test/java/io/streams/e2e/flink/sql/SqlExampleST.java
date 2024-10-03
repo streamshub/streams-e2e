@@ -7,6 +7,11 @@ package io.streams.e2e.flink.sql;
 import io.fabric8.kubernetes.api.model.ConfigMapBuilder;
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.NamespaceBuilder;
+import io.skodjob.annotations.Desc;
+import io.skodjob.annotations.Label;
+import io.skodjob.annotations.Step;
+import io.skodjob.annotations.SuiteDoc;
+import io.skodjob.annotations.TestDoc;
 import io.skodjob.testframe.TestFrameConstants;
 import io.skodjob.testframe.resources.KubeResourceManager;
 import io.streams.clients.kafka.StrimziKafkaClients;
@@ -45,6 +50,19 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Tag(FLINK)
 @Tag(FLINK_SQL_EXAMPLE)
+@SuiteDoc(
+    description = @Desc("This test suite verifies that flink-sql-example works correctly"),
+    beforeTestSteps = {
+        @Step(value = "Deploy the Strimzi Kafka operator", expected = "Strimzi operator is deployed"),
+        @Step(value = "Deploy the Flink Kubernetes operator", expected = "Flink operator is deployed"),
+        @Step(value = "Deploy the Apicurio operator", expected = "Apicurio operator is deployed"),
+        @Step(value = "Deploy the cert-manager operator", expected = "Cert-manager operator is deployed")
+    },
+    labels = {
+        @Label(value = FLINK_SQL_EXAMPLE),
+        @Label(value = FLINK),
+    }
+)
 public class SqlExampleST extends Abstract {
 
     String namespace = "flink";
@@ -61,6 +79,28 @@ public class SqlExampleST extends Abstract {
             FlinkManifestInstaller.install()).join();
     }
 
+    @TestDoc(
+        description = @Desc("Test verifies that flink-sql-example recommended app " +
+            "https://github.com/streamshub/flink-sql-examples/tree/main/recommendation-app works"),
+        steps = {
+            @Step(value = "Create namespace, serviceaccount and roles for Flink", expected = "Resources created"),
+            @Step(value = "Deploy Apicurio registry", expected = "Apicurio registry is up and running"),
+            @Step(value = "Deploy simple example Kafka my-cluster", expected = "Kafka is up and running"),
+            @Step(value = "Deploy productInventory.csv as configmap", expected = "Configmap created"),
+            @Step(value = "Deploy data-generator deployment", expected = "Deployment is up and running"),
+            @Step(value = "Deploy FlinkDeployment from sql-example",
+                expected = "FlinkDeployment is up and tasks are deployed and it sends filtered " +
+                    "data into flink.recommended.products topic"),
+            @Step(value = "Deploy strimzi-kafka-clients consumer as job and consume messages from" +
+                "kafka topic flink.recommended.products",
+                expected = "Consumer is deployed and it consumes messages"),
+            @Step(value = "Verify that messages are present", expected = "Messages are present"),
+        },
+        labels = {
+            @Label(value = FLINK_SQL_EXAMPLE),
+            @Label(value = FLINK),
+        }
+    )
     @Test
     void testFlinkSqlExample() throws IOException {
         // Create namespace

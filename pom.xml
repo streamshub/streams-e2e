@@ -25,6 +25,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <test-frame.version>0.7.0</test-frame.version>
+        <skodjob-doc.version>0.3.0</skodjob-doc.version>
         <fabric8.version>6.13.4</fabric8.version>
         <log4j.version>2.24.1</log4j.version>
         <slf4j.version>2.0.16</slf4j.version>
@@ -100,6 +101,12 @@
             <groupId>io.skodjob</groupId>
             <artifactId>test-frame-log-collector</artifactId>
             <version>${test-frame.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.skodjob</groupId>
+            <artifactId>test-docs-generator-maven-plugin</artifactId>
+            <version>${skodjob-doc.version}</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>io.skodjob</groupId>
@@ -359,6 +366,15 @@
                             </ignoredUnusedDeclaredDependencies>
                         </configuration>
                     </execution>
+                    <execution>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/lib</outputDirectory>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
             <plugin>
@@ -426,6 +442,25 @@
                     <enumUppercase>false</enumUppercase>
                     <extraAnnotations>true</extraAnnotations>
                     <alwaysPreserveUnknown>true</alwaysPreserveUnknown>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>io.skodjob</groupId>
+                <artifactId>test-docs-generator-maven-plugin</artifactId>
+                <version>${skodjob-doc.version}</version>
+                <executions>
+                    <execution>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>test-docs-generator</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <testsPath>${project.basedir}/src/test/java/io/streams/e2e/</testsPath>
+                    <docsPath>${project.basedir}/docs/</docsPath>
+                    <generateFmf>false</generateFmf>
+                    <generateDirs>true</generateDirs>
                 </configuration>
             </plugin>
         </plugins>
