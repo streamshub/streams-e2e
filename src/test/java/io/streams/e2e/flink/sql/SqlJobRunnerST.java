@@ -59,9 +59,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @SuiteDoc(
     description = @Desc("This test suite verifies that flink-sql-example works correctly"),
     beforeTestSteps = {
-        @Step(value = "Deploy the strimzi kafka operator", expected = "Strimzi operator is deployed"),
-        @Step(value = "Deploy the flink operator", expected = "Flink operator is deployed"),
-        @Step(value = "Deploy the apicurio operator", expected = "Apicurio operator is deployed"),
+        @Step(value = "Deploy the Strimzi Kafka operator", expected = "Strimzi operator is deployed"),
+        @Step(value = "Deploy the Flink Kubernetes operator", expected = "Flink operator is deployed"),
+        @Step(value = "Deploy the Apicurio operator", expected = "Apicurio operator is deployed"),
         @Step(value = "Deploy the cert-manager operator", expected = "Cert-manager operator is deployed")
     },
     labels = {
@@ -86,18 +86,18 @@ public class SqlJobRunnerST extends Abstract {
         description = @Desc("Test verifies sql-runner.jar works integrated with kafka, " +
             "apicurio and uses scram-sha for kafka authentication"),
         steps = {
-            @Step(value = "Create namespace, serviceaccount and roles for flink", expected = "Resources created"),
-            @Step(value = "Deploy apicurio registry", expected = "Apicurio registry is up and running"),
-            @Step(value = "Deploy kafka my-cluster with scram-sha auth", expected = "Kafka is up and running"),
+            @Step(value = "Create namespace, serviceaccount and roles for Flink", expected = "Resources created"),
+            @Step(value = "Deploy Apicurio registry", expected = "Apicurio registry is up and running"),
+            @Step(value = "Deploy Kafka my-cluster with scram-sha auth", expected = "Kafka is up and running"),
             @Step(value = "Create KafkaUser with scram-sha secret", expected = "KafkaUser created"),
-            @Step(value = "Deploy strimzi kafka clients producer with payment data generator",
+            @Step(value = "Deploy strimzi-kafka-clients producer with payment data generator",
                 expected = "Client job is created and data are sent to flink.payment.data topic"),
             @Step(value = "Deploy FlinkDeployment with sql which gets data from flink.payment.data topic filter " +
                 "payment of type paypal and send data to flink.payment.paypal topic, for authentication is used " +
                 "secret created by KafkaUser and this secret is passed into by secret interpolation",
                 expected = "FlinkDeployment is up and tasks are deployed and it sends filtered " +
                     "data into flink.payment.paypal topic"),
-            @Step(value = "Deploy strimzi-kafka-client consumer as job and consume messages from" +
+            @Step(value = "Deploy strimzi-kafka-clients consumer as job and consume messages from" +
                 "kafka topic flink.payment.paypal",
                 expected = "Consumer is deployed and it consumes messages"),
             @Step(value = "Verify that messages are present", expected = "Messages are present"),
@@ -235,7 +235,7 @@ public class SqlJobRunnerST extends Abstract {
     @TestDoc(
         description = @Desc("Test verifies that sql-runner.jar fail properly with not valid sql statement"),
         steps = {
-            @Step(value = "Create namespace, serviceaccount and roles for flink", expected = "Resources created"),
+            @Step(value = "Create namespace, serviceaccount and roles for Flink", expected = "Resources created"),
             @Step(value = "Deploy FlinkDeployment with not valid sql statement",
                 expected = "FlinkDeployment is deployed"),
             @Step(value = "Verify that FlinkDeployment fails", expected = "FlinkDeployment failed"),
@@ -284,7 +284,7 @@ public class SqlJobRunnerST extends Abstract {
     @TestDoc(
         description = @Desc("Test verifies sql-runner image with not valid kafka connection info"),
         steps = {
-            @Step(value = "Create namespace, serviceaccount and roles for flink", expected = "Resources created"),
+            @Step(value = "Create namespace, serviceaccount and roles for Flink", expected = "Resources created"),
             @Step(value = "Deploy FlinkDeployment with valid sql statement but not existing kafka connection",
                 expected = "FlinkDeployment is deployed"),
             @Step(value = "Verify error message",
