@@ -8,8 +8,11 @@ import io.streams.Environment;
 import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.api.extension.ExtensionContext;
 
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Base64;
 
 public class TestUtils {
     public static Path getLogPath(String folderName, ExtensionContext context) {
@@ -30,5 +33,50 @@ public class TestUtils {
             path = path.resolve(testMethod.replace("(", "").replace(")", ""));
         }
         return path;
+    }
+
+    /**
+     * Decodes a byte[] from Base64.
+     *
+     * @param data    String that should be decoded.
+     *
+     * @return        Plain data in byte[].
+     */
+    public static byte[] decodeBytesFromBase64(String data)  {
+        return Base64.getDecoder().decode(data);
+    }
+
+    /**
+     * Decodes a byte[] from Base64.
+     *
+     * @param data    byte[] that should be decoded.
+     *
+     * @return        Plain data in byte[].
+     */
+    public static byte[] decodeBytesFromBase64(byte[] data)  {
+        return Base64.getDecoder().decode(data);
+    }
+
+    /**
+     * Decodes a String from Base64.
+     *
+     * @param data    String that should be decoded.
+     *
+     * @return        Plain data using US ASCII charset.
+     */
+    public static String decodeFromBase64(String data)  {
+        return decodeFromBase64(data, StandardCharsets.US_ASCII);
+    }
+
+    /**
+     * Decodes a String from Base64.
+     *
+     * @param data    String that should be decoded.
+     * @param charset The charset for the return string
+     *
+     * @return        Plain data using specified charset.
+     */
+    public static String decodeFromBase64(String data, Charset charset)  {
+        return new String(decodeBytesFromBase64(data), charset);
     }
 }

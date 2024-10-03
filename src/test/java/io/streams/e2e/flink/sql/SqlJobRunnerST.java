@@ -20,14 +20,20 @@ import io.streams.operands.flink.templates.FlinkRBAC;
 import io.streams.operands.strimzi.resources.KafkaType;
 import io.streams.operands.strimzi.templates.KafkaNodePoolTemplate;
 import io.streams.operands.strimzi.templates.KafkaTemplate;
+import io.streams.operands.strimzi.templates.KafkaUserTemplate;
 import io.streams.operators.manifests.ApicurioRegistryManifestInstaller;
 import io.streams.operators.manifests.CertManagerManifestInstaller;
 import io.streams.operators.manifests.FlinkManifestInstaller;
 import io.streams.operators.manifests.StrimziManifestInstaller;
 import io.streams.sql.TestStatements;
 import io.streams.utils.StrimziClientUtils;
+import io.streams.utils.TestUtils;
 import io.streams.utils.kube.JobUtils;
+import io.strimzi.api.kafka.model.kafka.listener.GenericKafkaListenerBuilder;
+import io.strimzi.api.kafka.model.kafka.listener.KafkaListenerAuthenticationScramSha512;
+import io.strimzi.api.kafka.model.kafka.listener.KafkaListenerType;
 import io.strimzi.api.kafka.model.nodepool.ProcessRoles;
+import io.strimzi.api.kafka.model.user.KafkaUserScramSha512ClientAuthentication;
 import org.apache.flink.v1beta1.FlinkDeployment;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
@@ -62,6 +68,7 @@ public class SqlJobRunnerST extends Abstract {
     @Tag(SMOKE)
     void testFlinkSqlRunnerSimpleFilter() {
         String namespace = "flink-filter";
+        String kafkaUser = "test-user";
         // Create namespace
         KubeResourceManager.getInstance().createOrUpdateResourceWithWait(
             new NamespaceBuilder().withNewMetadata().withName(namespace).endMetadata().build());
@@ -82,10 +89,38 @@ public class SqlJobRunnerST extends Abstract {
         KubeResourceManager.getInstance().createOrUpdateResourceWithWait(
             KafkaTemplate.defaultKafka(namespace, "my-cluster")
                 .editSpec()
-                .withCruiseControl(null)
-                .withKafkaExporter(null)
+                .editKafka()
+                .withListeners(
+                    new GenericKafkaListenerBuilder()
+                        .withName("plain")
+                        .withTls(false)
+                        .withType(KafkaListenerType.INTERNAL)
+                        .withPort((9092))
+                        .withAuth(new KafkaListenerAuthenticationScramSha512())
+                        .build(),
+                    new GenericKafkaListenerBuilder()
+                        .withName("tls")
+                        .withTls(true)
+                        .withType(KafkaListenerType.INTERNAL)
+                        .withPort((9093))
+                        .build()
+                )
+                .endKafka()
                 .endSpec()
                 .build());
+
+        // Create kafka scram sha user
+        KubeResourceManager.getInstance().createOrUpdateResourceWithWait(
+            KafkaUserTemplate.defaultKafkaUser(namespace, kafkaUser, "my-cluster")
+                .editSpec()
+                .withAuthentication(new KafkaUserScramSha512ClientAuthentication())
+                .endSpec()
+                .build());
+
+        // Get user secret jaas configuration
+        final String saslJaasConfigEncrypted = KubeResourceManager.getKubeClient().getClient().secrets()
+            .inNamespace(namespace).withName(kafkaUser).get().getData().get("sasl.jaas.config");
+        final String saslJaasConfigDecrypted = TestUtils.decodeFromBase64(saslJaasConfigEncrypted);
 
         // Run internal producer and produce data
         String bootstrapServer = KafkaType.kafkaClient().inNamespace(namespace).withName("my-cluster").get()
@@ -98,11 +133,15 @@ public class SqlJobRunnerST extends Abstract {
             .withTopicName("flink.payment.data")
             .withBootstrapAddress(bootstrapServer)
             .withMessageCount(10000)
+            .withUsername(kafkaUser)
             .withDelayMs(10)
             .withMessageTemplate("payment_fiat")
             .withAdditionalConfig(
                 StrimziClientUtils.getApicurioAdditionalProperties(AvroKafkaSerializer.class.getName(),
-                    "http://apicurio-registry-service.flink-filter.svc:8080/apis/registry/v2")
+                    "http://apicurio-registry-service.flink-filter.svc:8080/apis/registry/v2") + "\n"
+                    + "sasl.mechanism=SCRAM-SHA-512\n"
+                    + "security.protocol=SASL_PLAINTEXT\n"
+                    + "sasl.jaas.config=" + saslJaasConfigDecrypted
             )
             .build();
 
@@ -112,8 +151,10 @@ public class SqlJobRunnerST extends Abstract {
 
         String registryUrl = "http://apicurio-registry-service.flink-filter.svc:8080/apis/ccompat/v6";
 
+        // Deploy flink with test filter sql statement which filter to specific topic only payment type paypal
         FlinkDeployment flink = FlinkDeploymentTemplate.defaultFlinkDeployment(namespace,
-                "flink-filter", List.of(TestStatements.getTestFlinkFilter(bootstrapServer, registryUrl)))
+                "flink-filter", List.of(TestStatements.getTestFlinkFilter(
+                    bootstrapServer, registryUrl, kafkaUser, namespace)))
             .build();
         KubeResourceManager.getInstance().createOrUpdateResourceWithWait(flink);
 
@@ -128,6 +169,11 @@ public class SqlJobRunnerST extends Abstract {
             .withTopicName("flink.payment.paypal")
             .withBootstrapAddress(bootstrapServer)
             .withMessageCount(10)
+            .withAdditionalConfig(
+                "sasl.mechanism=SCRAM-SHA-512\n" +
+                    "security.protocol=SASL_PLAINTEXT\n" +
+                    "sasl.jaas.config=" + saslJaasConfigDecrypted
+            )
             .withConsumerGroup("flink-filter-test-group").build();
 
         KubeResourceManager.getInstance().createResourceWithWait(

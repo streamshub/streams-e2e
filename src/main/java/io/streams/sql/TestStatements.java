@@ -164,7 +164,7 @@ public class TestStatements {
         return part1 + part2 + part3 + part4 + part5 + part6 + part7 + part8;
     }
 
-    public static String getTestFlinkFilter(String bootstrap, String registryUrl) {
+    public static String getTestFlinkFilter(String bootstrap, String registryUrl, String kafkaUser, String namespace) {
         StringBuilder builder = new StringBuilder();
         builder.append("CREATE TABLE payment_fiat (paymentDetails ROW<transactionId STRING, type STRING, " +
             "amount DOUBLE, currency STRING, `date` STRING, status STRING>, payer ROW<name STRING, payerType STRING, " +
@@ -178,6 +178,11 @@ public class TestStatements {
         additionalProperties.put("value.format", "avro-confluent");
         additionalProperties.put("value.avro-confluent.url", registryUrl);
         additionalProperties.put("scan.startup.mode", "latest-offset");
+        additionalProperties.put("properties.security.protocol", "SASL_PLAINTEXT");
+        additionalProperties.put("properties.sasl.mechanism", "SCRAM-SHA-512");
+        additionalProperties.put("properties.sasl.jaas.config",
+            "org.apache.flink.kafka.shaded.org.apache.kafka.common.security.scram.ScramLoginModule required " +
+                "username=" + kafkaUser + " password={{secret:" + namespace + "/" + kafkaUser + "/password}}\\;");
 
         SqlWith sqlWith = new SqlWithBuilder()
             .withSqlStatement(builder.toString())
@@ -199,6 +204,11 @@ public class TestStatements {
         additionalProperties.put("key.fields", "transactionId");
         additionalProperties.put("value.format", "json");
         additionalProperties.put("value.fields-include", "ALL");
+        additionalProperties.put("properties.security.protocol", "SASL_PLAINTEXT");
+        additionalProperties.put("properties.sasl.mechanism", "SCRAM-SHA-512");
+        additionalProperties.put("properties.sasl.jaas.config",
+            "org.apache.flink.kafka.shaded.org.apache.kafka.common.security.scram.ScramLoginModule required " +
+                "username=" + kafkaUser + " password={{secret:" + namespace + "/" + kafkaUser + "/password}}\\;");
 
         sqlWith = new SqlWithBuilder()
             .withSqlStatement(builder.toString())

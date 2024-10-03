@@ -55,6 +55,13 @@ public class FlinkRBAC {
                             "deployments/finalizers"
                         )
                         .withVerbs("*")
+                        .build(),
+                    new PolicyRuleBuilder()
+                        .withApiGroups("")
+                        .withResources(
+                            "secrets"
+                        )
+                        .withVerbs("get", "list")
                         .build()
                 )
                 .build(),
