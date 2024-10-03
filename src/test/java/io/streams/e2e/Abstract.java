@@ -14,6 +14,7 @@ import io.skodjob.testframe.resources.OperatorGroupType;
 import io.skodjob.testframe.resources.ServiceType;
 import io.skodjob.testframe.resources.SubscriptionType;
 import io.skodjob.testframe.utils.KubeUtils;
+import io.streams.Environment;
 import io.streams.constants.TestConstants;
 import io.streams.listeners.TestExceptionCallbackListener;
 import io.streams.operands.apicurio.resources.ApicurioRegistryType;
@@ -60,5 +61,6 @@ public class Abstract {
                 KubeUtils.labelNamespace(r.getMetadata().getName(), TestConstants.LOG_COLLECT_LABEL, "true");
             }
         });
+        KubeResourceManager.setStoreYamlPath(Environment.LOG_DIR.toString());
     }
 }
