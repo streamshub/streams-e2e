@@ -7,6 +7,9 @@ There is several requirements you have to have installed to properly build the p
 - Java 17+
 - Helm 3+
 
+## Test scenarios
+Test scenarios are documented in test code by [test-metadata-generator](https://github.com/skodjob/test-metadata-generator) and generated docs are stored in [docs](docs) folder.
+
 ## Use latest released upstream operators install files
 Run maven with profile `get-operator-files` to download all operators install files which will be used in test suite.
 
