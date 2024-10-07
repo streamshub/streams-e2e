@@ -6,6 +6,7 @@ Test suite for verify interoperability of streams components like kafka, flink, 
 There is several requirements you have to have installed to properly build the project and run the tests:
 - Java 17+
 - Helm 3+
+- OperatorSDK
 
 ## Test scenarios
 Test scenarios are documented in test code by [test-metadata-generator](https://github.com/skodjob/test-metadata-generator) and generated docs are stored in [docs](docs) folder.

@@ -26,10 +26,8 @@ import io.streams.operands.strimzi.resources.KafkaType;
 import io.streams.operands.strimzi.templates.KafkaNodePoolTemplate;
 import io.streams.operands.strimzi.templates.KafkaTemplate;
 import io.streams.operands.strimzi.templates.KafkaUserTemplate;
-import io.streams.operators.manifests.ApicurioRegistryManifestInstaller;
-import io.streams.operators.manifests.CertManagerManifestInstaller;
-import io.streams.operators.manifests.FlinkManifestInstaller;
-import io.streams.operators.manifests.StrimziManifestInstaller;
+import io.streams.operators.EOperator;
+import io.streams.operators.OperatorInstallHelper;
 import io.streams.sql.TestStatements;
 import io.streams.utils.StrimziClientUtils;
 import io.streams.utils.TestUtils;
@@ -44,9 +42,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 import static io.streams.constants.TestTags.FLINK;
 import static io.streams.constants.TestTags.FLINK_SQL_RUNNER;
@@ -72,14 +68,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class SqlJobRunnerST extends Abstract {
 
     @BeforeAll
-    void prepareOperators() throws IOException {
-        CompletableFuture.allOf(
-            CertManagerManifestInstaller.install()).join();
-
-        CompletableFuture.allOf(
-            StrimziManifestInstaller.install(),
-            ApicurioRegistryManifestInstaller.install(),
-            FlinkManifestInstaller.install()).join();
+    void prepareOperators() throws Exception {
+        OperatorInstallHelper.installRequiredOperators(EOperator.FLINK, EOperator.APICURIO,
+            EOperator.STRIMZI, EOperator.CERT_MANAGER);
     }
 
     @TestDoc(
