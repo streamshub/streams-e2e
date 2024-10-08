@@ -29,6 +29,10 @@ public class Environment {
         ENVIRONMENT_VARIABLES.getOrDefault("SQL_RUNNER_IMAGE",
             "quay.io/streamshub/flink-sql-runner:latest");
 
+    public static final String FLINK_OPERATOR_BUNDLE_IMAGE = ENVIRONMENT_VARIABLES.getOrDefault(
+        "FLINK_OPERATOR_BUNDLE_IMAGE",
+        "");
+
     public static void printEnvVars() {
         LOGGER.info("Streams-e2e environment variables");
         ENVIRONMENT_VARIABLES.logEnvironmentVariables();
