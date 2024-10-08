@@ -25,7 +25,7 @@ import io.streams.operands.strimzi.resources.KafkaType;
 import io.streams.operands.strimzi.templates.KafkaNodePoolTemplate;
 import io.streams.operands.strimzi.templates.KafkaTemplate;
 import io.streams.operators.EOperator;
-import io.streams.operators.OperatorInstallHelper;
+import io.streams.operators.OperatorInstaller;
 import io.streams.sql.TestStatements;
 import io.streams.utils.kube.JobUtils;
 import io.strimzi.api.kafka.model.nodepool.ProcessRoles;
@@ -67,7 +67,7 @@ public class SqlExampleST extends Abstract {
 
     @BeforeAll
     void prepareOperators() throws Exception {
-        OperatorInstallHelper.installRequiredOperators(EOperator.FLINK, EOperator.APICURIO,
+        OperatorInstaller.installRequiredOperators(EOperator.FLINK, EOperator.APICURIO,
             EOperator.STRIMZI, EOperator.CERT_MANAGER);
     }
 

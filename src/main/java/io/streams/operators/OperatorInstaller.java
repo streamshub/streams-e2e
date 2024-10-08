@@ -21,9 +21,9 @@ import java.util.concurrent.CompletableFuture;
 /**
  * Test suite helper provides abstraction for overall operators install
  */
-public class OperatorInstallHelper {
+public class OperatorInstaller {
 
-    private OperatorInstallHelper() {
+    private OperatorInstaller() {
         // Empty private constructor
     }
 
