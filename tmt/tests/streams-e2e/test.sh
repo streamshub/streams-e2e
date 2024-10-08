@@ -4,7 +4,7 @@
 cd ../../../
 
 #get install files
-./mvnw install -P get-operator-files
+./mvnw install -q -P get-operator-files
 
 #run tests
-./mvnw verify -P test -Dgroups="${TEST_GROUPS}"
+./mvnw verify -q -P test -Dgroups="${TEST_GROUPS}"
