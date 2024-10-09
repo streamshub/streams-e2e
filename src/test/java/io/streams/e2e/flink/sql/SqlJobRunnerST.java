@@ -107,10 +107,6 @@ public class SqlJobRunnerST extends Abstract {
         KubeResourceManager.getInstance().createOrUpdateResourceWithWait(
             new NamespaceBuilder().withNewMetadata().withName(namespace).endMetadata().build());
 
-        // Add apicurio
-        KubeResourceManager.getInstance().createOrUpdateResourceWithWait(
-            ApicurioRegistryTemplate.defaultApicurioRegistry("apicurio-registry", namespace).build());
-
         // Add flink RBAC
         KubeResourceManager.getInstance().createOrUpdateResourceWithWait(
             FlinkRBAC.getFlinkRbacResources(namespace).toArray(new HasMetadata[0]));
@@ -133,15 +129,19 @@ public class SqlJobRunnerST extends Abstract {
                         .withAuth(new KafkaListenerAuthenticationScramSha512())
                         .build(),
                     new GenericKafkaListenerBuilder()
-                        .withName("tls")
-                        .withTls(true)
+                        .withName("unsecure")
+                        .withTls(false)
                         .withType(KafkaListenerType.INTERNAL)
-                        .withPort((9093))
+                        .withPort((9094))
                         .build()
                 )
                 .endKafka()
                 .endSpec()
                 .build());
+
+        // Create topic for ksql apicurio
+        KubeResourceManager.getInstance().createOrUpdateResourceWithWait(
+            ApicurioRegistryTemplate.apicurioKsqlTopic(namespace, "my-cluster"));
 
         // Create kafka scram sha user
         KubeResourceManager.getInstance().createOrUpdateResourceWithWait(
@@ -151,21 +151,30 @@ public class SqlJobRunnerST extends Abstract {
                 .endSpec()
                 .build());
 
+        String bootstrapServerAuth = KafkaType.kafkaClient().inNamespace(namespace).withName("my-cluster").get()
+            .getStatus().getListeners().stream().filter(l -> l.getName().equals("plain"))
+            .findFirst().get().getBootstrapServers();
+        String bootstrapServerUnsecure = KafkaType.kafkaClient().inNamespace(namespace).withName("my-cluster").get()
+            .getStatus().getListeners().stream().filter(l -> l.getName().equals("unsecure"))
+            .findFirst().get().getBootstrapServers();
+
+        // Add apicurio
+        KubeResourceManager.getInstance().createOrUpdateResourceWithWait(
+            ApicurioRegistryTemplate.defaultApicurioRegistry("apicurio-registry", namespace,
+                bootstrapServerUnsecure).build());
+
         // Get user secret jaas configuration
         final String saslJaasConfigEncrypted = KubeResourceManager.getKubeClient().getClient().secrets()
             .inNamespace(namespace).withName(kafkaUser).get().getData().get("sasl.jaas.config");
         final String saslJaasConfigDecrypted = TestUtils.decodeFromBase64(saslJaasConfigEncrypted);
 
         // Run internal producer and produce data
-        String bootstrapServer = KafkaType.kafkaClient().inNamespace(namespace).withName("my-cluster").get()
-            .getStatus().getListeners().get(0).getBootstrapServers();
-
         String producerName = "kafka-producer";
         StrimziKafkaClients kafkaProducerClient = new StrimziKafkaClientsBuilder()
             .withProducerName(producerName)
             .withNamespaceName(namespace)
             .withTopicName("flink.payment.data")
-            .withBootstrapAddress(bootstrapServer)
+            .withBootstrapAddress(bootstrapServerAuth)
             .withMessageCount(10000)
             .withUsername(kafkaUser)
             .withDelayMs(10)
@@ -188,7 +197,7 @@ public class SqlJobRunnerST extends Abstract {
         // Deploy flink with test filter sql statement which filter to specific topic only payment type paypal
         FlinkDeployment flink = FlinkDeploymentTemplate.defaultFlinkDeployment(namespace,
                 "flink-filter", List.of(TestStatements.getTestFlinkFilter(
-                    bootstrapServer, registryUrl, kafkaUser, namespace)))
+                    bootstrapServerAuth, registryUrl, kafkaUser, namespace)))
             .build();
         KubeResourceManager.getInstance().createOrUpdateResourceWithWait(flink);
 
@@ -201,7 +210,7 @@ public class SqlJobRunnerST extends Abstract {
             .withConsumerName(consumerName)
             .withNamespaceName(namespace)
             .withTopicName("flink.payment.paypal")
-            .withBootstrapAddress(bootstrapServer)
+            .withBootstrapAddress(bootstrapServerAuth)
             .withMessageCount(10)
             .withAdditionalConfig(
                 "sasl.mechanism=SCRAM-SHA-512\n" +

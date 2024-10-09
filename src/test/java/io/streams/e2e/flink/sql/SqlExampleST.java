@@ -103,10 +103,6 @@ public class SqlExampleST extends Abstract {
         KubeResourceManager.getInstance().createOrUpdateResourceWithWait(
             FlinkRBAC.getFlinkRbacResources(namespace).toArray(new HasMetadata[0]));
 
-        // Add apicurio
-        KubeResourceManager.getInstance().createOrUpdateResourceWithWait(
-            ApicurioRegistryTemplate.defaultApicurioRegistry("apicurio-registry", namespace).build());
-
         // Create kafka
         KubeResourceManager.getInstance().createOrUpdateResourceWithWait(
             KafkaNodePoolTemplate.defaultKafkaNodePoolJbod(namespace, "dual-role",
@@ -129,6 +125,19 @@ public class SqlExampleST extends Abstract {
                 .endSpec()
                 .build());
 
+        // Create topic for ksql apicurio
+        KubeResourceManager.getInstance().createOrUpdateResourceWithWait(
+            ApicurioRegistryTemplate.apicurioKsqlTopic(namespace, "my-cluster"));
+
+        String bootstrapServer = KafkaType.kafkaClient().inNamespace(namespace).withName("my-cluster").get()
+            .getStatus().getListeners().stream().filter(l -> l.getName().equals("plain"))
+            .findFirst().get().getBootstrapServers();
+
+        // Add apicurio
+        KubeResourceManager.getInstance().createOrUpdateResourceWithWait(
+            ApicurioRegistryTemplate.defaultApicurioRegistry("apicurio-registry", namespace,
+                bootstrapServer).build());
+
         // Create configMap
         KubeResourceManager.getInstance().createOrUpdateResourceWithWait(
             new ConfigMapBuilder()
@@ -148,8 +157,6 @@ public class SqlExampleST extends Abstract {
         KubeResourceManager.getInstance().createOrUpdateResourceWithWait(dataApp.toArray(new HasMetadata[0]));
 
         // Deploy flink
-        String bootstrapServer = KafkaType.kafkaClient().inNamespace(namespace).withName("my-cluster").get()
-            .getStatus().getListeners().get(0).getBootstrapServers();
         String registryUrl = "http://apicurio-registry-service.flink.svc:8080/apis/ccompat/v6";
 
         FlinkDeployment flinkApp = FlinkDeploymentTemplate.flinkExampleDeployment(namespace,

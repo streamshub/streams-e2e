@@ -52,6 +52,30 @@ public class Environment {
         "");
 
     /**
+     * Use redhat catalog to install strimzi operator
+     */
+    public static final boolean INSTALL_STRIMZI_FROM_RH_CATALOG = ENVIRONMENT_VARIABLES.getOrDefault(
+        "INSTALL_STRIMZI_FROM_RH_CATALOG",
+        Boolean::valueOf,
+        false);
+
+    /**
+     * Use redhat catalog to install apicurio operator
+     */
+    public static final boolean INSTALL_APICURIO_FROM_RH_CATALOG = ENVIRONMENT_VARIABLES.getOrDefault(
+        "INSTALL_APICURIO_FROM_RH_CATALOG",
+        Boolean::valueOf,
+        false);
+
+    /**
+     * Use redhat catalog to install cert-manager operator
+     */
+    public static final boolean INSTALL_CERT_MANAGER_FROM_RH_CATALOG = ENVIRONMENT_VARIABLES.getOrDefault(
+        "INSTALL_CERT_MANAGER_FROM_RH_CATALOG",
+        Boolean::valueOf,
+        false);
+
+    /**
      * Prints configured environment variables or values from config
      */
     public static void printEnvVars() {
