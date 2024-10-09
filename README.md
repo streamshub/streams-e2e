@@ -53,7 +53,12 @@ $ ./mvnw verify -P test -Dit.tests=io.streams.e2e.flink.sql.SqlExampleST#testFli
 ```
 
 ## Test configuration
+### Using env vars
 - To configure sql runner image set env var `SQL_RUNNER_IMAGE`
+- To use custom flink operator bundle image use env var `FLINK_OPERATOR_BUNDLE_IMAGE`
+
+### Using config file
+- Modify variables in [config.yaml](config.yaml) file in root folder of repository
 
 ## Run Packit CI
 If PR is opened, you can use packit for run you tests on top of kind cluster.
