@@ -14,31 +14,56 @@ import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+/**
+ * Environment and config store
+ */
 public class Environment {
     private static final Logger LOGGER = LoggerFactory.getLogger(Environment.class);
-
     private static final TestEnvironmentVariables ENVIRONMENT_VARIABLES = new TestEnvironmentVariables();
     private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm");
     public static final String USER_PATH = System.getProperty("user.dir");
 
-
+    /**
+     * Root log dir where related stuff to test run will be stored
+     */
     public static final Path LOG_DIR = ENVIRONMENT_VARIABLES.getOrDefault("LOG_DIR",
             Paths::get, Paths.get(USER_PATH, "target", "logs"))
         .resolve("test-run-" + DATE_FORMAT.format(LocalDateTime.now()));
 
+    /**
+     * Image of flink sql runner, default is latest upstream from quay.io
+     */
     public static final String FLINK_SQL_RUNNER_IMAGE =
         ENVIRONMENT_VARIABLES.getOrDefault("SQL_RUNNER_IMAGE",
             "quay.io/streamshub/flink-sql-runner:latest");
 
+    /**
+     * Flink operator bundle image to install operator using operator sdk, default is empty.
+     */
     public static final String FLINK_OPERATOR_BUNDLE_IMAGE = ENVIRONMENT_VARIABLES.getOrDefault(
         "FLINK_OPERATOR_BUNDLE_IMAGE",
         "");
 
+    /**
+     * Strimzi operator bundle image to install operator using operator sdk, default is empty.
+     */
+    public static final String STRIMZI_OPERATOR_BUNDLE_IMAGE = ENVIRONMENT_VARIABLES.getOrDefault(
+        "STRIMZI_OPERATOR_BUNDLE_IMAGE",
+        "");
+
+    /**
+     * Prints configured environment variables or values from config
+     */
     public static void printEnvVars() {
         LOGGER.info("Streams-e2e environment variables");
         ENVIRONMENT_VARIABLES.logEnvironmentVariables();
     }
 
+    /**
+     * Save config.yaml file from all env vars and values from config.yaml if it is set
+     *
+     * @throws IOException when saving is not possible
+     */
     public static void saveConfig() throws IOException {
         ENVIRONMENT_VARIABLES.saveConfigurationFile(LOG_DIR.toString());
     }

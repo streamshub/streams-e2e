@@ -11,6 +11,7 @@ import io.streams.operators.manifests.DebeziumManifestInstaller;
 import io.streams.operators.manifests.FlinkManifestInstaller;
 import io.streams.operators.manifests.StrimziManifestInstaller;
 import io.streams.operators.olm.bundle.FlinkOlmBundleInstaller;
+import io.streams.operators.olm.bundle.StrimziOlmBundleInstaller;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -51,7 +52,7 @@ public class OperatorInstaller {
         }
         CompletableFuture.allOf(operatorWaiting.toArray(new CompletableFuture[0])).join();
 
-        // if flink is present install it
+        // if flink is present, install it
         if (Arrays.asList(operators).contains(EOperator.FLINK)) {
             additionalOperatorWaiting.add(installFlinkOperator());
             CompletableFuture.allOf(additionalOperatorWaiting.toArray(new CompletableFuture[0])).join();
@@ -59,7 +60,12 @@ public class OperatorInstaller {
     }
 
     private static CompletableFuture<?> installStrimziOperator() throws IOException {
-        return StrimziManifestInstaller.install();
+        if (Environment.STRIMZI_OPERATOR_BUNDLE_IMAGE.isEmpty()) {
+            return StrimziManifestInstaller.install();
+        } else {
+            return StrimziOlmBundleInstaller.install("strimzi-cluster-operator",
+                StrimziManifestInstaller.OPERATOR_NS, Environment.STRIMZI_OPERATOR_BUNDLE_IMAGE);
+        }
     }
 
     private static CompletableFuture<?> installCertManagerOperator() throws IOException {
