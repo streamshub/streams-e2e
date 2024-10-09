@@ -31,6 +31,7 @@ public class CertManagerOlmCatalogInstaller {
     private static final Logger LOGGER = LoggerFactory.getLogger(CertManagerOlmCatalogInstaller.class);
 
     private static final String SUBSCRIPTION_NAME = "cert-manager";
+    private static final String CERT_MANAGER_NS = "cert-manager";
 
     /**
      * Install cert-manager operator from catalog presented on cluster using OLM
@@ -93,11 +94,12 @@ public class CertManagerOlmCatalogInstaller {
             .endSpec()
             .build();
 
-        KubeResourceManager.getInstance().createOrUpdateResourceWithoutWait(subscription);
         KubeResourceManager.getInstance().pushToStack(new ResourceItem<>(() -> cleanClusterRoleBindings(), null));
         KubeResourceManager.getInstance().pushToStack(new ResourceItem<>(() -> cleanClusterRole(), null));
+        KubeResourceManager.getInstance().pushToStack(new ResourceItem<>(() -> cleanValidationWebhook(), null));
+        KubeResourceManager.getInstance().createOrUpdateResourceWithoutWait(subscription);
         return Wait.untilAsync(operatorName + " is ready", TestFrameConstants.GLOBAL_POLL_INTERVAL_1_SEC,
-            TestFrameConstants.GLOBAL_TIMEOUT, () -> isOperatorReady("cert-manager"));
+            TestFrameConstants.GLOBAL_TIMEOUT, () -> isOperatorReady(CERT_MANAGER_NS));
     }
 
     @SuppressFBWarnings("REC_CATCH_EXCEPTION")
@@ -125,5 +127,12 @@ public class CertManagerOlmCatalogInstaller {
             .withLabel("app.kubernetes.io/part-of", "cert-manager-operator").list().getItems().forEach(cr -> {
                 KubeResourceManager.getInstance().deleteResource(cr);
             });
+    }
+
+    private static void cleanValidationWebhook() {
+        KubeResourceManager.getKubeCmdClient().inNamespace(CERT_MANAGER_NS)
+            .exec(false, false, "delete", "validatingwebhookconfiguration", "cert-manager-webhook");
+        KubeResourceManager.getKubeCmdClient().inNamespace(CERT_MANAGER_NS)
+            .exec(false, false, "delete", "mutatingwebhookconfiguration", "cert-manager-webhook");
     }
 }
