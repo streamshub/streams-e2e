@@ -1,0 +1,2 @@
+SQL_RUNNER_IMAGE: quay.io/streamshub/flink-sql-runner:latest
+FLINK_OPERATOR_BUNDLE_IMAGE: ""

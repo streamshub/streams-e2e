@@ -30,13 +30,20 @@ import io.streams.operands.strimzi.resources.KafkaType;
 import io.streams.operands.strimzi.resources.KafkaUserType;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
 
 @ResourceManager
 @TestVisualSeparator
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @ExtendWith(TestExceptionCallbackListener.class)
 public class Abstract {
+    static final Logger LOGGER = LoggerFactory.getLogger(Abstract.class);
+
     static {
+        // Init abstraction of resource types
         KubeResourceManager.getInstance().setResourceTypes(
             new NamespaceType(),
             new SubscriptionType(),
@@ -56,11 +63,22 @@ public class Abstract {
             new FlinkDeploymentType(),
             new ApicurioRegistryType()
         );
+
+        // Set collect label for every namespace created during test run
         KubeResourceManager.getInstance().addCreateCallback(r -> {
             if (r.getKind().equals("Namespace")) {
                 KubeUtils.labelNamespace(r.getMetadata().getName(), TestConstants.LOG_COLLECT_LABEL, "true");
             }
         });
+
+        // Enable storing created resources in yaml format.
         KubeResourceManager.setStoreYamlPath(Environment.LOG_DIR.toString());
+
+        // Store config file for current test run
+        try {
+            Environment.saveConfig();
+        } catch (IOException e) {
+            LOGGER.warn("Saving of config file failed");
+        }
     }
 }

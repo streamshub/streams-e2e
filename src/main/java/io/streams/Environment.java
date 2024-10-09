@@ -8,6 +8,7 @@ import io.skodjob.testframe.environment.TestEnvironmentVariables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
@@ -36,5 +37,9 @@ public class Environment {
     public static void printEnvVars() {
         LOGGER.info("Streams-e2e environment variables");
         ENVIRONMENT_VARIABLES.logEnvironmentVariables();
+    }
+
+    public static void saveConfig() throws IOException {
+        ENVIRONMENT_VARIABLES.saveConfigurationFile(LOG_DIR.toString());
     }
 }
