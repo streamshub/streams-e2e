@@ -10,6 +10,7 @@ import io.skodjob.testframe.LogCollector;
 import io.skodjob.testframe.LogCollectorBuilder;
 import io.skodjob.testframe.resources.KubeResourceManager;
 import io.streams.Environment;
+import io.streams.constants.KubeResourceConstants;
 import io.streams.constants.TestConstants;
 import io.streams.utils.TestUtils;
 import io.strimzi.api.kafka.model.bridge.KafkaBridge;
@@ -69,11 +70,18 @@ public class TestExceptionCallbackListener implements TestExecutionExceptionHand
     private void saveKubernetesState(ExtensionContext context, Throwable throwable) throws Throwable {
         LogCollector logCollector = new LogCollectorBuilder()
             .withNamespacedResources(
-                "deployment",
-                "subscription",
-                "operatorgroup",
-                "configmaps",
-                "secret",
+                KubeResourceConstants.DEPLOYMENT,
+                KubeResourceConstants.SUBSCRIPTION,
+                KubeResourceConstants.OPERATOR_GROUP,
+                KubeResourceConstants.SECRET,
+                KubeResourceConstants.CONFIGMAPS,
+                KubeResourceConstants.FLINK_DEPLOYMENT,
+                KubeResourceConstants.APICURIO_REGISTRY,
+                KubeResourceConstants.JOB,
+                KubeResourceConstants.ROLE,
+                KubeResourceConstants.ROLE_BINDING,
+                KubeResourceConstants.SERVICE_ACCOUNT,
+                KubeResourceConstants.PVC,
                 Kafka.RESOURCE_SINGULAR,
                 KafkaNodePool.RESOURCE_SINGULAR,
                 KafkaConnect.RESOURCE_SINGULAR,
@@ -82,14 +90,10 @@ public class TestExceptionCallbackListener implements TestExecutionExceptionHand
                 KafkaMirrorMaker2.RESOURCE_SINGULAR,
                 KafkaRebalance.RESOURCE_SINGULAR,
                 KafkaTopic.RESOURCE_SINGULAR,
-                KafkaUser.RESOURCE_SINGULAR,
-                "FlinkDeployment",
-                "ApicurioRegistry",
-                "job",
-                "role",
-                "rolebinding",
-                "serviceaccount")
-            .withClusterWideResources("nodes", "pv")
+                KafkaUser.RESOURCE_SINGULAR)
+            .withClusterWideResources(
+                KubeResourceConstants.NODE,
+                KubeResourceConstants.PV)
             .withKubeClient(KubeResourceManager.getKubeClient())
             .withKubeCmdClient(KubeResourceManager.getKubeCmdClient())
             .withRootFolderPath(TestUtils.getLogPath(
