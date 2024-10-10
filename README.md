@@ -20,7 +20,7 @@ $ ./mvnw install -P get-operator-files
 All operator install files are download into `operator-install-files` folder
 
 ## Use operators from operator catalog
-TODO
+Use configuration of test suite described [here](#test-configuration)
 
 ## Use own install files
 If you want to use own installation files you need to complete following steps
@@ -33,7 +33,7 @@ $ ./mvnw install -P get-operator-files
 * Replace install files in `operator-install-files` folder
 
 ## Use own operator metadata bundle-container
-TODO
+Use configuration of test suite described [here](#test-configuration)
 
 ## Run tests
 Run all tests.
