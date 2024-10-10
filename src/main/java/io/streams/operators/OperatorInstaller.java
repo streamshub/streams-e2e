@@ -11,6 +11,10 @@ import io.streams.operators.manifests.DebeziumManifestInstaller;
 import io.streams.operators.manifests.FlinkManifestInstaller;
 import io.streams.operators.manifests.StrimziManifestInstaller;
 import io.streams.operators.olm.bundle.FlinkOlmBundleInstaller;
+import io.streams.operators.olm.bundle.StrimziOlmBundleInstaller;
+import io.streams.operators.olm.catalog.ApicurioOlmCatalogInstaller;
+import io.streams.operators.olm.catalog.CertManagerOlmCatalogInstaller;
+import io.streams.operators.olm.catalog.StrimziOlmCatalogInstaller;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -51,7 +55,7 @@ public class OperatorInstaller {
         }
         CompletableFuture.allOf(operatorWaiting.toArray(new CompletableFuture[0])).join();
 
-        // if flink is present install it
+        // if flink is present, install it
         if (Arrays.asList(operators).contains(EOperator.FLINK)) {
             additionalOperatorWaiting.add(installFlinkOperator());
             CompletableFuture.allOf(additionalOperatorWaiting.toArray(new CompletableFuture[0])).join();
@@ -59,11 +63,26 @@ public class OperatorInstaller {
     }
 
     private static CompletableFuture<?> installStrimziOperator() throws IOException {
-        return StrimziManifestInstaller.install();
+        if (Environment.INSTALL_STRIMZI_FROM_RH_CATALOG) {
+            return StrimziOlmCatalogInstaller.install("amq-streams",
+                StrimziManifestInstaller.OPERATOR_NS, null, "stable",
+                "redhat-operators", "openshift-marketplace");
+        } else if (Environment.STRIMZI_OPERATOR_BUNDLE_IMAGE.isEmpty()) {
+            return StrimziManifestInstaller.install();
+        } else {
+            return StrimziOlmBundleInstaller.install("strimzi-cluster-operator",
+                StrimziManifestInstaller.OPERATOR_NS, Environment.STRIMZI_OPERATOR_BUNDLE_IMAGE);
+        }
     }
 
     private static CompletableFuture<?> installCertManagerOperator() throws IOException {
-        return CertManagerManifestInstaller.install();
+        if (Environment.INSTALL_STRIMZI_FROM_RH_CATALOG) {
+            return CertManagerOlmCatalogInstaller.install("openshift-cert-manager-operator",
+                "cert-manager-operator", null, "stable-v1",
+                "redhat-operators", "openshift-marketplace");
+        } else {
+            return CertManagerManifestInstaller.install();
+        }
     }
 
     private static CompletableFuture<?> installFlinkOperator() throws IOException {
@@ -76,7 +95,13 @@ public class OperatorInstaller {
     }
 
     private static CompletableFuture<?> installApicurioOperator() throws IOException {
-        return ApicurioRegistryManifestInstaller.install();
+        if (Environment.INSTALL_STRIMZI_FROM_RH_CATALOG) {
+            return ApicurioOlmCatalogInstaller.install("service-registry-operator",
+                ApicurioRegistryManifestInstaller.OPERATOR_NS, null, "2.x",
+                "redhat-operators", "openshift-marketplace");
+        } else {
+            return ApicurioRegistryManifestInstaller.install();
+        }
     }
 
     private static CompletableFuture<?> installDebeziumOperator() throws IOException {

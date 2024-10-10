@@ -56,6 +56,8 @@ $ ./mvnw verify -P test -Dit.tests=io.streams.e2e.flink.sql.SqlExampleST#testFli
 ### Using env vars
 - To configure sql runner image set env var `SQL_RUNNER_IMAGE`
 - To use custom flink operator bundle image use env var `FLINK_OPERATOR_BUNDLE_IMAGE`
+- To use custom strimzi operator bundle image use env var `STRIMZI_OPERATOR_BUNDLE_IMAGE`
+- To use redhat catalog operators use env var `INSTALL_STRIMZI_FROM_RH_CATALOG`, `INSTALL_APICURIO_FROM_RH_CATALOG` or `INSTALL_CERT_MANAGER_FROM_RH_CATALOG`
 
 ### Using config file
 - Modify variables in [config.yaml](config.yaml) file in root folder of repository
