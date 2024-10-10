@@ -21,7 +21,9 @@ This definition is composed of hw requirements, prepare steps for created VM exe
 plan defines selectors for [tests](./tests) which should be executed.
 
 ### List of plans
-* verify
+* flink-all
+* smoke
+* flink-sql-example
 
 ## Usage
 
@@ -33,21 +35,21 @@ plan defines selectors for [tests](./tests) which should be executed.
 
 Run all plans
 ```commandline
-testing-farm request --compose Fedora-38 --git-url https://github.com/skodjob/streams-e2e.git
+testing-farm request --compose CentOS-Stream-9 --git-url https://github.com/streamshub/streams-e2e.git
 ```
 
 Select specific plan and git branch
 ```commandline
-testing-farm request --compose Fedora-38 \
- --git-url https://github.com/skodjob/streams-e2e.git \
+testing-farm request --compose CentOS-Stream-9 \
+ --git-url https://github.com/streamshub/streams-e2e.git \
  --git-ref some-branch \
  --plan smoke
 ```
 
 Run multi-arch build
 ```commandline
-testing-farm request --compose Fedora-Rawhide \
- --git-url https://github.com/skodjob/streams-e2e.git \
+testing-farm request --compose CentOS-Stream-9 \
+ --git-url https://github.com/streamshub/streams-e2e.git \
  --git-ref some-branch \
  --plan smoke \
  --arch aarch64,x86_64
@@ -69,5 +71,5 @@ Run all jobs for PR
 
 Run selected jobs by label
 ```
-/packit test --labels verify
+/packit test --labels flink-all
 ```

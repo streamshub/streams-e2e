@@ -62,6 +62,9 @@ $ ./mvnw verify -P test -Dit.tests=io.streams.e2e.flink.sql.SqlExampleST#testFli
 ### Using config file
 - Modify variables in [config.yaml](config.yaml) file in root folder of repository
 
+## Run testing-farm
+Please see [documentation](tmt/README.md)
+
 ## Run Packit CI
 If PR is opened, you can use packit for run you tests on top of kind cluster.
 To run Packit CI, just make comment with following text...
