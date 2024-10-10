@@ -28,7 +28,6 @@ import io.streams.operands.strimzi.resources.KafkaRebalanceType;
 import io.streams.operands.strimzi.resources.KafkaTopicType;
 import io.streams.operands.strimzi.resources.KafkaType;
 import io.streams.operands.strimzi.resources.KafkaUserType;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.slf4j.Logger;
@@ -81,11 +80,5 @@ public class Abstract {
         } catch (IOException e) {
             LOGGER.warn("Saving of config file failed");
         }
-    }
-
-    @AfterEach
-    void cleanKafkaTopics() {
-        KafkaTopicType.kafkaTopicClient().inAnyNamespace().list().getItems().forEach(kafkaTopic ->
-            KubeResourceManager.getInstance().deleteResource(kafkaTopic));
     }
 }
