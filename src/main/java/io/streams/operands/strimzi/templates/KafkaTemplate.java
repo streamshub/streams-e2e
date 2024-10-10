@@ -40,6 +40,7 @@ public class KafkaTemplate {
             .editOrNewTemplate()
             .editOrNewTopicOperatorContainer()
             .addNewEnv()
+            // We disable topic finalizers to speedup cleaning test environment
             .withName("STRIMZI_USE_FINALIZERS")
             .withValue("false")
             .endEnv()
