@@ -72,6 +72,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
     }
 )
 public class SqlJobRunnerST extends Abstract {
+    final String kafkaClusterName = "my-cluster";
 
     @BeforeAll
     void prepareOperators() throws Exception {
@@ -120,10 +121,10 @@ public class SqlJobRunnerST extends Abstract {
         // Create kafka
         KubeResourceManager.getInstance().createOrUpdateResourceWithWait(
             KafkaNodePoolTemplate.defaultKafkaNodePoolJbod(namespace, "dual-role",
-                3, "my-cluster", List.of(ProcessRoles.BROKER, ProcessRoles.CONTROLLER)).build());
+                3, kafkaClusterName, List.of(ProcessRoles.BROKER, ProcessRoles.CONTROLLER)).build());
 
         KubeResourceManager.getInstance().createOrUpdateResourceWithWait(
-            KafkaTemplate.defaultKafka(namespace, "my-cluster")
+            KafkaTemplate.defaultKafka(namespace, kafkaClusterName)
                 .editSpec()
                 .editKafka()
                 .withListeners(
@@ -147,20 +148,20 @@ public class SqlJobRunnerST extends Abstract {
 
         // Create topic for ksql apicurio
         KubeResourceManager.getInstance().createOrUpdateResourceWithWait(
-            ApicurioRegistryTemplate.apicurioKsqlTopic(namespace, "my-cluster", 3));
+            ApicurioRegistryTemplate.apicurioKsqlTopic(namespace, kafkaClusterName, 3));
 
         // Create kafka scram sha user
         KubeResourceManager.getInstance().createOrUpdateResourceWithWait(
-            KafkaUserTemplate.defaultKafkaUser(namespace, kafkaUser, "my-cluster")
+            KafkaUserTemplate.defaultKafkaUser(namespace, kafkaUser, kafkaClusterName)
                 .editSpec()
                 .withAuthentication(new KafkaUserScramSha512ClientAuthentication())
                 .endSpec()
                 .build());
 
-        String bootstrapServerAuth = KafkaType.kafkaClient().inNamespace(namespace).withName("my-cluster").get()
+        String bootstrapServerAuth = KafkaType.kafkaClient().inNamespace(namespace).withName(kafkaClusterName).get()
             .getStatus().getListeners().stream().filter(l -> l.getName().equals("plain"))
             .findFirst().get().getBootstrapServers();
-        String bootstrapServerUnsecure = KafkaType.kafkaClient().inNamespace(namespace).withName("my-cluster").get()
+        String bootstrapServerUnsecure = KafkaType.kafkaClient().inNamespace(namespace).withName(kafkaClusterName).get()
             .getStatus().getListeners().stream().filter(l -> l.getName().equals("unsecure"))
             .findFirst().get().getBootstrapServers();
 
@@ -379,10 +380,10 @@ public class SqlJobRunnerST extends Abstract {
         // Create kafka
         KubeResourceManager.getInstance().createOrUpdateResourceWithWait(
             KafkaNodePoolTemplate.defaultKafkaNodePoolJbod(namespace, "dual-role",
-                3, "my-cluster", List.of(ProcessRoles.BROKER, ProcessRoles.CONTROLLER)).build());
+                3, kafkaClusterName, List.of(ProcessRoles.BROKER, ProcessRoles.CONTROLLER)).build());
 
         KubeResourceManager.getInstance().createOrUpdateResourceWithWait(
-            KafkaTemplate.defaultKafka(namespace, "my-cluster")
+            KafkaTemplate.defaultKafka(namespace, kafkaClusterName)
                 .editSpec()
                 .editKafka()
                 .withListeners(
@@ -406,20 +407,20 @@ public class SqlJobRunnerST extends Abstract {
 
         // Create topic for ksql apicurio
         KubeResourceManager.getInstance().createOrUpdateResourceWithWait(
-            ApicurioRegistryTemplate.apicurioKsqlTopic(namespace, "my-cluster", 3));
+            ApicurioRegistryTemplate.apicurioKsqlTopic(namespace, kafkaClusterName, 3));
 
         // Create kafka scram sha user
         KubeResourceManager.getInstance().createOrUpdateResourceWithWait(
-            KafkaUserTemplate.defaultKafkaUser(namespace, kafkaUser, "my-cluster")
+            KafkaUserTemplate.defaultKafkaUser(namespace, kafkaUser, kafkaClusterName)
                 .editSpec()
                 .withAuthentication(new KafkaUserScramSha512ClientAuthentication())
                 .endSpec()
                 .build());
 
-        String bootstrapServerAuth = KafkaType.kafkaClient().inNamespace(namespace).withName("my-cluster").get()
+        String bootstrapServerAuth = KafkaType.kafkaClient().inNamespace(namespace).withName(kafkaClusterName).get()
             .getStatus().getListeners().stream().filter(l -> l.getName().equals("plain"))
             .findFirst().get().getBootstrapServers();
-        String bootstrapServerUnsecure = KafkaType.kafkaClient().inNamespace(namespace).withName("my-cluster").get()
+        String bootstrapServerUnsecure = KafkaType.kafkaClient().inNamespace(namespace).withName(kafkaClusterName).get()
             .getStatus().getListeners().stream().filter(l -> l.getName().equals("unsecure"))
             .findFirst().get().getBootstrapServers();
 
