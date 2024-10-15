@@ -336,7 +336,7 @@ public class SqlJobRunnerST extends Abstract {
     }
 
     @TestDoc(
-        description = @Desc("Test verifies that user can use FRocksDB ad state backend"),
+        description = @Desc("Test verifies that user can use FRocksDB as state backend"),
         steps = {
             @Step(value = "Create namespace, serviceaccount and roles for Flink", expected = "Resources created"),
             @Step(value = "Deploy Apicurio registry", expected = "Apicurio registry is up and running"),
@@ -466,7 +466,7 @@ public class SqlJobRunnerST extends Abstract {
             .withNamespace(namespace)
             .endMetadata()
             .withNewSpec()
-            .withAccessModes("ReadWriteMany")
+            .withAccessModes("ReadWriteOnce")
             .withNewResources()
             .withRequests(Collections.singletonMap(
                 "storage",

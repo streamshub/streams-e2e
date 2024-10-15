@@ -39,7 +39,7 @@
 
 ## testFRocksDbStateBackend
 
-**Description:** Test verifies that user can use FRocksDB ad state backend
+**Description:** Test verifies that user can use FRocksDB as state backend
 
 **Steps:**
 
