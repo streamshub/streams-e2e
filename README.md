@@ -49,7 +49,7 @@ $ ./mvnw verify -P test -Dgroups=flink-sql-example
 Run specific test class or test
 ```bash
 $ ./mvnw verify -P test -Dit.tests=io.streams.e2e.flink.sql.SqlExampleST
-$ ./mvnw verify -P test -Dit.tests=io.streams.e2e.flink.sql.SqlExampleST#testFlinkSqlExample
+$ ./mvnw verify -P test -Dit.tests=io.streams.e2e.flink.sql.SqlExampleST#testRecommendationApp
 ```
 
 ## Test configuration
