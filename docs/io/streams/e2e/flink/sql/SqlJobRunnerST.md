@@ -37,6 +37,31 @@
 * `flink` (description file doesn't exist)
 
 
+## testFRocksDbStateBackend
+
+**Description:** Test verifies that user can use FRocksDB as state backend
+
+**Steps:**
+
+| Step | Action | Result |
+| - | - | - |
+| 1. | Create namespace, serviceaccount and roles for Flink | Resources created |
+| 2. | Deploy Apicurio registry | Apicurio registry is up and running |
+| 3. | Deploy Kafka my-cluster with scram-sha auth | Kafka is up and running |
+| 4. | Create KafkaUser with scram-sha secret | KafkaUser created |
+| 5. | Deploy strimzi-kafka-clients producer with payment data generator | Client job is created and data are sent to flink.payment.data topic |
+| 6. | Create PVC for FlinkDeployment for FRocksDB | PVC is created |
+| 7. | Deploy FlinkDeployment with sql which gets data from flink.payment.data topic filter payment of type paypal and send data to flink.payment.paypal topic, for authentication is used secret created by KafkaUser and this secret is passed into by secret interpolation. Flink is configured to use FRocksDB as a state backend | FlinkDeployment is up and tasks are deployed and it sends filtered data into flink.payment.paypal topic, task manager deployed by FlinkDeployment uses FRockDB |
+| 8. | Deploy strimzi-kafka-clients consumer as job and consume messages fromkafka topic flink.payment.paypal | Consumer is deployed and it consumes messages |
+| 9. | Verify that messages are present | Messages are present |
+| 10. | Verify that taskmanager logs contains 'State backend loader loads the state backend as EmbeddedRocksDBStateBackend' | Log message is present |
+
+**Labels:**
+
+* `flink-sql-runner` (description file doesn't exist)
+* `flink` (description file doesn't exist)
+
+
 ## testSimpleFilter
 
 **Description:** Test verifies sql-runner.jar works integrated with kafka, apicurio and uses scram-sha for kafka authentication
