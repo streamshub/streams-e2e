@@ -100,7 +100,7 @@ public class SqlJobRunnerST extends Abstract {
     )
     @Test
     @Tag(SMOKE)
-    void testFlinkSqlRunnerSimpleFilter() {
+    void testSimpleFilter() {
         String namespace = "flink-filter";
         String kafkaUser = "test-user";
         // Create namespace
