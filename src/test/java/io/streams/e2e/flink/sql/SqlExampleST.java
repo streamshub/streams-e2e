@@ -94,7 +94,7 @@ public class SqlExampleST extends Abstract {
         }
     )
     @Test
-    void testFlinkSqlExample() throws IOException {
+    void testRecommendationApp() throws IOException {
         // Create namespace
         KubeResourceManager.getInstance().createOrUpdateResourceWithWait(
             new NamespaceBuilder().withNewMetadata().withName(namespace).endMetadata().build());

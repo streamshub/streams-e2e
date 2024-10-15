@@ -18,7 +18,7 @@
 
 <hr style="border:1px solid">
 
-## testFlinkSqlExample
+## testRecommendationApp
 
 **Description:** Test verifies that flink-sql-example recommended app https://github.com/streamshub/flink-sql-examples/tree/main/recommendation-app works
 

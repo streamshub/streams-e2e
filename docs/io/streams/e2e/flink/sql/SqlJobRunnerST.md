@@ -37,7 +37,7 @@
 * `flink` (description file doesn't exist)
 
 
-## testFlinkSqlRunnerSimpleFilter
+## testSimpleFilter
 
 **Description:** Test verifies sql-runner.jar works integrated with kafka, apicurio and uses scram-sha for kafka authentication
 
