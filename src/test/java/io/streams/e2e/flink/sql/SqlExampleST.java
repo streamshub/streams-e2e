@@ -127,7 +127,7 @@ public class SqlExampleST extends Abstract {
 
         // Create topic for ksql apicurio
         KubeResourceManager.getInstance().createOrUpdateResourceWithWait(
-            ApicurioRegistryTemplate.apicurioKsqlTopic(namespace, "my-cluster"));
+            ApicurioRegistryTemplate.apicurioKsqlTopic(namespace, "my-cluster", 1));
 
         String bootstrapServer = KafkaType.kafkaClient().inNamespace(namespace).withName("my-cluster").get()
             .getStatus().getListeners().stream().filter(l -> l.getName().equals("plain"))

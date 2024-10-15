@@ -147,7 +147,7 @@ public class SqlJobRunnerST extends Abstract {
 
         // Create topic for ksql apicurio
         KubeResourceManager.getInstance().createOrUpdateResourceWithWait(
-            ApicurioRegistryTemplate.apicurioKsqlTopic(namespace, "my-cluster"));
+            ApicurioRegistryTemplate.apicurioKsqlTopic(namespace, "my-cluster", 3));
 
         // Create kafka scram sha user
         KubeResourceManager.getInstance().createOrUpdateResourceWithWait(
@@ -187,7 +187,7 @@ public class SqlJobRunnerST extends Abstract {
             .withMessageTemplate("payment_fiat")
             .withAdditionalConfig(
                 StrimziClientUtils.getApicurioAdditionalProperties(AvroKafkaSerializer.class.getName(),
-                    "http://apicurio-registry-service.flink-filter.svc:8080/apis/registry/v2") + "\n"
+                    "http://apicurio-registry-service." + namespace + ".svc:8080/apis/registry/v2") + "\n"
                     + "sasl.mechanism=SCRAM-SHA-512\n"
                     + "security.protocol=SASL_PLAINTEXT\n"
                     + "sasl.jaas.config=" + saslJaasConfigDecrypted
@@ -198,7 +198,7 @@ public class SqlJobRunnerST extends Abstract {
             kafkaProducerClient.producerStrimzi()
         );
 
-        String registryUrl = "http://apicurio-registry-service.flink-filter.svc:8080/apis/ccompat/v6";
+        String registryUrl = "http://apicurio-registry-service." + namespace + ".svc:8080/apis/ccompat/v6";
 
         // Deploy flink with test filter sql statement which filter to specific topic only payment type paypal
         FlinkDeployment flink = FlinkDeploymentTemplate.defaultFlinkDeployment(namespace,
@@ -406,7 +406,7 @@ public class SqlJobRunnerST extends Abstract {
 
         // Create topic for ksql apicurio
         KubeResourceManager.getInstance().createOrUpdateResourceWithWait(
-            ApicurioRegistryTemplate.apicurioKsqlTopic(namespace, "my-cluster"));
+            ApicurioRegistryTemplate.apicurioKsqlTopic(namespace, "my-cluster", 3));
 
         // Create kafka scram sha user
         KubeResourceManager.getInstance().createOrUpdateResourceWithWait(
@@ -446,7 +446,7 @@ public class SqlJobRunnerST extends Abstract {
             .withMessageTemplate("payment_fiat")
             .withAdditionalConfig(
                 StrimziClientUtils.getApicurioAdditionalProperties(AvroKafkaSerializer.class.getName(),
-                    "http://apicurio-registry-service.flink-filter.svc:8080/apis/registry/v2") + "\n"
+                    "http://apicurio-registry-service." + namespace + ".svc:8080/apis/registry/v2") + "\n"
                     + "sasl.mechanism=SCRAM-SHA-512\n"
                     + "security.protocol=SASL_PLAINTEXT\n"
                     + "sasl.jaas.config=" + saslJaasConfigDecrypted
@@ -457,7 +457,7 @@ public class SqlJobRunnerST extends Abstract {
             kafkaProducerClient.producerStrimzi()
         );
 
-        String registryUrl = "http://apicurio-registry-service.flink-filter.svc:8080/apis/ccompat/v6";
+        String registryUrl = "http://apicurio-registry-service." + namespace + ".svc:8080/apis/ccompat/v6";
 
         // Create PVC for flink
         PersistentVolumeClaim flinkPVC = new PersistentVolumeClaimBuilder()

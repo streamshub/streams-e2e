@@ -107,7 +107,7 @@ public class CertManagerOlmCatalogInstaller {
         try {
             PodUtils.waitForPodsReadyWithRestart(ns, new LabelSelectorBuilder()
                 .withMatchLabels(Map.of("app.kubernetes.io/instance", "cert-manager")).build(), 3, true);
-            LockSupport.parkNanos(TimeUnit.SECONDS.toNanos(60));
+            LockSupport.parkNanos(TimeUnit.SECONDS.toNanos(120));
             LOGGER.info("Cert-manager operator in namespace {} is ready", ns);
             return true;
         } catch (Exception ex) {

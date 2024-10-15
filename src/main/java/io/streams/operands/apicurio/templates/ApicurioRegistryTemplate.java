@@ -32,7 +32,7 @@ public class ApicurioRegistryTemplate {
             .endSpec();
     }
 
-    public static KafkaTopic apicurioKsqlTopic(String namespace, String kafkaClusterName) {
+    public static KafkaTopic apicurioKsqlTopic(String namespace, String kafkaClusterName, int replicas) {
         return new KafkaTopicBuilder()
             .withNewMetadata()
             .withNamespace(namespace)
@@ -40,8 +40,8 @@ public class ApicurioRegistryTemplate {
             .addToLabels(ResourceLabels.STRIMZI_CLUSTER_LABEL, kafkaClusterName)
             .endMetadata()
             .withNewSpec()
-            .withPartitions(1)
-            .withReplicas(1)
+            .withPartitions(replicas)
+            .withReplicas(replicas)
             .withConfig(Map.of(
                 "cleanup.policy", "compact"
             ))

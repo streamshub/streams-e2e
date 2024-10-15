@@ -92,7 +92,7 @@ public class CertManagerManifestInstaller {
                 .deployments().inNamespace(OPERATOR_NS).withName(WEBHOOK_DEPLOYMENT_NAME).isReady() &&
             KubeResourceManager.getKubeClient().getClient().apps()
                 .deployments().inNamespace(OPERATOR_NS).withName(CA_INJECTION_DEPLOYMENT_NAME).isReady()) {
-            LockSupport.parkNanos(TimeUnit.SECONDS.toNanos(60));
+            LockSupport.parkNanos(TimeUnit.SECONDS.toNanos(120));
             LOGGER.info("Cert-manager {}/{} is ready", OPERATOR_NS, DEPLOYMENT_NAME);
             return true;
         } else {
