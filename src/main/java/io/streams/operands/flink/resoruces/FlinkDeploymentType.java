@@ -64,7 +64,8 @@ public class FlinkDeploymentType implements ResourceType<FlinkDeployment> {
             .withName(resource.getMetadata().getName())
             .get();
 
-        boolean isReady = fd.getStatus().getJobStatus().getState().equals("RUNNING") || fd.getStatus().getJobStatus().getState().equals("CREATED");
+        boolean isReady = fd.getStatus().getJobStatus().getState().equals("RUNNING") ||
+            fd.getStatus().getJobStatus().getState().equals("CREATED");
 
         if (isReady) {
             LOGGER.info("FlinkDeployment {}/{} is Ready", resource.getMetadata().getNamespace(), resource.getMetadata().getName());
