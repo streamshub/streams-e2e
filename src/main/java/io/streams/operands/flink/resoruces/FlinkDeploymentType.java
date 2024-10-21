@@ -4,6 +4,7 @@
  */
 package io.streams.operands.flink.resoruces;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.fabric8.kubernetes.api.model.KubernetesResourceList;
 import io.fabric8.kubernetes.client.dsl.MixedOperation;
 import io.fabric8.kubernetes.client.dsl.Resource;
@@ -57,6 +58,7 @@ public class FlinkDeploymentType implements ResourceType<FlinkDeployment> {
     }
 
     @Override
+    @SuppressFBWarnings("EC_UNRELATED_TYPES")
     public boolean isReady(FlinkDeployment resource) {
         FlinkDeployment fd = getClient().inNamespace(resource.getMetadata().getNamespace())
             .withName(resource.getMetadata().getName())

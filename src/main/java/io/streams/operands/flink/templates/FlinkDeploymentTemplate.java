@@ -26,7 +26,7 @@ public class FlinkDeploymentTemplate {
      * @return flink deployment builder
      */
     public static FlinkDeploymentBuilder defaultFlinkDeployment(String namespace, String name, List<String> args) {
-        FlinkDeploymentBuilder fb = new FlinkDeploymentBuilder()
+        return new FlinkDeploymentBuilder()
             .withNewMetadata()
             .withName(name)
             .withNamespace(namespace)
@@ -79,28 +79,6 @@ public class FlinkDeploymentTemplate {
             .withArgs(args)
             .endJob()
             .endSpec();
-
-        if (Environment.FLINK_OPERATOR_BUNDLE_IMAGE.isEmpty()) {
-            fb.editOrNewSpec()
-                .editOrNewPodTemplate()
-                .editOrNewSpec()
-                .editFirstContainer()
-                .addNewVolumeMount()
-                .withName("flink-artifacts")
-                .withMountPath("/opt/flink/artifacts")
-                .endFlinkdeploymentspecVolumeMount()
-                .endFlinkdeploymentspecContainer()
-                .addNewVolume()
-                .withName("flink-artifacts")
-                .withNewEmptyDir()
-                .endFlinkdeploymentspecEmptyDir()
-                .endFlinkdeploymentspecVolume()
-                .endFlinkdeploymentspecSpec()
-                .endPodTemplate()
-                .endSpec();
-        }
-
-        return fb;
     }
 
     /**
