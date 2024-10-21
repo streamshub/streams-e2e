@@ -26,7 +26,7 @@ public class FlinkDeploymentTemplate {
      * @return flink deployment builder
      */
     public static FlinkDeploymentBuilder defaultFlinkDeployment(String namespace, String name, List<String> args) {
-        return new FlinkDeploymentBuilder()
+        FlinkDeploymentBuilder fb = new FlinkDeploymentBuilder()
             .withNewMetadata()
             .withName(name)
             .withNamespace(namespace)
@@ -52,18 +52,9 @@ public class FlinkDeploymentTemplate {
             .withName("flink-logs")
             .withMountPath("/opt/flink/log")
             .endFlinkdeploymentspecVolumeMount()
-            .addNewVolumeMount()
-            .withName("flink-artifacts")
-            .withMountPath("/opt/flink/artifacts")
-            .endFlinkdeploymentspecVolumeMount()
             .endFlinkdeploymentspecContainer()
             .addNewVolume()
             .withName("flink-logs")
-            .withNewEmptyDir()
-            .endFlinkdeploymentspecEmptyDir()
-            .endFlinkdeploymentspecVolume()
-            .addNewVolume()
-            .withName("flink-artifacts")
             .withNewEmptyDir()
             .endFlinkdeploymentspecEmptyDir()
             .endFlinkdeploymentspecVolume()
@@ -88,6 +79,28 @@ public class FlinkDeploymentTemplate {
             .withArgs(args)
             .endJob()
             .endSpec();
+
+        if (Environment.FLINK_OPERATOR_BUNDLE_IMAGE.isEmpty()) {
+            fb.editOrNewSpec()
+                .editOrNewPodTemplate()
+                .editOrNewSpec()
+                .editFirstContainer()
+                .addNewVolumeMount()
+                .withName("flink-artifacts")
+                .withMountPath("/opt/flink/artifacts")
+                .endFlinkdeploymentspecVolumeMount()
+                .endFlinkdeploymentspecContainer()
+                .addNewVolume()
+                .withName("flink-artifacts")
+                .withNewEmptyDir()
+                .endFlinkdeploymentspecEmptyDir()
+                .endFlinkdeploymentspecVolume()
+                .endFlinkdeploymentspecSpec()
+                .endPodTemplate()
+                .endSpec();
+        }
+
+        return fb;
     }
 
     /**
