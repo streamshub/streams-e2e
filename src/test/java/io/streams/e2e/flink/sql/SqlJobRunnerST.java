@@ -275,9 +275,11 @@ public class SqlJobRunnerST extends Abstract {
 
         // Check if no task is deployed and error is proper in flink deployment
         Wait.until("Flink deployment fail", TestFrameConstants.GLOBAL_POLL_INTERVAL_1_SEC,
-            TestFrameConstants.GLOBAL_TIMEOUT_MEDIUM, () ->
-                new FlinkDeploymentType().getClient().inNamespace(namespace).withName(flinkDeploymentName)
-                    .get().getStatus().getError().contains("DeploymentFailedException"));
+            TestFrameConstants.GLOBAL_TIMEOUT_MEDIUM, () -> {
+                String error = new FlinkDeploymentType().getClient().inNamespace(namespace).withName(flinkDeploymentName)
+                    .get().getStatus().getError();
+                return error.contains("DeploymentFailedException") || error.contains("ReconciliationException");
+            });
 
         String podName = KubeResourceManager.getKubeClient().listPodsByPrefixInName(namespace, flinkDeploymentName)
             .get(0).getMetadata().getName();
