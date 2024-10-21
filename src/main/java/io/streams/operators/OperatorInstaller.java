@@ -76,7 +76,7 @@ public class OperatorInstaller {
     }
 
     private static CompletableFuture<?> installCertManagerOperator() throws IOException {
-        if (Environment.INSTALL_STRIMZI_FROM_RH_CATALOG) {
+        if (Environment.INSTALL_CERT_MANAGER_FROM_RH_CATALOG) {
             return CertManagerOlmCatalogInstaller.install("openshift-cert-manager-operator",
                 "cert-manager-operator", null, "stable-v1",
                 "redhat-operators", "openshift-marketplace");
@@ -95,7 +95,7 @@ public class OperatorInstaller {
     }
 
     private static CompletableFuture<?> installApicurioOperator() throws IOException {
-        if (Environment.INSTALL_STRIMZI_FROM_RH_CATALOG) {
+        if (Environment.INSTALL_APICURIO_FROM_RH_CATALOG) {
             return ApicurioOlmCatalogInstaller.install("service-registry-operator",
                 ApicurioRegistryManifestInstaller.OPERATOR_NS, null, "2.x",
                 "redhat-operators", "openshift-marketplace");
