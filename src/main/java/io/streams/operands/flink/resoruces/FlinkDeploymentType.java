@@ -11,6 +11,7 @@ import io.fabric8.kubernetes.client.dsl.Resource;
 import io.skodjob.testframe.interfaces.ResourceType;
 import io.skodjob.testframe.resources.KubeResourceManager;
 import org.apache.flink.v1beta1.FlinkDeployment;
+import org.apache.flink.v1beta1.FlinkDeploymentStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,7 +65,8 @@ public class FlinkDeploymentType implements ResourceType<FlinkDeployment> {
             .withName(resource.getMetadata().getName())
             .get();
 
-        boolean isReady = fd.getStatus().getJobStatus().getState().equals("RUNNING");
+        boolean isReady = fd.getStatus().getJobManagerDeploymentStatus()
+            .equals(FlinkDeploymentStatus.JobManagerDeploymentStatus.READY);
 
         if (isReady) {
             LOGGER.info("FlinkDeployment {}/{} is Ready", resource.getMetadata().getNamespace(), resource.getMetadata().getName());
