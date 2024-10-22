@@ -4,11 +4,15 @@
  */
 package io.streams.operands.flink.templates;
 
+import io.fabric8.kubernetes.api.model.PersistentVolumeClaimBuilder;
+import io.fabric8.kubernetes.api.model.Quantity;
+import io.skodjob.testframe.resources.KubeResourceManager;
 import io.streams.Environment;
 import org.apache.flink.v1beta1.FlinkDeploymentBuilder;
 import org.apache.flink.v1beta1.FlinkDeploymentSpec;
 import org.apache.flink.v1beta1.flinkdeploymentspec.Job;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -112,6 +116,33 @@ public class FlinkDeploymentTemplate {
             .endFlinkdeploymentspecVolume()
             .endFlinkdeploymentspecSpec()
             .endPodTemplate()
+            .endSpec();
+    }
+
+    /**
+     * Returns default kube pvc for flink state backend
+     *
+     * @param namespace namespace
+     * @param name      name
+     * @return pvc builder
+     */
+    public static PersistentVolumeClaimBuilder getFlinkPVC(String namespace, String name) {
+        String accessMode = "ReadWriteOnce";
+        if (KubeResourceManager.getKubeClient().getClient().nodes().list().getItems().size() > 1) {
+            accessMode = "ReadWriteMany";
+        }
+        return new PersistentVolumeClaimBuilder()
+            .withNewMetadata()
+            .withName(name)
+            .withNamespace(namespace)
+            .endMetadata()
+            .withNewSpec()
+            .withAccessModes(accessMode)
+            .withNewResources()
+            .withRequests(Collections.singletonMap(
+                "storage",
+                new Quantity("100Gi")))
+            .endResources()
             .endSpec();
     }
 }

@@ -8,9 +8,7 @@ import io.apicurio.registry.serde.avro.AvroKafkaSerializer;
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.NamespaceBuilder;
 import io.fabric8.kubernetes.api.model.PersistentVolumeClaim;
-import io.fabric8.kubernetes.api.model.PersistentVolumeClaimBuilder;
 import io.fabric8.kubernetes.api.model.Pod;
-import io.fabric8.kubernetes.api.model.Quantity;
 import io.skodjob.annotations.Desc;
 import io.skodjob.annotations.Label;
 import io.skodjob.annotations.Step;
@@ -46,7 +44,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -463,19 +460,8 @@ public class SqlJobRunnerST extends Abstract {
         String registryUrl = "http://apicurio-registry-service." + namespace + ".svc:8080/apis/ccompat/v6";
 
         // Create PVC for flink
-        PersistentVolumeClaim flinkPVC = new PersistentVolumeClaimBuilder()
-            .withNewMetadata()
-            .withName("flink-state-backend")
-            .withNamespace(namespace)
-            .endMetadata()
-            .withNewSpec()
-            .withAccessModes("ReadWriteOnce")
-            .withNewResources()
-            .withRequests(Collections.singletonMap(
-                "storage",
-                new Quantity("100Gi")))
-            .endResources()
-            .endSpec()
+        PersistentVolumeClaim flinkPVC = FlinkDeploymentTemplate
+            .getFlinkPVC(namespace, "flink-state-backend")
             .build();
         KubeResourceManager.getInstance().createOrUpdateResourceWithWait(flinkPVC);
 
