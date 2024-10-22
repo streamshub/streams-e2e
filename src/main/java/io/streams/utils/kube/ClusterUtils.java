@@ -25,7 +25,7 @@ public class ClusterUtils {
      */
     public static boolean isOcp() {
         return KubeResourceManager.getKubeCmdClient()
-            .exec(false, false, "api-version").out().contains("openshift.io");
+            .exec(false, false, "api-versions").out().contains("openshift.io");
     }
 
     /**
