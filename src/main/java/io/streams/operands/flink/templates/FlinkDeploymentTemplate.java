@@ -6,8 +6,8 @@ package io.streams.operands.flink.templates;
 
 import io.fabric8.kubernetes.api.model.PersistentVolumeClaimBuilder;
 import io.fabric8.kubernetes.api.model.Quantity;
-import io.skodjob.testframe.resources.KubeResourceManager;
 import io.streams.Environment;
+import io.streams.utils.kube.ClusterUtils;
 import org.apache.flink.v1beta1.FlinkDeploymentBuilder;
 import org.apache.flink.v1beta1.FlinkDeploymentSpec;
 import org.apache.flink.v1beta1.flinkdeploymentspec.Job;
@@ -128,7 +128,7 @@ public class FlinkDeploymentTemplate {
      */
     public static PersistentVolumeClaimBuilder getFlinkPVC(String namespace, String name) {
         String accessMode = "ReadWriteOnce";
-        if (KubeResourceManager.getKubeClient().getClient().nodes().list().getItems().size() > 1) {
+        if (ClusterUtils.isOcp() && ClusterUtils.isMultinode()) {
             accessMode = "ReadWriteMany";
         }
         return new PersistentVolumeClaimBuilder()
