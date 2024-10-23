@@ -34,8 +34,7 @@ public class Environment {
      * Image of flink sql runner, default is latest upstream from quay.io
      */
     public static final String FLINK_SQL_RUNNER_IMAGE =
-        ENVIRONMENT_VARIABLES.getOrDefault("SQL_RUNNER_IMAGE",
-            "quay.io/streamshub/flink-sql-runner:latest");
+        ENVIRONMENT_VARIABLES.getOrDefault("SQL_RUNNER_IMAGE", "");
 
     /**
      * Flink operator bundle image to install operator using operator sdk, default is empty.

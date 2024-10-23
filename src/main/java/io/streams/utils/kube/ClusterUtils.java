@@ -5,15 +5,11 @@
 package io.streams.utils.kube;
 
 import io.skodjob.testframe.resources.KubeResourceManager;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 /**
  * Kubernetes cluster utils
  */
 public class ClusterUtils {
-
-    private static final Logger LOGGER = LogManager.getLogger(ClusterUtils.class);
 
     private ClusterUtils() {
     }

@@ -30,13 +30,12 @@ public class FlinkDeploymentTemplate {
      * @return flink deployment builder
      */
     public static FlinkDeploymentBuilder defaultFlinkDeployment(String namespace, String name, List<String> args) {
-        return new FlinkDeploymentBuilder()
+        FlinkDeploymentBuilder fb = new FlinkDeploymentBuilder()
             .withNewMetadata()
             .withName(name)
             .withNamespace(namespace)
             .endMetadata()
             .withNewSpec()
-            .withImage(Environment.FLINK_SQL_RUNNER_IMAGE)
             .withFlinkVersion(FlinkDeploymentSpec.FlinkVersion.v1_19)
             .withFlinkConfiguration(
                 Map.of("taskmanager.numberOfTaskSlots", "1")
@@ -50,7 +49,6 @@ public class FlinkDeploymentTemplate {
             .withNewSpec()
             .addNewContainer()
             .withName("flink-main-container")
-            .withImage(Environment.FLINK_SQL_RUNNER_IMAGE)
             .withImagePullPolicy("Always")
             .addNewVolumeMount()
             .withName("flink-logs")
@@ -83,6 +81,24 @@ public class FlinkDeploymentTemplate {
             .withArgs(args)
             .endJob()
             .endSpec();
+
+        if (!Environment.FLINK_SQL_RUNNER_IMAGE.isEmpty()) {
+            fb.editOrNewSpec()
+                .withImage(Environment.FLINK_SQL_RUNNER_IMAGE)
+                .endSpec();
+
+            fb.editOrNewSpec()
+                .editOrNewPodTemplate()
+                .editOrNewSpec()
+                .editFirstContainer()
+                .withImage(Environment.FLINK_SQL_RUNNER_IMAGE)
+                .endFlinkdeploymentspecContainer()
+                .endFlinkdeploymentspecSpec()
+                .endPodTemplate()
+                .endSpec();
+        }
+
+        return fb;
     }
 
     /**
