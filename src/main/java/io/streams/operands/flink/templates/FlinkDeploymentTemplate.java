@@ -86,16 +86,6 @@ public class FlinkDeploymentTemplate {
             fb.editOrNewSpec()
                 .withImage(Environment.FLINK_SQL_RUNNER_IMAGE)
                 .endSpec();
-
-            fb.editOrNewSpec()
-                .editOrNewPodTemplate()
-                .editOrNewSpec()
-                .editFirstContainer()
-                .withImage(Environment.FLINK_SQL_RUNNER_IMAGE)
-                .endFlinkdeploymentspecContainer()
-                .endFlinkdeploymentspecSpec()
-                .endPodTemplate()
-                .endSpec();
         }
 
         return fb;
