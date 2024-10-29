@@ -1,7 +1,7 @@
 # Test suite configuration file
 ---
 # Image of flink sql runner
-SQL_RUNNER_IMAGE: quay.io/streamshub/flink-sql-runner:latest
+SQL_RUNNER_IMAGE: quay.io/streamshub/flink-sql-runner:main
 
 # Operator bundle image of flink operator (leave empty if this install type is not used)
 FLINK_OPERATOR_BUNDLE_IMAGE: ""
