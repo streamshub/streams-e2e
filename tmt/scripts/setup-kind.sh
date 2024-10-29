@@ -6,7 +6,7 @@ rm -rf ~/.kube
 # There is a bug in 0.24.0 - https://github.com/kubernetes-sigs/kind/issues/3713
 KIND_VERSION=${KIND_VERSION:-"v0.23.0"}
 # To properly upgrade Kind version check the releases in github https://github.com/kubernetes-sigs/kind/releases and use proper image based on Kind version
-KIND_NODE_IMAGE=${KIND_NODE_IMAGE:-"kindest/node:v1.25.16@sha256:5da57dfc290ac3599e775e63b8b6c49c0c85d3fec771cd7d55b45fae14b38d3b"}
+KIND_NODE_IMAGE=${KIND_NODE_IMAGE:-"kindest/node:v1.30.4@sha256:976ea815844d5fa93be213437e3ff5754cd599b040946b5cca43ca45c2047114"}
 COPY_DOCKER_LOGIN=${COPY_DOCKER_LOGIN:-"false"}
 
 KIND_CLUSTER_NAME="kind-cluster"
