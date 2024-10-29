@@ -54,7 +54,7 @@
         <debezium.operator.files.destination>debezium</debezium.operator.files.destination>
         <!-- Operators versions -->
         <strimzi.version>0.43.0</strimzi.version>
-        <flink.version>1.10.0-rc1</flink.version>
+        <flink.version>1.10.0</flink.version>
         <cert.manager.version>1.15.2</cert.manager.version>
         <apicurio.registry.version>1.1.2-v2.5.11.final</apicurio.registry.version>
         <apicurio.api.version>1.1.2</apicurio.api.version>
@@ -637,7 +637,7 @@
                                     <executable>sh</executable>
                                     <arguments>
                                         <argument>-c</argument>
-                                        <argument>helm repo add --force-update flink-operator-repo https://dist.apache.org/repos/dist/dev/flink/flink-kubernetes-operator-${flink.version}/</argument>
+                                        <argument>helm repo add --force-update flink-operator-repo https://downloads.apache.org/flink/flink-kubernetes-operator-${flink.version}/</argument>
                                     </arguments>
                                 </configuration>
                             </execution>
