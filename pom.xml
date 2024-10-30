@@ -53,7 +53,7 @@
         <apicurio.registry.files.destination>apicurio-registry</apicurio.registry.files.destination>
         <debezium.operator.files.destination>debezium</debezium.operator.files.destination>
         <!-- Operators versions -->
-        <strimzi.version>0.43.0</strimzi.version>
+        <strimzi.version>0.44.0</strimzi.version>
         <flink.version>1.10.0</flink.version>
         <cert.manager.version>1.15.2</cert.manager.version>
         <apicurio.registry.version>1.1.2-v2.5.11.final</apicurio.registry.version>
