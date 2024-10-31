@@ -1,5 +1,8 @@
 # Test suite configuration file
 ---
+# Flink default version for flink deployment
+FLINK_VERSION: "v1_20"
+
 # Image of flink sql runner
 SQL_RUNNER_IMAGE: quay.io/streamshub/flink-sql-runner:main
 

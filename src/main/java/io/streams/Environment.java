@@ -31,6 +31,12 @@ public class Environment {
         .resolve("test-run-" + DATE_FORMAT.format(LocalDateTime.now()));
 
     /**
+     * Flink default version passed to flink deployment
+     */
+    public static final String FLINK_VERSION =
+        ENVIRONMENT_VARIABLES.getOrDefault("FLINK_VERSION", "");
+
+    /**
      * Image of flink sql runner, default is latest upstream from quay.io
      */
     public static final String FLINK_SQL_RUNNER_IMAGE =

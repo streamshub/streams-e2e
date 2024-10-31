@@ -36,7 +36,7 @@ public class FlinkDeploymentTemplate {
             .withNamespace(namespace)
             .endMetadata()
             .withNewSpec()
-            .withFlinkVersion(FlinkDeploymentSpec.FlinkVersion.v1_19)
+            .withFlinkVersion(FlinkDeploymentSpec.FlinkVersion.valueOf(Environment.FLINK_VERSION))
             .withFlinkConfiguration(
                 Map.of(
                     "taskmanager.numberOfTaskSlots", "1",
