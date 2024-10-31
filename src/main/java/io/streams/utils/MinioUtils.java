@@ -76,7 +76,7 @@ public class MinioUtils {
      * @param bucketName bucket name
      */
     public static void waitForDataInMinio(String namespace, String bucketName) {
-        Wait.until("data sync from Kafka to Minio",
+        Wait.until("data sync to Minio",
             TestFrameConstants.GLOBAL_POLL_INTERVAL_MEDIUM,
             TestFrameConstants.GLOBAL_TIMEOUT,
             () -> {

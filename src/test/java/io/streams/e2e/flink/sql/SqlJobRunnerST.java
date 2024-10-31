@@ -817,9 +817,9 @@ public class SqlJobRunnerST extends Abstract {
             .withNamespaceName(namespace)
             .withTopicName("flink.payment.data")
             .withBootstrapAddress(bootstrapServerAuth)
-            .withMessageCount(10000)
+            .withMessageCount(30000)
             .withUsername(kafkaUser)
-            .withDelayMs(10)
+            .withDelayMs(1)
             .withMessageTemplate("payment_fiat")
             .withAdditionalConfig(
                 StrimziClientUtils.getApicurioAdditionalProperties(AvroKafkaSerializer.class.getName(),
@@ -844,7 +844,7 @@ public class SqlJobRunnerST extends Abstract {
         // Deploy flink with test filter sql statement which filter to specific topic only payment type paypal
         // Modify flink default deployment with state backend and pvc configuration
         HashMap<String, String> flinkConfig = new HashMap();
-        flinkConfig.put("execution.checkpointing.interval", "60000");
+        flinkConfig.put("execution.checkpointing.interval", "10000");
         flinkConfig.put("execution.checkpointing.snapshot-compression", "true");
         flinkConfig.put("kubernetes.operator.job.restart.failed", "true");
         flinkConfig.put("state.backend.rocksdb.compression.per.level_FLINK_JIRA", "SNAPPY_COMPRESSION");
