@@ -693,7 +693,7 @@ public class SqlJobRunnerST extends Abstract {
                 expected = "Consumer is deployed and it consumes messages"),
             @Step(value = "Verify that messages are present", expected = "Messages are present"),
             @Step(value = "Verify that taskmanager logs contains 'State backend loader loads the state " +
-                "backend as EmbeddedRocksDBStateBackend'", expected = "Log message is present"),
+                "backend as HashMapStateBackend'", expected = "Log message is present"),
             @Step(value = "Verify that Minio contains some data from Flink", expected = "Flink bucket is not empty")
         },
         labels = {
@@ -855,6 +855,7 @@ public class SqlJobRunnerST extends Abstract {
         flinkConfig.put("state.savepoints.dir", "s3://" + bucketName + "/" + SetupMinio.MINIO + ":" + SetupMinio.MINIO_PORT);
         // Currently Minio is deployed only in HTTP mode so we need to specify http in the url
         flinkConfig.put("s3.endpoint", "http://" + SetupMinio.MINIO + ":" + SetupMinio.MINIO_PORT);
+        // This should be set to make sure Flink will properly work with Minio
         flinkConfig.put("s3.path.style.access", "true");
         flinkConfig.put("s3.access-key", SetupMinio.ADMIN_CREDS);
         flinkConfig.put("s3.secret-key", SetupMinio.ADMIN_CREDS);
@@ -890,10 +891,26 @@ public class SqlJobRunnerST extends Abstract {
                         .getLogsFromPod(namespace, p.getMetadata()
                             .getName())
 //                        .contains("State backend loader loads the state backend as EmbeddedRocksDBStateBackend");
-                            .contains("State backend loader loads the state backend as HashMapStateBackend");
+                        .contains("State backend loader loads the state backend as HashMapStateBackend");
                 }
                 return false;
             });
+
+        // TODO remove
+        String consumerName1 = "pepa-consumer";
+        StrimziKafkaClients kafkaConsumerClient1 = new StrimziKafkaClientsBuilder()
+            .withConsumerName(consumerName1)
+            .withNamespaceName(namespace)
+            .withTopicName("flink.payment.data")
+            .withBootstrapAddress(bootstrapServerAuth)
+            .withMessageCount(100)
+            .withAdditionalConfig(
+                "sasl.mechanism=SCRAM-SHA-512\n" +
+                    "security.protocol=SASL_PLAINTEXT\n" +
+                    "sasl.jaas.config=" + saslJaasConfigDecrypted
+            )
+            .withConsumerGroup("flink-filter-test-group")
+            .build();
 
         // Run consumer and check if data are filtered
         String consumerName = "kafka-consumer";
