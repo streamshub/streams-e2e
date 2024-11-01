@@ -27,7 +27,7 @@ public class KafkaNodePoolTemplate {
             .withReplicas(replicas)
             .addAllToRoles(roles)
             .withNewPersistentClaimStorage()
-            .withSize("1Gi")
+            .withSize("5Gi")
             .withDeleteClaim(true)
             .endPersistentClaimStorage()
             .endSpec();
@@ -46,7 +46,7 @@ public class KafkaNodePoolTemplate {
             .addAllToRoles(roles)
             .withStorage(
                 new JbodStorageBuilder().addToVolumes(
-                        new PersistentClaimStorageBuilder().withId(0).withSize("1Gi").withDeleteClaim(true)
+                        new PersistentClaimStorageBuilder().withId(0).withSize("5Gi").withDeleteClaim(true)
                             .withKraftMetadata(KRaftMetadataStorage.SHARED).build())
                     .build())
             .endSpec();

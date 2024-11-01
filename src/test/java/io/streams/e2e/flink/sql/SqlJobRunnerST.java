@@ -593,7 +593,7 @@ public class SqlJobRunnerST extends Abstract {
                     "execution.checkpointing.snapshot-compression", "true",
                     "kubernetes.operator.job.restart.failed", "true",
                     "state.backend.rocksdb.compression.per.level_FLINK_JIRA", "SNAPPY_COMPRESSION",
-                    "state.backend.type", "rocksdb",
+                    "state.backend", "rocksdb",
                     "state.checkpoints.dir", "file:///flink-state-store/checkpoints",
                     "state.savepoints.dir", "file:///flink-state-store/savepoints"
                 )
@@ -847,9 +847,10 @@ public class SqlJobRunnerST extends Abstract {
         flinkConfig.put("execution.checkpointing.interval", "10000");
         flinkConfig.put("execution.checkpointing.snapshot-compression", "true");
         flinkConfig.put("kubernetes.operator.job.restart.failed", "true");
-        flinkConfig.put("state.backend.rocksdb.compression.per.level_FLINK_JIRA", "SNAPPY_COMPRESSION");
+//        flinkConfig.put("state.backend.rocksdb.compression.per.level_FLINK_JIRA", "SNAPPY_COMPRESSION");
         // rocksdb can be used as a state backend but the location is referenced in s3 instead on local pvc
-        flinkConfig.put("state.backend.type", "rocksdb");
+//        flinkConfig.put("state.backend.type", "rocksdb");
+        flinkConfig.put("state.backend", "filesystem");
         flinkConfig.put("state.checkpoints.dir", "s3://" + bucketName + "/" + SetupMinio.MINIO + ":" + SetupMinio.MINIO_PORT);
         flinkConfig.put("state.savepoints.dir", "s3://" + bucketName + "/" + SetupMinio.MINIO + ":" + SetupMinio.MINIO_PORT);
         // Currently Minio is deployed only in HTTP mode so we need to specify http in the url
@@ -880,7 +881,7 @@ public class SqlJobRunnerST extends Abstract {
             TestFrameConstants.GLOBAL_TIMEOUT_MEDIUM);
 
         //Check task manager log for presence rocksbd configuration
-        Wait.until("Task manager contains info about rocksdb", TestFrameConstants.GLOBAL_POLL_INTERVAL_LONG,
+        Wait.until("Task manager contains info about state.backend", TestFrameConstants.GLOBAL_POLL_INTERVAL_LONG,
             TestFrameConstants.GLOBAL_TIMEOUT, () -> {
                 List<Pod> taskManagerPods = KubeResourceManager.getKubeClient()
                     .listPodsByPrefixInName(namespace, flinkDeploymentName + "-taskmanager");
@@ -888,7 +889,8 @@ public class SqlJobRunnerST extends Abstract {
                     return KubeResourceManager.getKubeClient()
                         .getLogsFromPod(namespace, p.getMetadata()
                             .getName())
-                        .contains("State backend loader loads the state backend as EmbeddedRocksDBStateBackend");
+//                        .contains("State backend loader loads the state backend as EmbeddedRocksDBStateBackend");
+                            .contains("State backend loader loads the state backend as HashMapStateBackend");
                 }
                 return false;
             });
@@ -900,7 +902,7 @@ public class SqlJobRunnerST extends Abstract {
             .withNamespaceName(namespace)
             .withTopicName("flink.payment.paypal")
             .withBootstrapAddress(bootstrapServerAuth)
-            .withMessageCount(10)
+            .withMessageCount(100)
             .withAdditionalConfig(
                 "sasl.mechanism=SCRAM-SHA-512\n" +
                     "security.protocol=SASL_PLAINTEXT\n" +
