@@ -39,8 +39,7 @@ public class FlinkDeploymentTemplate {
             .withFlinkVersion(FlinkDeploymentSpec.FlinkVersion.valueOf(Environment.FLINK_VERSION))
             .withFlinkConfiguration(
                 Map.of(
-                    "taskmanager.numberOfTaskSlots", "1",
-                    "env.java.opts.all", "--add-opens=java.base/java.util=ALL-UNNAMED"
+                    "taskmanager.numberOfTaskSlots", "1"
                 )
             )
             .withServiceAccount("flink")
