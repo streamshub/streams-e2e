@@ -847,10 +847,8 @@ public class SqlJobRunnerST extends Abstract {
         flinkConfig.put("execution.checkpointing.interval", "10000");
         flinkConfig.put("execution.checkpointing.snapshot-compression", "true");
         flinkConfig.put("kubernetes.operator.job.restart.failed", "true");
-//        flinkConfig.put("state.backend.rocksdb.compression.per.level_FLINK_JIRA", "SNAPPY_COMPRESSION");
         // rocksdb can be used as a state backend but the location is referenced in s3 instead on local pvc
-//        flinkConfig.put("state.backend.type", "rocksdb");
-        flinkConfig.put("state.backend", "filesystem");
+        flinkConfig.put("state.backend", "rocksdb");
         flinkConfig.put("state.checkpoints.dir", "s3://" + bucketName + "/" + SetupMinio.MINIO + ":" + SetupMinio.MINIO_PORT);
         flinkConfig.put("state.savepoints.dir", "s3://" + bucketName + "/" + SetupMinio.MINIO + ":" + SetupMinio.MINIO_PORT);
         // Currently Minio is deployed only in HTTP mode so we need to specify http in the url
@@ -881,7 +879,7 @@ public class SqlJobRunnerST extends Abstract {
         JobUtils.waitForJobSuccess(namespace, kafkaProducerClient.getProducerName(),
             TestFrameConstants.GLOBAL_TIMEOUT_MEDIUM);
 
-        //Check task manager log for presence rocksbd configuration
+        //Check task manager log for presence checkpoint configuration
         Wait.until("Task manager contains info about state.backend", TestFrameConstants.GLOBAL_POLL_INTERVAL_LONG,
             TestFrameConstants.GLOBAL_TIMEOUT, () -> {
                 List<Pod> taskManagerPods = KubeResourceManager.getKubeClient()
@@ -890,27 +888,10 @@ public class SqlJobRunnerST extends Abstract {
                     return KubeResourceManager.getKubeClient()
                         .getLogsFromPod(namespace, p.getMetadata()
                             .getName())
-//                        .contains("State backend loader loads the state backend as EmbeddedRocksDBStateBackend");
-                        .contains("State backend loader loads the state backend as HashMapStateBackend");
+                            .contains("State backend loader loads the state backend as EmbeddedRocksDBStateBackend");
                 }
                 return false;
             });
-
-        // TODO remove
-        String consumerName1 = "pepa-consumer";
-        StrimziKafkaClients kafkaConsumerClient1 = new StrimziKafkaClientsBuilder()
-            .withConsumerName(consumerName1)
-            .withNamespaceName(namespace)
-            .withTopicName("flink.payment.data")
-            .withBootstrapAddress(bootstrapServerAuth)
-            .withMessageCount(100)
-            .withAdditionalConfig(
-                "sasl.mechanism=SCRAM-SHA-512\n" +
-                    "security.protocol=SASL_PLAINTEXT\n" +
-                    "sasl.jaas.config=" + saslJaasConfigDecrypted
-            )
-            .withConsumerGroup("flink-filter-test-group")
-            .build();
 
         // Run consumer and check if data are filtered
         String consumerName = "kafka-consumer";
@@ -945,6 +926,20 @@ public class SqlJobRunnerST extends Abstract {
         assertTrue(log.contains("\"type\":\"paypal\""));
         assertFalse(log.contains("\"type\":\"creditCard\""));
 
-        MinioUtils.waitForDataInMinio(namespace, bucketName);
+        MinioUtils.waitForObjectsInMinio(namespace, bucketName);
+        String flinkDeploymentPodName = KubeResourceManager.getKubeClient()
+            .listPodsByPrefixInName(namespace, flinkDeploymentName)
+            .stream()
+            .filter(pod -> !pod.getMetadata()
+                .getName()
+                .contains("taskmanager"))
+            .toList()
+            .get(0)
+            .getMetadata()
+            .getName();
+
+        log = KubeResourceManager.getKubeClient().getLogsFromPod(namespace, flinkDeploymentPodName);
+        assertTrue(log.contains("Committing minio:9000"));
+        assertTrue(log.contains("Marking checkpoint 1 as completed for source Source: payment_fiat"));
     }
 }

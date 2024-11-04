@@ -79,7 +79,7 @@
 | 7. | Deploy FlinkDeployment with sql which gets data from flink.payment.data topic filter payment of type paypal and send data to flink.payment.paypal topic, for authentication is used secret created by KafkaUser and this secret is passed into by secret interpolation. Flink is configured to use S3 as a state backend | FlinkDeployment is up and tasks are deployed and it sends filtered data into flink.payment.paypal topic, task manager deployed by FlinkDeployment uses S3 |
 | 8. | Deploy strimzi-kafka-clients consumer as job and consume messages fromkafka topic flink.payment.paypal | Consumer is deployed and it consumes messages |
 | 9. | Verify that messages are present | Messages are present |
-| 10. | Verify that taskmanager logs contains 'State backend loader loads the state backend as EmbeddedRocksDBStateBackend' | Log message is present |
+| 10. | Verify that taskmanager logs contains 'State backend loader loads the state backend as HashMapStateBackend' | Log message is present |
 | 11. | Verify that Minio contains some data from Flink | Flink bucket is not empty |
 
 **Labels:**

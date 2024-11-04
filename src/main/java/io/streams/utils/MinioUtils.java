@@ -49,7 +49,6 @@ public class MinioUtils {
                 "stat",
                 "local/" + bucketName)
             .out();
-
     }
 
     /**
@@ -70,13 +69,30 @@ public class MinioUtils {
     }
 
     /**
+     * Parse out total size of bucket from the information about usage.
+     *
+     * @param bucketInfo String containing all stat info about bucket
+     * @return Object counts in the bucket
+     */
+    private static int parseObjectCount(String bucketInfo) {
+        Pattern pattern = Pattern.compile("Objects count:\\s*(?<count>[\\d.]+)");
+        Matcher matcher = pattern.matcher(bucketInfo);
+
+        if (matcher.find()) {
+            return Integer.parseInt(matcher.group("count"));
+        } else {
+            throw new IllegalArgumentException("Objects count not found in the provided string");
+        }
+    }
+
+    /**
      * Wait until size of the bucket is not 0 B.
      *
      * @param namespace  Minio location
      * @param bucketName bucket name
      */
     public static void waitForDataInMinio(String namespace, String bucketName) {
-        Wait.until("data sync to Minio",
+        Wait.until("data sync from Kafka to Minio",
             TestFrameConstants.GLOBAL_POLL_INTERVAL_MEDIUM,
             TestFrameConstants.GLOBAL_TIMEOUT,
             () -> {
@@ -91,7 +107,28 @@ public class MinioUtils {
     }
 
     /**
-     * Wait until size of the bucket is 0 B.
+     * Wait until size of the bucket is not 0 B.
+     *
+     * @param namespace  Minio location
+     * @param bucketName bucket name
+     */
+    public static void waitForObjectsInMinio(String namespace, String bucketName) {
+        Wait.until("data sync from Kafka to Minio",
+            TestFrameConstants.GLOBAL_POLL_INTERVAL_MEDIUM,
+            TestFrameConstants.GLOBAL_TIMEOUT,
+            () -> {
+                String bucketSizeInfo = getBucketSizeInfo(namespace, bucketName);
+                int objectCount = parseObjectCount(bucketSizeInfo);
+                LOGGER.info("Collected object count: {}", objectCount);
+                LOGGER.debug("Collected bucket info:\n{}", bucketSizeInfo);
+
+                return objectCount > 0;
+            });
+    }
+
+
+    /**
+     * Wait until bucket is empty.
      *
      * @param namespace  Minio location
      * @param bucketName bucket name

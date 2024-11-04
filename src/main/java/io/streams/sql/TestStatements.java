@@ -177,7 +177,8 @@ public class TestStatements {
         additionalProperties.put("properties.group.id", "flink-filter-group");
         additionalProperties.put("value.format", "avro-confluent");
         additionalProperties.put("value.avro-confluent.url", registryUrl);
-        additionalProperties.put("scan.startup.mode", "latest-offset");
+        // Startup mode for Kafka consumer, we set earliest to catch even previously sent messages
+        additionalProperties.put("scan.startup.mode", "earliest-offset");
         additionalProperties.put("properties.security.protocol", "SASL_PLAINTEXT");
         additionalProperties.put("properties.sasl.mechanism", "SCRAM-SHA-512");
         additionalProperties.put("properties.sasl.jaas.config",
@@ -239,7 +240,8 @@ public class TestStatements {
         additionalProperties.put("properties.group.id", "flink-filter-group");
         additionalProperties.put("value.format", "avro-confluent");
         additionalProperties.put("value.avro-confluent.url", "not-exists-sr.cluster.local:5001");
-        additionalProperties.put("scan.startup.mode", "latest-offset");
+        // Startup mode for Kafka consumer, we set earliest to catch even previously sent messages
+        additionalProperties.put("scan.startup.mode", "earliest-offset");
 
         SqlWith sqlWith = new SqlWithBuilder()
             .withSqlStatement(builder.toString())
