@@ -20,4 +20,8 @@ public interface TestConstants {
 
     String STRIMZI_TEST_CLIENTS_LABEL_KEY = "strimzi-test-clients";
     String STRIMZI_TEST_CLIENTS_LABEL_VALUE = "true";
+
+    // Labels
+    String APP_POD_LABEL = "app";
+    String DEPLOYMENT_TYPE = "deployment-type";
 }
