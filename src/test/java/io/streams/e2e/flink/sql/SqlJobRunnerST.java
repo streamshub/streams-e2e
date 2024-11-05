@@ -24,7 +24,7 @@ import io.streams.operands.apicurio.templates.ApicurioRegistryTemplate;
 import io.streams.operands.flink.resoruces.FlinkDeploymentType;
 import io.streams.operands.flink.templates.FlinkDeploymentTemplate;
 import io.streams.operands.flink.templates.FlinkRBAC;
-import io.streams.operands.minio.SetupMinio;
+import io.streams.operands.minio.MinioInstaller;
 import io.streams.operands.strimzi.resources.KafkaType;
 import io.streams.operands.strimzi.templates.KafkaNodePoolTemplate;
 import io.streams.operands.strimzi.templates.KafkaTemplate;
@@ -716,8 +716,8 @@ public class SqlJobRunnerST extends Abstract {
         String registryUrl = "http://apicurio-registry-service." + namespace + ".svc:8080/apis/ccompat/v6";
 
         // Add Minio
-        SetupMinio.deployMinio(namespace);
-        SetupMinio.createBucket(namespace, bucketName);
+        MinioInstaller.deployMinio(namespace);
+        MinioInstaller.createBucket(namespace, bucketName);
 
         // Deploy flink with test filter sql statement which filter to specific topic only payment type paypal
         // Modify flink default deployment with state backend and pvc configuration
@@ -727,14 +727,14 @@ public class SqlJobRunnerST extends Abstract {
         flinkConfig.put("kubernetes.operator.job.restart.failed", "true");
         // rocksdb can be used as a state backend but the location is referenced in s3 instead on local pvc
         flinkConfig.put("state.backend", "rocksdb");
-        flinkConfig.put("state.checkpoints.dir", "s3://" + bucketName + "/" + SetupMinio.MINIO + ":" + SetupMinio.MINIO_PORT);
-        flinkConfig.put("state.savepoints.dir", "s3://" + bucketName + "/" + SetupMinio.MINIO + ":" + SetupMinio.MINIO_PORT);
+        flinkConfig.put("state.checkpoints.dir", "s3://" + bucketName + "/" + MinioInstaller.MINIO + ":" + MinioInstaller.MINIO_PORT);
+        flinkConfig.put("state.savepoints.dir", "s3://" + bucketName + "/" + MinioInstaller.MINIO + ":" + MinioInstaller.MINIO_PORT);
         // Currently Minio is deployed only in HTTP mode so we need to specify http in the url
-        flinkConfig.put("s3.endpoint", "http://" + SetupMinio.MINIO + ":" + SetupMinio.MINIO_PORT);
+        flinkConfig.put("s3.endpoint", "http://" + MinioInstaller.MINIO + ":" + MinioInstaller.MINIO_PORT);
         // This should be set to make sure Flink will properly work with Minio
         flinkConfig.put("s3.path.style.access", "true");
-        flinkConfig.put("s3.access-key", SetupMinio.ADMIN_CREDS);
-        flinkConfig.put("s3.secret-key", SetupMinio.ADMIN_CREDS);
+        flinkConfig.put("s3.access-key", MinioInstaller.ADMIN_CREDS);
+        flinkConfig.put("s3.secret-key", MinioInstaller.ADMIN_CREDS);
 
         FlinkDeployment flink = FlinkDeploymentTemplate.defaultFlinkDeployment(namespace,
                 flinkDeploymentName, List.of(TestStatements.getTestFlinkFilter(

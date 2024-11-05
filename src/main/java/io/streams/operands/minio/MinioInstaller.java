@@ -21,8 +21,8 @@ import org.apache.logging.log4j.Logger;
 
 import java.util.Map;
 
-public class SetupMinio {
-    private static final Logger LOGGER = LogManager.getLogger(SetupMinio.class);
+public class MinioInstaller {
+    private static final Logger LOGGER = LogManager.getLogger(MinioInstaller.class);
 
     public static final String MINIO = "minio";
     public static final String ADMIN_CREDS = "minioadminLongerThan16BytesForFIPS";

@@ -10,7 +10,7 @@ import io.skodjob.testframe.TestFrameConstants;
 import io.skodjob.testframe.resources.KubeResourceManager;
 import io.skodjob.testframe.wait.Wait;
 import io.streams.constants.TestConstants;
-import io.streams.operands.minio.SetupMinio;
+import io.streams.operands.minio.MinioInstaller;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -34,7 +34,7 @@ public class MinioUtils {
      */
     public static String getBucketSizeInfo(String namespace, String bucketName) {
         final LabelSelector labelSelector = new LabelSelectorBuilder()
-            .withMatchLabels(Map.of(TestConstants.APP_POD_LABEL, SetupMinio.MINIO))
+            .withMatchLabels(Map.of(TestConstants.APP_POD_LABEL, MinioInstaller.MINIO))
             .build();
         final String minioPod = KubeResourceManager.getKubeClient()
             .listPods(namespace, labelSelector)
