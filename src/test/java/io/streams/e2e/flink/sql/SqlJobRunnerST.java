@@ -76,8 +76,11 @@ public class SqlJobRunnerST extends Abstract {
 
     @BeforeAll
     void prepareOperators() throws Exception {
-        OperatorInstaller.installRequiredOperators(EOperator.FLINK, EOperator.APICURIO,
-            EOperator.STRIMZI, EOperator.CERT_MANAGER);
+        OperatorInstaller.installRequiredOperators(
+            EOperator.FLINK,
+            EOperator.APICURIO,
+            EOperator.STRIMZI,
+            EOperator.CERT_MANAGER);
     }
 
     @TestDoc(
