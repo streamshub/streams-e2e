@@ -36,12 +36,12 @@ public class OperatorInstaller {
      *
      * @param operators list of operators
      */
-    public static void installRequiredOperators(EOperator... operators) throws Exception {
+    public static void installRequiredOperators(InstallableOperator... operators) throws Exception {
         List<CompletableFuture<?>> operatorWaiting = new ArrayList<>();
         List<CompletableFuture<?>> additionalOperatorWaiting = new ArrayList<>();
 
         // Install every operator except flink if present
-        for (EOperator operator : operators) {
+        for (InstallableOperator operator : operators) {
             switch (operator) {
                 case STRIMZI -> operatorWaiting.add(installStrimziOperator());
                 case APICURIO -> operatorWaiting.add(installApicurioOperator());
@@ -56,7 +56,7 @@ public class OperatorInstaller {
         CompletableFuture.allOf(operatorWaiting.toArray(new CompletableFuture[0])).join();
 
         // if flink is present, install it
-        if (Arrays.asList(operators).contains(EOperator.FLINK)) {
+        if (Arrays.asList(operators).contains(InstallableOperator.FLINK)) {
             additionalOperatorWaiting.add(installFlinkOperator());
             CompletableFuture.allOf(additionalOperatorWaiting.toArray(new CompletableFuture[0])).join();
         }

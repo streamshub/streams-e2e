@@ -4,7 +4,7 @@
  */
 package io.streams.operators;
 
-public enum EOperator {
+public enum InstallableOperator {
     STRIMZI,
     FLINK,
     CERT_MANAGER,

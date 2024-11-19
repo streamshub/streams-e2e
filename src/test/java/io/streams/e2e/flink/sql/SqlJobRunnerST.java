@@ -29,7 +29,7 @@ import io.streams.operands.strimzi.resources.KafkaType;
 import io.streams.operands.strimzi.templates.KafkaNodePoolTemplate;
 import io.streams.operands.strimzi.templates.KafkaTemplate;
 import io.streams.operands.strimzi.templates.KafkaUserTemplate;
-import io.streams.operators.EOperator;
+import io.streams.operators.InstallableOperator;
 import io.streams.operators.OperatorInstaller;
 import io.streams.sql.TestStatements;
 import io.streams.utils.MinioUtils;
@@ -77,10 +77,10 @@ public class SqlJobRunnerST extends Abstract {
     @BeforeAll
     void prepareOperators() throws Exception {
         OperatorInstaller.installRequiredOperators(
-            EOperator.FLINK,
-            EOperator.APICURIO,
-            EOperator.STRIMZI,
-            EOperator.CERT_MANAGER);
+            InstallableOperator.FLINK,
+            InstallableOperator.APICURIO,
+            InstallableOperator.STRIMZI,
+            InstallableOperator.CERT_MANAGER);
     }
 
     @TestDoc(
