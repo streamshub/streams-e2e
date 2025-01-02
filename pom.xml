@@ -24,9 +24,9 @@
         <maven.compiler.release>17</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <test-frame.version>0.8.0</test-frame.version>
+        <test-frame.version>0.9.0</test-frame.version>
         <skodjob-doc.version>0.3.0</skodjob-doc.version>
-        <fabric8.version>6.13.4</fabric8.version>
+        <fabric8.version>7.0.1</fabric8.version>
         <log4j.version>2.24.3</log4j.version>
         <slf4j.version>2.0.16</slf4j.version>
         <jackson.version>2.17.2</jackson.version>
@@ -129,11 +129,6 @@
             <artifactId>generator-annotations</artifactId>
             <version>${fabric8.version}</version>
             <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>io.fabric8</groupId>
-            <artifactId>kubernetes-model</artifactId>
-            <version>${fabric8.version}</version>
         </dependency>
         <dependency>
             <groupId>io.fabric8</groupId>
