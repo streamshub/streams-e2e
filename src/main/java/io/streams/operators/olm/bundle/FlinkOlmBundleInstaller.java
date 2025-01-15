@@ -13,6 +13,7 @@ import io.skodjob.testframe.olm.OperatorSdkRun;
 import io.skodjob.testframe.olm.OperatorSdkRunBuilder;
 import io.skodjob.testframe.resources.KubeResourceManager;
 import io.skodjob.testframe.utils.PodUtils;
+import io.skodjob.testframe.utils.TestFrameUtils;
 import io.skodjob.testframe.wait.Wait;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,25 +36,28 @@ public class FlinkOlmBundleInstaller {
      * @return wait future
      */
     public static CompletableFuture<Void> install(String operatorName, String operatorNamespace, String bundleImageRef) {
-        // Create ns for the operator
-        Namespace ns = new NamespaceBuilder()
-            .withNewMetadata()
-            .withName(operatorNamespace)
-            .endMetadata()
-            .build();
-        KubeResourceManager.getInstance().createOrUpdateResourceWithWait(ns);
-
         OperatorSdkRun osr = new OperatorSdkRunBuilder()
             .withBundleImage(bundleImageRef)
             .withInstallMode("AllNamespaces")
             .withNamespace(operatorNamespace)
             .build();
 
-        CompletableFuture<Void> osrRun = CompletableFuture.runAsync(osr::run);
-
         return Wait.untilAsync(operatorName + " is ready", TestFrameConstants.GLOBAL_POLL_INTERVAL_1_SEC,
             TestFrameConstants.GLOBAL_TIMEOUT, () -> {
-                CompletableFuture.allOf(osrRun).join();
+                TestFrameUtils.runUntilPass(3, () -> {
+                    Namespace ns = new NamespaceBuilder()
+                        .withNewMetadata()
+                        .withName(operatorNamespace)
+                        .endMetadata()
+                        .build();
+                    KubeResourceManager.getInstance().createOrUpdateResourceWithWait(ns);
+                    try {
+                        return osr.run();
+                    } catch (Exception ex) {
+                        KubeResourceManager.getInstance().deleteResource(ns);
+                        throw ex;
+                    }
+                });
                 return isOperatorReady(operatorNamespace);
             });
     }
