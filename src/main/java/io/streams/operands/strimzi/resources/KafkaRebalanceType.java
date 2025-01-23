@@ -82,6 +82,6 @@ public class KafkaRebalanceType implements ResourceType<KafkaRebalance> {
     }
 
     public static MixedOperation<KafkaRebalance, KafkaRebalanceList, Resource<KafkaRebalance>> kafkaRebalanceClient() {
-        return Crds.kafkaRebalanceOperation(KubeResourceManager.getKubeClient().getClient());
+        return Crds.kafkaRebalanceOperation(KubeResourceManager.get().kubeClient().getClient());
     }
 }

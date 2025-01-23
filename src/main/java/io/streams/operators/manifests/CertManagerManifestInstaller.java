@@ -56,12 +56,12 @@ public class CertManagerManifestInstaller {
         LOGGER.info("Installing Cert-manager into namespace: {}", OPERATOR_NS);
 
         Namespace namespace = new NamespaceBuilder().withNewMetadata().withName(OPERATOR_NS).endMetadata().build();
-        KubeResourceManager.getInstance().createOrUpdateResourceWithWait(namespace);
+        KubeResourceManager.get().createOrUpdateResourceWithWait(namespace);
 
         List<HasMetadata> certManagerResources = new LinkedList<>();
         Files.list(filesDir).sorted().forEach(file -> {
             try {
-                certManagerResources.addAll(KubeResourceManager.getInstance().readResourcesFromFile(file));
+                certManagerResources.addAll(KubeResourceManager.get().readResourcesFromFile(file));
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -78,7 +78,7 @@ public class CertManagerManifestInstaller {
             } else if (res instanceof RoleBinding rb) {
                 rb.getSubjects().forEach(sbj -> sbj.setNamespace(OPERATOR_NS));
             }
-            KubeResourceManager.getInstance().createOrUpdateResourceWithoutWait(res);
+            KubeResourceManager.get().createOrUpdateResourceWithoutWait(res);
         });
         LOGGER.info("Cert-manager installed to namespace: {}", OPERATOR_NS);
         return Wait.untilAsync("Cert-manager readiness", TestFrameConstants.GLOBAL_POLL_INTERVAL_1_SEC,
@@ -86,11 +86,11 @@ public class CertManagerManifestInstaller {
     }
 
     private static boolean isReady() {
-        if (KubeResourceManager.getKubeClient().getClient().apps()
+        if (KubeResourceManager.get().kubeClient().getClient().apps()
             .deployments().inNamespace(OPERATOR_NS).withName(DEPLOYMENT_NAME).isReady() &&
-            KubeResourceManager.getKubeClient().getClient().apps()
+            KubeResourceManager.get().kubeClient().getClient().apps()
                 .deployments().inNamespace(OPERATOR_NS).withName(WEBHOOK_DEPLOYMENT_NAME).isReady() &&
-            KubeResourceManager.getKubeClient().getClient().apps()
+            KubeResourceManager.get().kubeClient().getClient().apps()
                 .deployments().inNamespace(OPERATOR_NS).withName(CA_INJECTION_DEPLOYMENT_NAME).isReady()) {
             LockSupport.parkNanos(TimeUnit.SECONDS.toNanos(120));
             LOGGER.info("Cert-manager {}/{} is ready", OPERATOR_NS, DEPLOYMENT_NAME);

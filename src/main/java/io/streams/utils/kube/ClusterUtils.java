@@ -20,7 +20,7 @@ public class ClusterUtils {
      * @return true if cluster is openshift
      */
     public static boolean isOcp() {
-        return KubeResourceManager.getKubeCmdClient()
+        return KubeResourceManager.get().kubeCmdClient()
             .exec(false, false, "api-versions").out().contains("openshift.io");
     }
 
@@ -30,6 +30,6 @@ public class ClusterUtils {
      * @return true if cluster is multinode
      */
     public static boolean isMultinode() {
-        return KubeResourceManager.getKubeClient().getClient().nodes().list().getItems().size() > 1;
+        return KubeResourceManager.get().kubeClient().getClient().nodes().list().getItems().size() > 1;
     }
 }

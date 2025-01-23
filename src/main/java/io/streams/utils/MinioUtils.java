@@ -36,13 +36,13 @@ public class MinioUtils {
         final LabelSelector labelSelector = new LabelSelectorBuilder()
             .withMatchLabels(Map.of(TestConstants.APP_POD_LABEL, MinioInstaller.MINIO))
             .build();
-        final String minioPod = KubeResourceManager.getKubeClient()
+        final String minioPod = KubeResourceManager.get().kubeClient()
             .listPods(namespace, labelSelector)
             .get(0)
             .getMetadata()
             .getName();
 
-        return KubeResourceManager.getKubeCmdClient()
+        return KubeResourceManager.get().kubeCmdClient()
             .inNamespace(namespace)
             .execInPod(minioPod,
                 "mc",

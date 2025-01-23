@@ -53,16 +53,16 @@ public class CertManagerOlmCatalogInstaller {
             .withName(operatorNamespace)
             .endMetadata()
             .build();
-        KubeResourceManager.getInstance().createOrUpdateResourceWithWait(ns);
+        KubeResourceManager.get().createOrUpdateResourceWithWait(ns);
         // Create ns for the cert-manager instance
         Namespace ns2 = new NamespaceBuilder()
             .withNewMetadata()
             .withName("cert-manager")
             .endMetadata()
             .build();
-        KubeResourceManager.getInstance().createOrUpdateResourceWithWait(ns2);
+        KubeResourceManager.get().createOrUpdateResourceWithWait(ns2);
         //Create operator group for the operator
-        if (KubeResourceManager.getKubeClient().getOpenShiftClient().operatorHub().operatorGroups()
+        if (KubeResourceManager.get().kubeClient().getOpenShiftClient().operatorHub().operatorGroups()
             .inNamespace(operatorNamespace).list().getItems().isEmpty()) {
             OperatorGroupBuilder operatorGroup = new OperatorGroupBuilder()
                 .editOrNewMetadata()
@@ -72,7 +72,7 @@ public class CertManagerOlmCatalogInstaller {
                 .withNewSpec()
                 .addToTargetNamespaces(operatorNamespace)
                 .endSpec();
-            KubeResourceManager.getInstance().createResourceWithoutWait(operatorGroup.build());
+            KubeResourceManager.get().createResourceWithoutWait(operatorGroup.build());
         } else {
             LOGGER.info("OperatorGroup is already exists.");
         }
@@ -94,10 +94,10 @@ public class CertManagerOlmCatalogInstaller {
             .endSpec()
             .build();
 
-        KubeResourceManager.getInstance().pushToStack(new ResourceItem<>(() -> cleanClusterRoleBindings(), null));
-        KubeResourceManager.getInstance().pushToStack(new ResourceItem<>(() -> cleanClusterRole(), null));
-        KubeResourceManager.getInstance().pushToStack(new ResourceItem<>(() -> cleanValidationWebhook(), null));
-        KubeResourceManager.getInstance().createOrUpdateResourceWithoutWait(subscription);
+        KubeResourceManager.get().pushToStack(new ResourceItem<>(() -> cleanClusterRoleBindings(), null));
+        KubeResourceManager.get().pushToStack(new ResourceItem<>(() -> cleanClusterRole(), null));
+        KubeResourceManager.get().pushToStack(new ResourceItem<>(() -> cleanValidationWebhook(), null));
+        KubeResourceManager.get().createOrUpdateResourceWithoutWait(subscription);
         return Wait.untilAsync(operatorName + " is ready", TestFrameConstants.GLOBAL_POLL_INTERVAL_1_SEC,
             TestFrameConstants.GLOBAL_TIMEOUT, () -> isOperatorReady(CERT_MANAGER_NS));
     }
@@ -116,23 +116,23 @@ public class CertManagerOlmCatalogInstaller {
     }
 
     private static void cleanClusterRoleBindings() {
-        KubeResourceManager.getKubeClient().getClient().rbac().clusterRoleBindings()
+        KubeResourceManager.get().kubeClient().getClient().rbac().clusterRoleBindings()
             .withLabel("app.kubernetes.io/component", "cert-manager").list().getItems().forEach(crb -> {
-                KubeResourceManager.getInstance().deleteResource(crb);
+                KubeResourceManager.get().deleteResource(crb);
             });
     }
 
     private static void cleanClusterRole() {
-        KubeResourceManager.getKubeClient().getClient().rbac().clusterRoles()
+        KubeResourceManager.get().kubeClient().getClient().rbac().clusterRoles()
             .withLabel("app.kubernetes.io/part-of", "cert-manager-operator").list().getItems().forEach(cr -> {
-                KubeResourceManager.getInstance().deleteResource(cr);
+                KubeResourceManager.get().deleteResource(cr);
             });
     }
 
     private static void cleanValidationWebhook() {
-        KubeResourceManager.getKubeCmdClient().inNamespace(CERT_MANAGER_NS)
+        KubeResourceManager.get().kubeCmdClient().inNamespace(CERT_MANAGER_NS)
             .exec(false, false, "delete", "validatingwebhookconfiguration", "cert-manager-webhook");
-        KubeResourceManager.getKubeCmdClient().inNamespace(CERT_MANAGER_NS)
+        KubeResourceManager.get().kubeCmdClient().inNamespace(CERT_MANAGER_NS)
             .exec(false, false, "delete", "mutatingwebhookconfiguration", "cert-manager-webhook");
     }
 }

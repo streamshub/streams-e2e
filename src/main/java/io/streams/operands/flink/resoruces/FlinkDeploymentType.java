@@ -32,7 +32,7 @@ public class FlinkDeploymentType implements ResourceType<FlinkDeployment> {
 
     @Override
     public MixedOperation<FlinkDeployment, KubernetesResourceList<FlinkDeployment>, Resource<FlinkDeployment>> getClient() {
-        return KubeResourceManager.getKubeClient().getClient().resources(FlinkDeployment.class);
+        return KubeResourceManager.get().kubeClient().getClient().resources(FlinkDeployment.class);
     }
 
     @Override

@@ -94,8 +94,8 @@ public class TestExceptionCallbackListener implements TestExecutionExceptionHand
             .withClusterWideResources(
                 KubeResourceConstants.NODE,
                 KubeResourceConstants.PV)
-            .withKubeClient(KubeResourceManager.getKubeClient())
-            .withKubeCmdClient(KubeResourceManager.getKubeCmdClient())
+            .withKubeClient(KubeResourceManager.get().kubeClient())
+            .withKubeCmdClient(KubeResourceManager.get().kubeCmdClient())
             .withRootFolderPath(TestUtils.getLogPath(
                 Environment.LOG_DIR.resolve("failedTest").toString(), context).toString())
             .build();

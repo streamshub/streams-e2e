@@ -50,11 +50,11 @@ public class FlinkOlmBundleInstaller {
                         .withName(operatorNamespace)
                         .endMetadata()
                         .build();
-                    KubeResourceManager.getInstance().createOrUpdateResourceWithWait(ns);
+                    KubeResourceManager.get().createOrUpdateResourceWithWait(ns);
                     try {
                         return osr.run();
                     } catch (Exception ex) {
-                        KubeResourceManager.getInstance().deleteResource(ns);
+                        KubeResourceManager.get().deleteResource(ns);
                         throw ex;
                     }
                 });

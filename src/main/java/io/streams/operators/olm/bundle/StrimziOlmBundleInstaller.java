@@ -41,7 +41,7 @@ public class StrimziOlmBundleInstaller {
             .withName(operatorNamespace)
             .endMetadata()
             .build();
-        KubeResourceManager.getInstance().createOrUpdateResourceWithWait(ns);
+        KubeResourceManager.get().createOrUpdateResourceWithWait(ns);
 
         OperatorSdkRun osr = new OperatorSdkRunBuilder()
             .withBundleImage(bundleImageRef)
