@@ -51,14 +51,14 @@ public class DebeziumManifestInstaller {
         LOGGER.info("Installing Debezium into namespace: {}", OPERATOR_NS);
 
         Namespace namespace = new NamespaceBuilder().withNewMetadata().withName(OPERATOR_NS).endMetadata().build();
-        KubeResourceManager.getInstance().createOrUpdateResourceWithWait(namespace);
+        KubeResourceManager.get().createOrUpdateResourceWithWait(namespace);
 
         // modify namespaces, convert rolebinding to clusterrolebindings, update deployment if needed
 
         List<HasMetadata> debeziumResources = new LinkedList<>();
         Files.list(filesDir).sorted().forEach(file -> {
             try {
-                debeziumResources.addAll(KubeResourceManager.getInstance().readResourcesFromFile(file));
+                debeziumResources.addAll(KubeResourceManager.get().readResourcesFromFile(file));
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -72,7 +72,7 @@ public class DebeziumManifestInstaller {
                 crb.getSubjects().forEach(sbj -> sbj.setNamespace(OPERATOR_NS));
                 crb.getMetadata().setName(crb.getMetadata().getName() + "." + OPERATOR_NS);
             }
-            KubeResourceManager.getInstance().createOrUpdateResourceWithoutWait(res);
+            KubeResourceManager.get().createOrUpdateResourceWithoutWait(res);
         });
         LOGGER.info("Debezium operator installed to namespace: {}", OPERATOR_NS);
         return Wait.untilAsync("Debezium operator readiness", TestFrameConstants.GLOBAL_POLL_INTERVAL_1_SEC,
@@ -80,7 +80,7 @@ public class DebeziumManifestInstaller {
     }
 
     private static boolean isReady() {
-        if (KubeResourceManager.getKubeClient().getClient().apps()
+        if (KubeResourceManager.get().kubeClient().getClient().apps()
             .deployments().inNamespace(OPERATOR_NS).withName(DEPLOYMENT_NAME).isReady()) {
             LOGGER.info("Debezium Operator {}/{} is ready", OPERATOR_NS, DEPLOYMENT_NAME);
             return true;

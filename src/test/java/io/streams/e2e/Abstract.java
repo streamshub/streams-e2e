@@ -44,7 +44,7 @@ public class Abstract {
 
     static {
         // Init abstraction of resource types
-        KubeResourceManager.getInstance().setResourceTypes(
+        KubeResourceManager.get().setResourceTypes(
             new NamespaceType(),
             new SubscriptionType(),
             new OperatorGroupType(),
@@ -65,14 +65,14 @@ public class Abstract {
         );
 
         // Set collect label for every namespace created during test run
-        KubeResourceManager.getInstance().addCreateCallback(r -> {
+        KubeResourceManager.get().addCreateCallback(r -> {
             if (r.getKind().equals("Namespace")) {
                 KubeUtils.labelNamespace(r.getMetadata().getName(), TestConstants.LOG_COLLECT_LABEL, "true");
             }
         });
 
         // Enable storing created resources in yaml format.
-        KubeResourceManager.setStoreYamlPath(Environment.LOG_DIR.toString());
+        KubeResourceManager.get().setStoreYamlPath(Environment.LOG_DIR.toString());
 
         // Store config file for current test run
         try {

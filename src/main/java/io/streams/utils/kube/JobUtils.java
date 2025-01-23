@@ -34,11 +34,12 @@ public class JobUtils {
      * @param logMessage desired log message
      */
     public static void waitForJobContainingLogMessage(String namespace, String jobName, String logMessage) {
-        String jobPodName = KubeResourceManager.getKubeClient().listPodsByPrefixInName(namespace, jobName).get(0).getMetadata().getName();
+        String jobPodName = KubeResourceManager.get().kubeClient()
+            .listPodsByPrefixInName(namespace, jobName).get(0).getMetadata().getName();
 
         Wait.until("Job contains log message: " + logMessage,
             TestFrameConstants.GLOBAL_POLL_INTERVAL_LONG, TestFrameConstants.GLOBAL_TIMEOUT,
-            () -> KubeResourceManager.getKubeClient().getLogsFromPod(namespace, jobPodName).contains(logMessage));
+            () -> KubeResourceManager.get().kubeClient().getLogsFromPod(namespace, jobPodName).contains(logMessage));
     }
 
     /**
@@ -47,8 +48,9 @@ public class JobUtils {
      * @param namespace Delete all jobs in this namespace
      */
     public static void removeAllJobs(String namespace) {
-        KubeResourceManager.getKubeClient().getClient().batch().v1().jobs().inNamespace(namespace).list().getItems().forEach(
-            job -> JobUtils.deleteJobWithWait(namespace, job.getMetadata().getName()));
+        KubeResourceManager.get().kubeClient().getClient()
+            .batch().v1().jobs().inNamespace(namespace).list().getItems().forEach(
+                job -> JobUtils.deleteJobWithWait(namespace, job.getMetadata().getName()));
     }
 
     /**
@@ -61,7 +63,7 @@ public class JobUtils {
         LOGGER.debug("Waiting for Job: {}/{} deletion", namespace, jobName);
         Wait.until("deletion of Job: " + namespace + "/" + jobName,
             TestFrameConstants.GLOBAL_POLL_INTERVAL_1_SEC, TestFrameConstants.GLOBAL_TIMEOUT_MEDIUM,
-            () -> KubeResourceManager.getKubeClient().listPodsByPrefixInName(namespace, jobName).isEmpty());
+            () -> KubeResourceManager.get().kubeClient().listPodsByPrefixInName(namespace, jobName).isEmpty());
         LOGGER.debug("Job: {}/{} was deleted", namespace, jobName);
     }
 
@@ -72,7 +74,8 @@ public class JobUtils {
      * @param jobName   name of the job
      */
     public static void deleteJobWithWait(String namespace, String jobName) {
-        KubeResourceManager.getKubeClient().getClient().batch().v1().jobs().inNamespace(namespace).withName(jobName).delete();
+        KubeResourceManager.get().kubeClient().getClient()
+            .batch().v1().jobs().inNamespace(namespace).withName(jobName).delete();
         waitForJobDeletion(namespace, jobName);
     }
 
@@ -85,8 +88,9 @@ public class JobUtils {
      */
     public static void waitForJobSuccess(String namespace, String jobName, long timeout) {
         LOGGER.info("Waiting for Job: {}/{} to success", namespace, jobName);
-        Wait.until("success of Job: " + namespace + "/" + jobName, TestFrameConstants.GLOBAL_POLL_INTERVAL_1_SEC, timeout,
-            () -> KubeResourceManager.getKubeClient().getClient().batch().v1().jobs()
+        Wait.until("success of Job: " + namespace + "/" + jobName,
+            TestFrameConstants.GLOBAL_POLL_INTERVAL_1_SEC, timeout,
+            () -> KubeResourceManager.get().kubeClient().getClient().batch().v1().jobs()
                 .inNamespace(namespace).withName(jobName).get().getStatus().getSucceeded() != null);
     }
 
@@ -99,8 +103,9 @@ public class JobUtils {
      */
     public static void waitForJobFailure(String namespace, String jobName, long timeout) {
         LOGGER.info("Waiting for Job: {}/{} to fail", namespace, jobName);
-        Wait.until("failure of Job: " + namespace + "/" + jobName, TestFrameConstants.GLOBAL_POLL_INTERVAL_1_SEC, timeout,
-            () -> KubeResourceManager.getKubeClient().getClient().batch().v1().jobs()
+        Wait.until("failure of Job: " + namespace + "/" + jobName,
+            TestFrameConstants.GLOBAL_POLL_INTERVAL_1_SEC, timeout,
+            () -> KubeResourceManager.get().kubeClient().getClient().batch().v1().jobs()
                 .inNamespace(namespace).withName(jobName).get().getStatus().getFailed() != null);
     }
 
@@ -111,7 +116,7 @@ public class JobUtils {
      * @param jobName   name of the job, for which we should scrape status
      */
     public static void logCurrentJobStatus(String namespace, String jobName) {
-        Job currentJob = KubeResourceManager.getKubeClient().getClient().batch().v1().jobs()
+        Job currentJob = KubeResourceManager.get().kubeClient().getClient().batch().v1().jobs()
             .inNamespace(namespace).withName(jobName).get();
 
         if (currentJob != null && currentJob.getStatus() != null) {
@@ -142,7 +147,7 @@ public class JobUtils {
 
             log.add("\n\nPods with conditions and messages:\n\n");
 
-            for (Pod pod : KubeResourceManager.getKubeClient().listPodsByPrefixInName(namespace, jobName)) {
+            for (Pod pod : KubeResourceManager.get().kubeClient().listPodsByPrefixInName(namespace, jobName)) {
                 log.add(pod.getMetadata().getName() + ":");
                 List<String> podConditions = new ArrayList<>();
 

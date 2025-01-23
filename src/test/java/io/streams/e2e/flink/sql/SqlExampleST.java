@@ -99,19 +99,19 @@ public class SqlExampleST extends Abstract {
     @Test
     void testRecommendationApp() throws IOException {
         // Create namespace
-        KubeResourceManager.getInstance().createOrUpdateResourceWithWait(
+        KubeResourceManager.get().createOrUpdateResourceWithWait(
             new NamespaceBuilder().withNewMetadata().withName(namespace).endMetadata().build());
 
         // Add flink RBAC
-        KubeResourceManager.getInstance().createOrUpdateResourceWithWait(
+        KubeResourceManager.get().createOrUpdateResourceWithWait(
             FlinkRBAC.getFlinkRbacResources(namespace).toArray(new HasMetadata[0]));
 
         // Create kafka
-        KubeResourceManager.getInstance().createOrUpdateResourceWithWait(
+        KubeResourceManager.get().createOrUpdateResourceWithWait(
             KafkaNodePoolTemplate.defaultKafkaNodePoolJbod(namespace, "dual-role",
                 1, "my-cluster", List.of(ProcessRoles.BROKER, ProcessRoles.CONTROLLER)).build());
 
-        KubeResourceManager.getInstance().createOrUpdateResourceWithWait(
+        KubeResourceManager.get().createOrUpdateResourceWithWait(
             KafkaTemplate.defaultKafka(namespace, "my-cluster")
                 .editSpec()
                 .withCruiseControl(null)
@@ -129,7 +129,7 @@ public class SqlExampleST extends Abstract {
                 .build());
 
         // Create topic for ksql apicurio
-        KubeResourceManager.getInstance().createOrUpdateResourceWithWait(
+        KubeResourceManager.get().createOrUpdateResourceWithWait(
             ApicurioRegistryTemplate.apicurioKsqlTopic(namespace, "my-cluster", 1));
 
         String bootstrapServer = KafkaType.kafkaClient().inNamespace(namespace).withName("my-cluster").get()
@@ -137,12 +137,12 @@ public class SqlExampleST extends Abstract {
             .findFirst().get().getBootstrapServers();
 
         // Add apicurio
-        KubeResourceManager.getInstance().createOrUpdateResourceWithWait(
+        KubeResourceManager.get().createOrUpdateResourceWithWait(
             ApicurioRegistryTemplate.defaultApicurioRegistry("apicurio-registry", namespace,
                 bootstrapServer).build());
 
         // Create configMap
-        KubeResourceManager.getInstance().createOrUpdateResourceWithWait(
+        KubeResourceManager.get().createOrUpdateResourceWithWait(
             new ConfigMapBuilder()
                 .withNewMetadata()
                 .withName("product-inventory")
@@ -154,17 +154,17 @@ public class SqlExampleST extends Abstract {
                 .build());
 
         // Create data-app
-        List<HasMetadata> dataApp = KubeResourceManager.getInstance()
+        List<HasMetadata> dataApp = KubeResourceManager.get()
             .readResourcesFromFile(exampleFiles.resolve("data-generator.yaml"));
         dataApp.forEach(r -> r.getMetadata().setNamespace(namespace));
-        KubeResourceManager.getInstance().createOrUpdateResourceWithWait(dataApp.toArray(new HasMetadata[0]));
+        KubeResourceManager.get().createOrUpdateResourceWithWait(dataApp.toArray(new HasMetadata[0]));
 
         // Deploy flink
         String registryUrl = "http://apicurio-registry-service.flink.svc:8080/apis/ccompat/v6";
 
         FlinkDeployment flinkApp = FlinkDeploymentTemplate.flinkExampleDeployment(namespace,
             "recommendation-app", List.of(TestStatements.getTestSqlExample(bootstrapServer, registryUrl))).build();
-        KubeResourceManager.getInstance().createOrUpdateResourceWithWait(flinkApp);
+        KubeResourceManager.get().createOrUpdateResourceWithWait(flinkApp);
 
         // Run internal consumer and check if topic contains messages
         String consumerName = "kafka-consumer";
@@ -176,15 +176,15 @@ public class SqlExampleST extends Abstract {
             .withMessageCount(10)
             .withConsumerGroup("my-group").build();
 
-        KubeResourceManager.getInstance().createResourceWithWait(
+        KubeResourceManager.get().createResourceWithWait(
             strimziKafkaClients.consumerStrimzi()
         );
         JobUtils.waitForJobSuccess(namespace, strimziKafkaClients.getConsumerName(),
             TestFrameConstants.GLOBAL_TIMEOUT_MEDIUM);
-        String consumerPodName = KubeResourceManager.getKubeClient().listPodsByPrefixInName(namespace, consumerName)
+        String consumerPodName = KubeResourceManager.get().kubeClient().listPodsByPrefixInName(namespace, consumerName)
             .get(0).getMetadata().getName();
 
-        String log = KubeResourceManager.getKubeClient().getLogsFromPod(namespace, consumerPodName);
+        String log = KubeResourceManager.get().kubeClient().getLogsFromPod(namespace, consumerPodName);
         assertTrue(log.contains("user-"));
     }
 }

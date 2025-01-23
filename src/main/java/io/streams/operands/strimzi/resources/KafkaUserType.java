@@ -82,6 +82,6 @@ public class KafkaUserType implements ResourceType<KafkaUser> {
     }
 
     public static MixedOperation<KafkaUser, KafkaUserList, Resource<KafkaUser>> kafkaUserClient() {
-        return Crds.kafkaUserOperation(KubeResourceManager.getKubeClient().getClient());
+        return Crds.kafkaUserOperation(KubeResourceManager.get().kubeClient().getClient());
     }
 }

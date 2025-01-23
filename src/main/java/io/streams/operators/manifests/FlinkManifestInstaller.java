@@ -52,12 +52,12 @@ public class FlinkManifestInstaller {
         LOGGER.info("Installing Flink into namespace: {}", OPERATOR_NS);
 
         Namespace namespace = new NamespaceBuilder().withNewMetadata().withName(OPERATOR_NS).endMetadata().build();
-        KubeResourceManager.getInstance().createOrUpdateResourceWithWait(namespace);
+        KubeResourceManager.get().createOrUpdateResourceWithWait(namespace);
 
         List<HasMetadata> flinkResources = new LinkedList<>();
         Files.list(filesDir).sorted().forEach(file -> {
             try {
-                flinkResources.addAll(KubeResourceManager.getInstance().readResourcesFromFile(file));
+                flinkResources.addAll(KubeResourceManager.get().readResourcesFromFile(file));
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -75,7 +75,7 @@ public class FlinkManifestInstaller {
             } else {
                 res.getMetadata().setNamespace(OPERATOR_NS);
             }
-            KubeResourceManager.getInstance().createOrUpdateResourceWithoutWait(res);
+            KubeResourceManager.get().createOrUpdateResourceWithoutWait(res);
         });
         LOGGER.info("Flink operator installed to namespace: {}", OPERATOR_NS);
         return Wait.untilAsync("Flink operator readiness", TestFrameConstants.GLOBAL_POLL_INTERVAL_1_SEC,
@@ -83,7 +83,7 @@ public class FlinkManifestInstaller {
     }
 
     private static boolean isReady() {
-        if (KubeResourceManager.getKubeClient().getClient().apps()
+        if (KubeResourceManager.get().kubeClient().getClient().apps()
             .deployments().inNamespace(OPERATOR_NS).withName(DEPLOYMENT_NAME).isReady()) {
             LOGGER.info("Flink Operator {}/{} is ready", OPERATOR_NS, DEPLOYMENT_NAME);
             return true;

@@ -78,7 +78,7 @@ public class MinioInstaller {
             .build();
 
         // Create the deployment
-        KubeResourceManager.getInstance().createResourceWithWait(minioDeployment);
+        KubeResourceManager.get().createResourceWithWait(minioDeployment);
 
         // Create a service to expose Minio
         Service minioService = new ServiceBuilder()
@@ -101,7 +101,7 @@ public class MinioInstaller {
             .endSpec()
             .build();
 
-        KubeResourceManager.getInstance().createResourceWithoutWait(minioService);
+        KubeResourceManager.get().createResourceWithoutWait(minioService);
         // NetworkPolicyResource.allowNetworkPolicyAllIngressForMatchingLabel(namespace, MINIO, Map.of(TestConstants.APP_POD_LABEL, MINIO));
 
         initMinioClient(namespace);
@@ -113,9 +113,9 @@ public class MinioInstaller {
      */
     private static void initMinioClient(String namespace) {
         final LabelSelector labelSelector = new LabelSelectorBuilder().withMatchLabels(Map.of(TestConstants.APP_POD_LABEL, MINIO)).build();
-        final String minioPod = KubeResourceManager.getKubeClient().listPods(namespace, labelSelector).get(0).getMetadata().getName();
+        final String minioPod = KubeResourceManager.get().kubeClient().listPods(namespace, labelSelector).get(0).getMetadata().getName();
 
-        KubeResourceManager.getKubeCmdClient().inNamespace(namespace).execInPod(minioPod,
+        KubeResourceManager.get().kubeCmdClient().inNamespace(namespace).execInPod(minioPod,
             "mc",
             "config",
             "host",
@@ -132,9 +132,9 @@ public class MinioInstaller {
      */
     public static void createBucket(String namespace, String bucketName) {
         final LabelSelector labelSelector = new LabelSelectorBuilder().withMatchLabels(Map.of(TestConstants.APP_POD_LABEL, MINIO)).build();
-        final String minioPod = KubeResourceManager.getKubeClient().listPods(namespace, labelSelector).get(0).getMetadata().getName();
+        final String minioPod = KubeResourceManager.get().kubeClient().listPods(namespace, labelSelector).get(0).getMetadata().getName();
 
-        KubeResourceManager.getKubeCmdClient().inNamespace(namespace).execInPod(minioPod,
+        KubeResourceManager.get().kubeCmdClient().inNamespace(namespace).execInPod(minioPod,
             "mc",
             "mb",
             MINIO_STORAGE_ALIAS + "/" + bucketName);

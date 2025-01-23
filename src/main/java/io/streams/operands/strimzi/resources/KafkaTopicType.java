@@ -82,6 +82,6 @@ public class KafkaTopicType implements ResourceType<KafkaTopic> {
     }
 
     public static MixedOperation<KafkaTopic, KafkaTopicList, Resource<KafkaTopic>> kafkaTopicClient() {
-        return Crds.topicOperation(KubeResourceManager.getKubeClient().getClient());
+        return Crds.topicOperation(KubeResourceManager.get().kubeClient().getClient());
     }
 }

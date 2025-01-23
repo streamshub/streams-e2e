@@ -58,12 +58,12 @@ public class ApicurioRegistryManifestInstaller {
         LOGGER.info("Installing Apicurio Registry into namespace: {}", OPERATOR_NS);
 
         Namespace namespace = new NamespaceBuilder().withNewMetadata().withName(OPERATOR_NS).endMetadata().build();
-        KubeResourceManager.getInstance().createOrUpdateResourceWithWait(namespace);
+        KubeResourceManager.get().createOrUpdateResourceWithWait(namespace);
 
         List<HasMetadata> apicurioRegistryResources = new LinkedList<>();
         Files.list(filesDir).sorted().forEach(file -> {
             try {
-                apicurioRegistryResources.addAll(KubeResourceManager.getInstance().readResourcesFromFile(file));
+                apicurioRegistryResources.addAll(KubeResourceManager.get().readResourcesFromFile(file));
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -81,7 +81,7 @@ public class ApicurioRegistryManifestInstaller {
             } else if (res instanceof Deployment dep && DEPLOYMENT_NAME.equals(res.getMetadata().getName())) {
                 modifyDeployment(dep);
             }
-            KubeResourceManager.getInstance().createOrUpdateResourceWithoutWait(res);
+            KubeResourceManager.get().createOrUpdateResourceWithoutWait(res);
         });
         LOGGER.info("Apicurio Registry operator installed to namespace: {}", OPERATOR_NS);
         return Wait.untilAsync("Apicurio Registry operator readiness", TestFrameConstants.GLOBAL_POLL_INTERVAL_1_SEC,
@@ -97,7 +97,7 @@ public class ApicurioRegistryManifestInstaller {
     }
 
     private static boolean isReady() {
-        if (KubeResourceManager.getKubeClient().getClient().apps()
+        if (KubeResourceManager.get().kubeClient().getClient().apps()
             .deployments().inNamespace(OPERATOR_NS).withName(DEPLOYMENT_NAME).isReady()) {
             LOGGER.info("Apicurio Registry operator {}/{} is ready", OPERATOR_NS, DEPLOYMENT_NAME);
             return true;

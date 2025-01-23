@@ -82,6 +82,6 @@ public class KafkaConnectorType implements ResourceType<KafkaConnector> {
     }
 
     public static MixedOperation<KafkaConnector, KafkaConnectorList, Resource<KafkaConnector>> kafkaConnectorClient() {
-        return Crds.kafkaConnectorOperation(KubeResourceManager.getKubeClient().getClient());
+        return Crds.kafkaConnectorOperation(KubeResourceManager.get().kubeClient().getClient());
     }
 }

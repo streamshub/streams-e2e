@@ -82,6 +82,6 @@ public class KafkaMirrorMaker2Type implements ResourceType<KafkaMirrorMaker2> {
     }
 
     public static MixedOperation<KafkaMirrorMaker2, KafkaMirrorMaker2List, Resource<KafkaMirrorMaker2>> kafkaMirrorMaker2Client() {
-        return Crds.kafkaMirrorMaker2Operation(KubeResourceManager.getKubeClient().getClient());
+        return Crds.kafkaMirrorMaker2Operation(KubeResourceManager.get().kubeClient().getClient());
     }
 }

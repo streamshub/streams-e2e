@@ -49,16 +49,16 @@ public class ApicurioOlmCatalogInstaller {
             .withName(operatorNamespace)
             .endMetadata()
             .build();
-        KubeResourceManager.getInstance().createOrUpdateResourceWithWait(ns);
+        KubeResourceManager.get().createOrUpdateResourceWithWait(ns);
         //Create operator group for the operator
-        if (KubeResourceManager.getKubeClient().getOpenShiftClient().operatorHub().operatorGroups()
+        if (KubeResourceManager.get().kubeClient().getOpenShiftClient().operatorHub().operatorGroups()
             .inNamespace(operatorNamespace).list().getItems().isEmpty()) {
             OperatorGroupBuilder operatorGroup = new OperatorGroupBuilder()
                 .editOrNewMetadata()
                 .withName("streams-e2e-operator-group")
                 .withNamespace(operatorNamespace)
                 .endMetadata();
-            KubeResourceManager.getInstance().createResourceWithoutWait(operatorGroup.build());
+            KubeResourceManager.get().createResourceWithoutWait(operatorGroup.build());
         } else {
             LOGGER.info("OperatorGroup is already exists.");
         }
@@ -80,7 +80,7 @@ public class ApicurioOlmCatalogInstaller {
             .endSpec()
             .build();
 
-        KubeResourceManager.getInstance().createOrUpdateResourceWithoutWait(subscription);
+        KubeResourceManager.get().createOrUpdateResourceWithoutWait(subscription);
         return Wait.untilAsync(operatorName + " is ready", TestFrameConstants.GLOBAL_POLL_INTERVAL_1_SEC,
             TestFrameConstants.GLOBAL_TIMEOUT, () -> isOperatorReady(operatorNamespace));
     }

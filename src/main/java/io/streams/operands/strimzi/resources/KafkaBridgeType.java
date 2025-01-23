@@ -82,6 +82,6 @@ public class KafkaBridgeType implements ResourceType<KafkaBridge> {
     }
 
     public static MixedOperation<KafkaBridge, KafkaBridgeList, Resource<KafkaBridge>> kafkaBridgeClient() {
-        return Crds.kafkaBridgeOperation(KubeResourceManager.getKubeClient().getClient());
+        return Crds.kafkaBridgeOperation(KubeResourceManager.get().kubeClient().getClient());
     }
 }

@@ -61,7 +61,7 @@ public class StrimziManifestInstaller {
         LOGGER.info("Installing Strimzi into namespace: {}", OPERATOR_NS);
 
         Namespace namespace = new NamespaceBuilder().withNewMetadata().withName(OPERATOR_NS).endMetadata().build();
-        KubeResourceManager.getInstance().createOrUpdateResourceWithWait(namespace);
+        KubeResourceManager.get().createOrUpdateResourceWithWait(namespace);
 
         // modify namespaces, convert rolebinding to clusterrolebindings, update deployment if needed
         String crbID = UUID.randomUUID().toString().substring(0, 5);
@@ -69,7 +69,7 @@ public class StrimziManifestInstaller {
         List<HasMetadata> strimziResoruces = new LinkedList<>();
         Files.list(filesDir).sorted().forEach(file -> {
             try {
-                strimziResoruces.addAll(KubeResourceManager.getInstance().readResourcesFromFile(file));
+                strimziResoruces.addAll(KubeResourceManager.get().readResourcesFromFile(file));
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -95,11 +95,11 @@ public class StrimziManifestInstaller {
                     .withSubjects(rb.getSubjects())
                     .build();
 
-                KubeResourceManager.getInstance().createOrUpdateResourceWithoutWait(crb);
+                KubeResourceManager.get().createOrUpdateResourceWithoutWait(crb);
             } else if (res instanceof Deployment && DEPLOYMENT_NAME.equals(res.getMetadata().getName())) {
                 modifyDeployment((Deployment) res);
             }
-            KubeResourceManager.getInstance().createOrUpdateResourceWithoutWait(res);
+            KubeResourceManager.get().createOrUpdateResourceWithoutWait(res);
         });
         LOGGER.info("Strimzi operator installed to namespace: {}", OPERATOR_NS);
         return Wait.untilAsync("Strimzi operator readiness", TestFrameConstants.GLOBAL_POLL_INTERVAL_1_SEC,
@@ -115,7 +115,7 @@ public class StrimziManifestInstaller {
     }
 
     private static boolean isReady() {
-        if (KubeResourceManager.getKubeClient().getClient().apps()
+        if (KubeResourceManager.get().kubeClient().getClient().apps()
             .deployments().inNamespace(OPERATOR_NS).withName(DEPLOYMENT_NAME).isReady()) {
             LOGGER.info("Strimzi {}/{} is ready", OPERATOR_NS, DEPLOYMENT_NAME);
             return true;
