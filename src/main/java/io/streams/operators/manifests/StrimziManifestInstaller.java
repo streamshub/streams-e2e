@@ -4,6 +4,7 @@
  */
 package io.streams.operators.manifests;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.fabric8.kubernetes.api.model.Container;
 import io.fabric8.kubernetes.api.model.EnvVar;
 import io.fabric8.kubernetes.api.model.EnvVarBuilder;
@@ -57,6 +58,7 @@ public class StrimziManifestInstaller {
      * @return async waiter for deployment complete
      * @throws IOException io exception
      */
+    @SuppressFBWarnings("THROWS_METHOD_THROWS_RUNTIMEEXCEPTION")
     public static CompletableFuture<Void> install() throws IOException {
         LOGGER.info("Installing Strimzi into namespace: {}", OPERATOR_NS);
 

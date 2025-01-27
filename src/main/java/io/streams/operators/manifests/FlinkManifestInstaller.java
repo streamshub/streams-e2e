@@ -4,6 +4,7 @@
  */
 package io.streams.operators.manifests;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.Namespace;
 import io.fabric8.kubernetes.api.model.NamespaceBuilder;
@@ -48,6 +49,7 @@ public class FlinkManifestInstaller {
      * @return async waiter for deployment complete
      * @throws IOException io exception
      */
+    @SuppressFBWarnings("THROWS_METHOD_THROWS_RUNTIMEEXCEPTION")
     public static CompletableFuture<Void> install() throws IOException {
         LOGGER.info("Installing Flink into namespace: {}", OPERATOR_NS);
 

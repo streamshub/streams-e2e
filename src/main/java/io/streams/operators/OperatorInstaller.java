@@ -4,6 +4,7 @@
  */
 package io.streams.operators;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.streams.Environment;
 import io.streams.operators.manifests.ApicurioRegistryManifestInstaller;
 import io.streams.operators.manifests.CertManagerManifestInstaller;
@@ -36,6 +37,7 @@ public class OperatorInstaller {
      *
      * @param operators list of operators
      */
+    @SuppressFBWarnings("THROWS_METHOD_THROWS_CLAUSE_BASIC_EXCEPTION")
     public static void installRequiredOperators(InstallableOperator... operators) throws Exception {
         List<CompletableFuture<?>> operatorWaiting = new ArrayList<>();
         List<CompletableFuture<?>> additionalOperatorWaiting = new ArrayList<>();
