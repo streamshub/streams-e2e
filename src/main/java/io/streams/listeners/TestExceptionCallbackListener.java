@@ -66,7 +66,10 @@ public class TestExceptionCallbackListener implements TestExecutionExceptionHand
         saveKubernetesState(context, throwable);
     }
 
-    @SuppressFBWarnings("BC_UNCONFIRMED_CAST_OF_RETURN_VALUE")
+    @SuppressFBWarnings({
+        "BC_UNCONFIRMED_CAST_OF_RETURN_VALUE",
+        "THROWS_METHOD_THROWS_CLAUSE_THROWABLE"
+    })
     private void saveKubernetesState(ExtensionContext context, Throwable throwable) throws Throwable {
         LogCollector logCollector = new LogCollectorBuilder()
             .withNamespacedResources(
