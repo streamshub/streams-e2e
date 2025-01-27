@@ -36,7 +36,7 @@
         <maven.surefire.version>3.5.2</maven.surefire.version>
 
         <!--   Build tools' properties     -->
-        <spotbugs.version>4.8.6</spotbugs.version>
+        <spotbugs.version>4.9.0</spotbugs.version>
         <maven.spotbugs.version>4.8.6.6</maven.spotbugs.version>
         <maven.checkstyle.version>3.6.0</maven.checkstyle.version>
         <maven.compile.plugin.version>3.13.0</maven.compile.plugin.version>
@@ -58,7 +58,7 @@
         <cert.manager.version>1.15.2</cert.manager.version>
         <apicurio.registry.version>1.1.3-v2.6.4.final</apicurio.registry.version>
         <apicurio.api.version>1.1.2</apicurio.api.version>
-        <apicurio.lib.version>2.6.6.Final</apicurio.lib.version>
+        <apicurio.lib.version>2.6.7.Final</apicurio.lib.version>
         <debezium.operator.version>2.7.0</debezium.operator.version>
         <kafka.version>3.8.0</kafka.version>
     </properties>
