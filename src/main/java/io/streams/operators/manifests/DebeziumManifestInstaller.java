@@ -48,7 +48,6 @@ public class DebeziumManifestInstaller {
      * @return async waiter for deployment complete
      * @throws IOException io exception
      */
-    @SuppressFBWarnings("THROWS_METHOD_THROWS_RUNTIMEEXCEPTION")
     public static CompletableFuture<Void> install() throws IOException {
         LOGGER.info("Installing Debezium into namespace: {}", OPERATOR_NS);
 
