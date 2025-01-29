@@ -34,6 +34,8 @@
         <junit.jupiter.version>5.11.4</junit.jupiter.version>
         <junit.platform.version>1.11.4</junit.platform.version>
         <maven.surefire.version>3.5.2</maven.surefire.version>
+        <allure.junit.version>2.29.1</allure.junit.version>
+        <allure.maven.version>2.15.0</allure.maven.version>
 
         <!--   Build tools' properties     -->
         <spotbugs.version>4.9.0</spotbugs.version>
@@ -74,6 +76,13 @@
                 <groupId>io.fabric8</groupId>
                 <artifactId>kubernetes-client-bom-with-deps</artifactId>
                 <version>${fabric8.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>io.qameta.allure</groupId>
+                <artifactId>allure-bom</artifactId>
+                <version>${allure.junit.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -209,6 +218,18 @@
             <version>${junit.platform.version}</version>
         </dependency>
         <dependency>
+            <groupId>io.qameta.allure</groupId>
+            <artifactId>allure-junit5</artifactId>
+            <version>${allure.junit.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.qameta.allure</groupId>
+            <artifactId>allure-java-commons</artifactId>
+            <version>${allure.junit.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-failsafe-plugin</artifactId>
             <version>${maven.surefire.version}</version>
@@ -328,7 +349,28 @@
                             junit.jupiter.extensions.autodetection.enabled = true
                         </configurationParameters>
                     </properties>
+                    <systemProperties>
+                        <resultsDirectory>${project.build.directory}/allure-results</resultsDirectory>
+                    </systemProperties>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>io.qameta.allure</groupId>
+                <artifactId>allure-maven</artifactId>
+                <version>${allure.maven.version}</version>
+                <configuration>
+                    <reportVersion>2.30.0</reportVersion>
+                    <resultsDirectory>${project.build.directory}/allure-results</resultsDirectory>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>allure-report</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -358,6 +400,8 @@
                                 <ignoredUnusedDeclaredDependency>org.junit.platform:junit-platform-commons</ignoredUnusedDeclaredDependency>
                                 <ignoredUnusedDeclaredDependency>org.junit.platform:junit-platform-engine</ignoredUnusedDeclaredDependency>
                                 <ignoredUnusedDeclaredDependency>org.apache.maven.plugins:maven-failsafe-plugin</ignoredUnusedDeclaredDependency>
+                                <ignoredUnusedDeclaredDependency>io.qameta.allure:allure-java-commons</ignoredUnusedDeclaredDependency>
+                                <ignoredUnusedDeclaredDependency>io.qameta.allure:allure-junit5</ignoredUnusedDeclaredDependency>
                             </ignoredUnusedDeclaredDependencies>
                         </configuration>
                     </execution>
