@@ -9,6 +9,7 @@ import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.NamespaceBuilder;
 import io.fabric8.kubernetes.api.model.PersistentVolumeClaim;
 import io.fabric8.kubernetes.api.model.Pod;
+import io.qameta.allure.Allure;
 import io.skodjob.annotations.Desc;
 import io.skodjob.annotations.Label;
 import io.skodjob.annotations.Step;
@@ -76,11 +77,11 @@ public class SqlJobRunnerST extends Abstract {
 
     @BeforeAll
     void prepareOperators() throws Exception {
-        OperatorInstaller.installRequiredOperators(
+        Allure.step("Install required operators", () -> OperatorInstaller.installRequiredOperators(
             InstallableOperator.FLINK,
             InstallableOperator.APICURIO,
             InstallableOperator.STRIMZI,
-            InstallableOperator.CERT_MANAGER);
+            InstallableOperator.CERT_MANAGER));
     }
 
     @TestDoc(
@@ -113,53 +114,46 @@ public class SqlJobRunnerST extends Abstract {
     void testSimpleFilter() {
         String namespace = "flink-filter";
         String kafkaUser = "test-user";
-        // Create namespace
-        KubeResourceManager.get().createOrUpdateResourceWithWait(
-            new NamespaceBuilder().withNewMetadata().withName(namespace).endMetadata().build());
 
-        // Add flink RBAC
-        KubeResourceManager.get().createOrUpdateResourceWithWait(
-            FlinkRBAC.getFlinkRbacResources(namespace).toArray(new HasMetadata[0]));
+        Allure.step("Prepare " + namespace + " namespace", () -> {
+            // Create namespace
+            KubeResourceManager.get().createOrUpdateResourceWithWait(
+                new NamespaceBuilder().withNewMetadata().withName(namespace).endMetadata().build());
 
-        // Create kafka
-        KubeResourceManager.get().createOrUpdateResourceWithWait(
-            KafkaNodePoolTemplate.defaultKafkaNodePoolJbod(namespace, "dual-role",
-                3, kafkaClusterName, List.of(ProcessRoles.BROKER, ProcessRoles.CONTROLLER)).build());
+            // Add flink RBAC
+            KubeResourceManager.get().createOrUpdateResourceWithWait(
+                FlinkRBAC.getFlinkRbacResources(namespace).toArray(new HasMetadata[0]));
+        });
 
-        KubeResourceManager.get().createOrUpdateResourceWithWait(
-            KafkaTemplate.defaultKafka(namespace, kafkaClusterName)
-                .editSpec()
-                .editKafka()
-                .withListeners(
-                    new GenericKafkaListenerBuilder()
-                        .withName("plain")
-                        .withTls(false)
-                        .withType(KafkaListenerType.INTERNAL)
-                        .withPort((9092))
-                        .withAuth(new KafkaListenerAuthenticationScramSha512())
-                        .build(),
-                    new GenericKafkaListenerBuilder()
-                        .withName("unsecure")
-                        .withTls(false)
-                        .withType(KafkaListenerType.INTERNAL)
-                        .withPort((9094))
-                        .build()
-                )
-                .endKafka()
-                .endSpec()
-                .build());
+        Allure.step("Deploy kafka", () -> {
+            // Create kafka
+            KubeResourceManager.get().createOrUpdateResourceWithWait(
+                KafkaNodePoolTemplate.defaultKafkaNodePoolJbod(namespace, "dual-role",
+                    3, kafkaClusterName, List.of(ProcessRoles.BROKER, ProcessRoles.CONTROLLER)).build());
 
-        // Create topic for ksql apicurio
-        KubeResourceManager.get().createOrUpdateResourceWithWait(
-            ApicurioRegistryTemplate.apicurioKsqlTopic(namespace, kafkaClusterName, 3));
-
-        // Create kafka scram sha user
-        KubeResourceManager.get().createOrUpdateResourceWithWait(
-            KafkaUserTemplate.defaultKafkaUser(namespace, kafkaUser, kafkaClusterName)
-                .editSpec()
-                .withAuthentication(new KafkaUserScramSha512ClientAuthentication())
-                .endSpec()
-                .build());
+            KubeResourceManager.get().createOrUpdateResourceWithWait(
+                KafkaTemplate.defaultKafka(namespace, kafkaClusterName)
+                    .editSpec()
+                    .editKafka()
+                    .withListeners(
+                        new GenericKafkaListenerBuilder()
+                            .withName("plain")
+                            .withTls(false)
+                            .withType(KafkaListenerType.INTERNAL)
+                            .withPort((9092))
+                            .withAuth(new KafkaListenerAuthenticationScramSha512())
+                            .build(),
+                        new GenericKafkaListenerBuilder()
+                            .withName("unsecure")
+                            .withTls(false)
+                            .withType(KafkaListenerType.INTERNAL)
+                            .withPort((9094))
+                            .build()
+                    )
+                    .endKafka()
+                    .endSpec()
+                    .build());
+        });
 
         String bootstrapServerAuth = KafkaType.kafkaClient().inNamespace(namespace).withName(kafkaClusterName).get()
             .getStatus().getListeners().stream().filter(l -> l.getName().equals("plain"))
@@ -168,78 +162,102 @@ public class SqlJobRunnerST extends Abstract {
             .getStatus().getListeners().stream().filter(l -> l.getName().equals("unsecure"))
             .findFirst().get().getBootstrapServers();
 
-        // Add apicurio
-        KubeResourceManager.get().createOrUpdateResourceWithWait(
-            ApicurioRegistryTemplate.defaultApicurioRegistry("apicurio-registry", namespace,
-                bootstrapServerUnsecure).build());
+        Allure.step("Deploy apicurio registry", () -> {
+            // Create topic for ksql apicurio
+            KubeResourceManager.get().createOrUpdateResourceWithWait(
+                ApicurioRegistryTemplate.apicurioKsqlTopic(namespace, kafkaClusterName, 3));
 
+            // Add apicurio
+            KubeResourceManager.get().createOrUpdateResourceWithWait(
+                ApicurioRegistryTemplate.defaultApicurioRegistry("apicurio-registry", namespace,
+                    bootstrapServerUnsecure).build());
+        });
+
+        String registryUrl = "http://apicurio-registry-service." + namespace + ".svc:8080/apis/ccompat/v6";
+
+        Allure.step("Create kafka scram sha user", () -> {
+            // Create kafka scram sha user
+            KubeResourceManager.get().createOrUpdateResourceWithWait(
+                KafkaUserTemplate.defaultKafkaUser(namespace, kafkaUser, kafkaClusterName)
+                    .editSpec()
+                    .withAuthentication(new KafkaUserScramSha512ClientAuthentication())
+                    .endSpec()
+                    .build());
+        });
+
+        Allure.step("Get user secret configuration");
         // Get user secret jaas configuration
         final String saslJaasConfigEncrypted = KubeResourceManager.get().kubeClient().getClient().secrets()
             .inNamespace(namespace).withName(kafkaUser).get().getData().get("sasl.jaas.config");
         final String saslJaasConfigDecrypted = TestUtils.decodeFromBase64(saslJaasConfigEncrypted);
 
-        // Run internal producer and produce data
         String producerName = "kafka-producer";
-        StrimziKafkaClients kafkaProducerClient = new StrimziKafkaClientsBuilder()
-            .withProducerName(producerName)
-            .withNamespaceName(namespace)
-            .withTopicName("flink.payment.data")
-            .withBootstrapAddress(bootstrapServerAuth)
-            .withMessageCount(10000)
-            .withUsername(kafkaUser)
-            .withDelayMs(10)
-            .withMessageTemplate("payment_fiat")
-            .withAdditionalConfig(
-                StrimziClientUtils.getApicurioAdditionalProperties(AvroKafkaSerializer.class.getName(),
-                    "http://apicurio-registry-service." + namespace + ".svc:8080/apis/registry/v2") + "\n"
-                    + "sasl.mechanism=SCRAM-SHA-512\n"
-                    + "security.protocol=SASL_PLAINTEXT\n"
-                    + "sasl.jaas.config=" + saslJaasConfigDecrypted
-            )
-            .build();
+        Allure.step("Create kafka producer and produce payment data", () -> {
+            // Run internal producer and produce data
+            StrimziKafkaClients kafkaProducerClient = new StrimziKafkaClientsBuilder()
+                .withProducerName(producerName)
+                .withNamespaceName(namespace)
+                .withTopicName("flink.payment.data")
+                .withBootstrapAddress(bootstrapServerAuth)
+                .withMessageCount(10000)
+                .withUsername(kafkaUser)
+                .withDelayMs(10)
+                .withMessageTemplate("payment_fiat")
+                .withAdditionalConfig(
+                    StrimziClientUtils.getApicurioAdditionalProperties(AvroKafkaSerializer.class.getName(),
+                        "http://apicurio-registry-service." + namespace + ".svc:8080/apis/registry/v2") + "\n"
+                        + "sasl.mechanism=SCRAM-SHA-512\n"
+                        + "security.protocol=SASL_PLAINTEXT\n"
+                        + "sasl.jaas.config=" + saslJaasConfigDecrypted
+                )
+                .build();
 
-        KubeResourceManager.get().createResourceWithWait(
-            kafkaProducerClient.producerStrimzi()
-        );
+            KubeResourceManager.get().createResourceWithWait(
+                kafkaProducerClient.producerStrimzi()
+            );
+        });
 
-        String registryUrl = "http://apicurio-registry-service." + namespace + ".svc:8080/apis/ccompat/v6";
+        Allure.step("Deploy flink application", () -> {
+            // Deploy flink with test filter sql statement which filter to specific topic only payment type paypal
+            FlinkDeployment flink = FlinkDeploymentTemplate.defaultFlinkDeployment(namespace,
+                    "flink-filter", List.of(TestStatements.getTestFlinkFilter(
+                        bootstrapServerAuth, registryUrl, kafkaUser, namespace)))
+                .build();
+            KubeResourceManager.get().createOrUpdateResourceWithWait(flink);
+        });
 
-        // Deploy flink with test filter sql statement which filter to specific topic only payment type paypal
-        FlinkDeployment flink = FlinkDeploymentTemplate.defaultFlinkDeployment(namespace,
-                "flink-filter", List.of(TestStatements.getTestFlinkFilter(
-                    bootstrapServerAuth, registryUrl, kafkaUser, namespace)))
-            .build();
-        KubeResourceManager.get().createOrUpdateResourceWithWait(flink);
+        Allure.step("Wait until producer produce all messages", () ->
+            JobUtils.waitForJobSuccess(namespace, producerName, TestFrameConstants.GLOBAL_TIMEOUT_MEDIUM));
 
-        JobUtils.waitForJobSuccess(namespace, kafkaProducerClient.getProducerName(),
-            TestFrameConstants.GLOBAL_TIMEOUT_MEDIUM);
 
-        // Run consumer and check if data are filtered
-        String consumerName = "kafka-consumer";
-        StrimziKafkaClients kafkaConsumerClient = new StrimziKafkaClientsBuilder()
-            .withConsumerName(consumerName)
-            .withNamespaceName(namespace)
-            .withTopicName("flink.payment.paypal")
-            .withBootstrapAddress(bootstrapServerAuth)
-            .withMessageCount(10)
-            .withAdditionalConfig(
-                "sasl.mechanism=SCRAM-SHA-512\n" +
-                    "security.protocol=SASL_PLAINTEXT\n" +
-                    "sasl.jaas.config=" + saslJaasConfigDecrypted
-            )
-            .withConsumerGroup("flink-filter-test-group").build();
+        Allure.step("Consume filtered messages", () -> {
+            // Run consumer and check if data are filtered
+            String consumerName = "kafka-consumer";
+            StrimziKafkaClients kafkaConsumerClient = new StrimziKafkaClientsBuilder()
+                .withConsumerName(consumerName)
+                .withNamespaceName(namespace)
+                .withTopicName("flink.payment.paypal")
+                .withBootstrapAddress(bootstrapServerAuth)
+                .withMessageCount(10)
+                .withAdditionalConfig(
+                    "sasl.mechanism=SCRAM-SHA-512\n" +
+                        "security.protocol=SASL_PLAINTEXT\n" +
+                        "sasl.jaas.config=" + saslJaasConfigDecrypted
+                )
+                .withConsumerGroup("flink-filter-test-group").build();
 
-        KubeResourceManager.get().createResourceWithWait(
-            kafkaConsumerClient.consumerStrimzi()
-        );
+            KubeResourceManager.get().createResourceWithWait(
+                kafkaConsumerClient.consumerStrimzi()
+            );
 
-        JobUtils.waitForJobSuccess(namespace, kafkaConsumerClient.getConsumerName(),
-            TestFrameConstants.GLOBAL_TIMEOUT_MEDIUM);
-        String consumerPodName = KubeResourceManager.get().kubeClient().listPodsByPrefixInName(namespace, consumerName)
-            .get(0).getMetadata().getName();
-        String log = KubeResourceManager.get().kubeClient().getLogsFromPod(namespace, consumerPodName);
-        assertTrue(log.contains("\"type\":\"paypal\""));
-        assertFalse(log.contains("\"type\":\"creditCard\""));
+            JobUtils.waitForJobSuccess(namespace, kafkaConsumerClient.getConsumerName(),
+                TestFrameConstants.GLOBAL_TIMEOUT_MEDIUM);
+            String consumerPodName = KubeResourceManager.get().kubeClient().listPodsByPrefixInName(namespace, consumerName)
+                .get(0).getMetadata().getName();
+            String log = KubeResourceManager.get().kubeClient().getLogsFromPod(namespace, consumerPodName);
+            assertTrue(log.contains("\"type\":\"paypal\""));
+            assertFalse(log.contains("\"type\":\"creditCard\""));
+        });
     }
 
     @TestDoc(
@@ -262,35 +280,41 @@ public class SqlJobRunnerST extends Abstract {
         String namespace = "flink-bad-sql";
         String flinkDeploymentName = namespace;
 
-        // Create namespace
-        KubeResourceManager.get().createOrUpdateResourceWithWait(
-            new NamespaceBuilder().withNewMetadata().withName(namespace).endMetadata().build());
+        Allure.step("Prepare " + namespace + " namespace", () -> {
+            // Create namespace
+            KubeResourceManager.get().createOrUpdateResourceWithWait(
+                new NamespaceBuilder().withNewMetadata().withName(namespace).endMetadata().build());
 
-        // Add flink RBAC
-        KubeResourceManager.get().createOrUpdateResourceWithWait(
-            FlinkRBAC.getFlinkRbacResources(namespace).toArray(new HasMetadata[0]));
+            // Add flink RBAC
+            KubeResourceManager.get().createOrUpdateResourceWithWait(
+                FlinkRBAC.getFlinkRbacResources(namespace).toArray(new HasMetadata[0]));
+        });
 
-        // Deploy flink with not valid sql
-        FlinkDeployment flink = FlinkDeploymentTemplate.defaultFlinkDeployment(namespace,
-                flinkDeploymentName, List.of("blah blah"))
-            .build();
-        KubeResourceManager.get().createOrUpdateResourceWithoutWait(flink);
+        Allure.step("Deploy flink with not valid sql statement", () -> {
+            // Deploy flink with not valid sql
+            FlinkDeployment flink = FlinkDeploymentTemplate.defaultFlinkDeployment(namespace,
+                    flinkDeploymentName, List.of("blah blah"))
+                .build();
+            KubeResourceManager.get().createOrUpdateResourceWithoutWait(flink);
+        });
 
-        // Check if no task is deployed and error is proper in flink deployment
-        Wait.until("Flink deployment fail", TestFrameConstants.GLOBAL_POLL_INTERVAL_1_SEC,
-            TestFrameConstants.GLOBAL_TIMEOUT_MEDIUM, () -> {
-                String error = new FlinkDeploymentType().getClient().inNamespace(namespace).withName(flinkDeploymentName)
-                    .get().getStatus().getError();
-                return error.contains("DeploymentFailedException") || error.contains("ReconciliationException");
-            });
+        Allure.step("Verify that flink deployment failed with error", () -> {
+            // Check if no task is deployed and error is proper in flink deployment
+            Wait.until("Flink deployment fail", TestFrameConstants.GLOBAL_POLL_INTERVAL_1_SEC,
+                TestFrameConstants.GLOBAL_TIMEOUT_MEDIUM, () -> {
+                    String error = new FlinkDeploymentType().getClient().inNamespace(namespace).withName(flinkDeploymentName)
+                        .get().getStatus().getError();
+                    return error.contains("DeploymentFailedException") || error.contains("ReconciliationException");
+                });
 
-        String podName = KubeResourceManager.get().kubeClient().listPodsByPrefixInName(namespace, flinkDeploymentName)
-            .get(0).getMetadata().getName();
+            String podName = KubeResourceManager.get().kubeClient().listPodsByPrefixInName(namespace, flinkDeploymentName)
+                .get(0).getMetadata().getName();
 
-        Wait.until("Flink deployment contains error message", TestFrameConstants.GLOBAL_POLL_INTERVAL_1_SEC,
-            TestFrameConstants.GLOBAL_TIMEOUT_MEDIUM, () ->
-                KubeResourceManager.get().kubeClient()
-                    .getLogsFromPod(namespace, podName).contains("SQL parse failed"));
+            Wait.until("Flink deployment contains error message", TestFrameConstants.GLOBAL_POLL_INTERVAL_1_SEC,
+                TestFrameConstants.GLOBAL_TIMEOUT_MEDIUM, () ->
+                    KubeResourceManager.get().kubeClient()
+                        .getLogsFromPod(namespace, podName).contains("SQL parse failed"));
+        });
     }
 
     @TestDoc(
@@ -313,32 +337,38 @@ public class SqlJobRunnerST extends Abstract {
         String namespace = "flink-wrong-connection";
         String flinkDeploymentName = namespace;
 
-        // Create namespace
-        KubeResourceManager.get().createOrUpdateResourceWithWait(
-            new NamespaceBuilder().withNewMetadata().withName(namespace).endMetadata().build());
+        Allure.step("Prepare " + namespace + " namespace", () -> {
+            // Create namespace
+            KubeResourceManager.get().createOrUpdateResourceWithWait(
+                new NamespaceBuilder().withNewMetadata().withName(namespace).endMetadata().build());
 
-        // Add flink RBAC
-        KubeResourceManager.get().createOrUpdateResourceWithWait(
-            FlinkRBAC.getFlinkRbacResources(namespace).toArray(new HasMetadata[0]));
+            // Add flink RBAC
+            KubeResourceManager.get().createOrUpdateResourceWithWait(
+                FlinkRBAC.getFlinkRbacResources(namespace).toArray(new HasMetadata[0]));
+        });
 
-        // Deploy flink with not valid sql
-        FlinkDeployment flink = FlinkDeploymentTemplate.defaultFlinkDeployment(namespace,
-            flinkDeploymentName, List.of(TestStatements.getWrongConnectionSql())).build();
-        KubeResourceManager.get().createOrUpdateResourceWithoutWait(flink);
+        Allure.step("Deploy flink with wrong connection info", () -> {
+            // Deploy flink with wring connection info
+            FlinkDeployment flink = FlinkDeploymentTemplate.defaultFlinkDeployment(namespace,
+                flinkDeploymentName, List.of(TestStatements.getWrongConnectionSql())).build();
+            KubeResourceManager.get().createOrUpdateResourceWithoutWait(flink);
+        });
 
-        // Check if no task is deployed and error is proper in flink deployment
-        Wait.until("Flink deployment starts", TestFrameConstants.GLOBAL_POLL_INTERVAL_1_SEC,
-            TestFrameConstants.GLOBAL_TIMEOUT_MEDIUM, () ->
-                !KubeResourceManager.get().kubeClient().listPodsByPrefixInName(namespace, flinkDeploymentName).isEmpty());
+        Allure.step("Verify that flink deployment fails with connection issue", () -> {
+            // Check if no task is deployed and error is proper in flink deployment
+            Wait.until("Flink deployment starts", TestFrameConstants.GLOBAL_POLL_INTERVAL_1_SEC,
+                TestFrameConstants.GLOBAL_TIMEOUT_MEDIUM, () ->
+                    !KubeResourceManager.get().kubeClient().listPodsByPrefixInName(namespace, flinkDeploymentName).isEmpty());
 
-        String podName = KubeResourceManager.get().kubeClient().listPodsByPrefixInName(namespace, flinkDeploymentName)
-            .get(0).getMetadata().getName();
+            String podName = KubeResourceManager.get().kubeClient().listPodsByPrefixInName(namespace, flinkDeploymentName)
+                .get(0).getMetadata().getName();
 
-        Wait.until("Flink deployment contains error message", TestFrameConstants.GLOBAL_POLL_INTERVAL_1_SEC,
-            TestFrameConstants.GLOBAL_TIMEOUT_MEDIUM, () ->
-                KubeResourceManager.get().kubeClient()
-                    .getLogsFromPod(namespace, podName)
-                    .contains("No resolvable bootstrap urls given in bootstrap.servers"));
+            Wait.until("Flink deployment contains error message", TestFrameConstants.GLOBAL_POLL_INTERVAL_1_SEC,
+                TestFrameConstants.GLOBAL_TIMEOUT_MEDIUM, () ->
+                    KubeResourceManager.get().kubeClient()
+                        .getLogsFromPod(namespace, podName)
+                        .contains("No resolvable bootstrap urls given in bootstrap.servers"));
+        });
     }
 
     @TestDoc(
@@ -375,53 +405,46 @@ public class SqlJobRunnerST extends Abstract {
         String namespace = "flink-state-backend";
         String flinkDeploymentName = namespace;
         String kafkaUser = "test-user";
-        // Create namespace
-        KubeResourceManager.get().createOrUpdateResourceWithWait(
-            new NamespaceBuilder().withNewMetadata().withName(namespace).endMetadata().build());
 
-        // Add flink RBAC
-        KubeResourceManager.get().createOrUpdateResourceWithWait(
-            FlinkRBAC.getFlinkRbacResources(namespace).toArray(new HasMetadata[0]));
+        Allure.step("Prepare " + namespace + " namespace", () -> {
+            // Create namespace
+            KubeResourceManager.get().createOrUpdateResourceWithWait(
+                new NamespaceBuilder().withNewMetadata().withName(namespace).endMetadata().build());
 
-        // Create kafka
-        KubeResourceManager.get().createOrUpdateResourceWithWait(
-            KafkaNodePoolTemplate.defaultKafkaNodePoolJbod(namespace, "dual-role",
-                3, kafkaClusterName, List.of(ProcessRoles.BROKER, ProcessRoles.CONTROLLER)).build());
+            // Add flink RBAC
+            KubeResourceManager.get().createOrUpdateResourceWithWait(
+                FlinkRBAC.getFlinkRbacResources(namespace).toArray(new HasMetadata[0]));
+        });
 
-        KubeResourceManager.get().createOrUpdateResourceWithWait(
-            KafkaTemplate.defaultKafka(namespace, kafkaClusterName)
-                .editSpec()
-                .editKafka()
-                .withListeners(
-                    new GenericKafkaListenerBuilder()
-                        .withName("plain")
-                        .withTls(false)
-                        .withType(KafkaListenerType.INTERNAL)
-                        .withPort((9092))
-                        .withAuth(new KafkaListenerAuthenticationScramSha512())
-                        .build(),
-                    new GenericKafkaListenerBuilder()
-                        .withName("unsecure")
-                        .withTls(false)
-                        .withType(KafkaListenerType.INTERNAL)
-                        .withPort((9094))
-                        .build()
-                )
-                .endKafka()
-                .endSpec()
-                .build());
+        Allure.step("Deploy kafka", () -> {
+            // Create kafka
+            KubeResourceManager.get().createOrUpdateResourceWithWait(
+                KafkaNodePoolTemplate.defaultKafkaNodePoolJbod(namespace, "dual-role",
+                    3, kafkaClusterName, List.of(ProcessRoles.BROKER, ProcessRoles.CONTROLLER)).build());
 
-        // Create topic for ksql apicurio
-        KubeResourceManager.get().createOrUpdateResourceWithWait(
-            ApicurioRegistryTemplate.apicurioKsqlTopic(namespace, kafkaClusterName, 3));
-
-        // Create kafka scram sha user
-        KubeResourceManager.get().createOrUpdateResourceWithWait(
-            KafkaUserTemplate.defaultKafkaUser(namespace, kafkaUser, kafkaClusterName)
-                .editSpec()
-                .withAuthentication(new KafkaUserScramSha512ClientAuthentication())
-                .endSpec()
-                .build());
+            KubeResourceManager.get().createOrUpdateResourceWithWait(
+                KafkaTemplate.defaultKafka(namespace, kafkaClusterName)
+                    .editSpec()
+                    .editKafka()
+                    .withListeners(
+                        new GenericKafkaListenerBuilder()
+                            .withName("plain")
+                            .withTls(false)
+                            .withType(KafkaListenerType.INTERNAL)
+                            .withPort((9092))
+                            .withAuth(new KafkaListenerAuthenticationScramSha512())
+                            .build(),
+                        new GenericKafkaListenerBuilder()
+                            .withName("unsecure")
+                            .withTls(false)
+                            .withType(KafkaListenerType.INTERNAL)
+                            .withPort((9094))
+                            .build()
+                    )
+                    .endKafka()
+                    .endSpec()
+                    .build());
+        });
 
         String bootstrapServerAuth = KafkaType.kafkaClient().inNamespace(namespace).withName(kafkaClusterName).get()
             .getStatus().getListeners().stream().filter(l -> l.getName().equals("plain"))
@@ -429,12 +452,30 @@ public class SqlJobRunnerST extends Abstract {
         String bootstrapServerUnsecure = KafkaType.kafkaClient().inNamespace(namespace).withName(kafkaClusterName).get()
             .getStatus().getListeners().stream().filter(l -> l.getName().equals("unsecure"))
             .findFirst().get().getBootstrapServers();
+        String registryUrl = "http://apicurio-registry-service." + namespace + ".svc:8080/apis/ccompat/v6";
 
-        // Add apicurio
-        KubeResourceManager.get().createOrUpdateResourceWithWait(
-            ApicurioRegistryTemplate.defaultApicurioRegistry("apicurio-registry", namespace,
-                bootstrapServerUnsecure).build());
+        Allure.step("Deploy apicurio registry", () -> {
+            // Create topic for ksql apicurio
+            KubeResourceManager.get().createOrUpdateResourceWithWait(
+                ApicurioRegistryTemplate.apicurioKsqlTopic(namespace, kafkaClusterName, 3));
 
+            // Add apicurio
+            KubeResourceManager.get().createOrUpdateResourceWithWait(
+                ApicurioRegistryTemplate.defaultApicurioRegistry("apicurio-registry", namespace,
+                    bootstrapServerUnsecure).build());
+        });
+
+        Allure.step("Create kafka scram sha user", () -> {
+            // Create kafka scram sha user
+            KubeResourceManager.get().createOrUpdateResourceWithWait(
+                KafkaUserTemplate.defaultKafkaUser(namespace, kafkaUser, kafkaClusterName)
+                    .editSpec()
+                    .withAuthentication(new KafkaUserScramSha512ClientAuthentication())
+                    .endSpec()
+                    .build());
+        });
+
+        Allure.step("Get user secret configuration");
         // Get user secret jaas configuration
         final String saslJaasConfigEncrypted = KubeResourceManager.get().kubeClient().getClient().secrets()
             .inNamespace(namespace).withName(kafkaUser).get().getData().get("sasl.jaas.config");
@@ -442,114 +483,122 @@ public class SqlJobRunnerST extends Abstract {
 
         // Run internal producer and produce data
         String producerName = "kafka-producer";
-        StrimziKafkaClients kafkaProducerClient = new StrimziKafkaClientsBuilder()
-            .withProducerName(producerName)
-            .withNamespaceName(namespace)
-            .withTopicName("flink.payment.data")
-            .withBootstrapAddress(bootstrapServerAuth)
-            .withMessageCount(10000)
-            .withUsername(kafkaUser)
-            .withDelayMs(10)
-            .withMessageTemplate("payment_fiat")
-            .withAdditionalConfig(
-                StrimziClientUtils.getApicurioAdditionalProperties(AvroKafkaSerializer.class.getName(),
-                    "http://apicurio-registry-service." + namespace + ".svc:8080/apis/registry/v2") + "\n"
-                    + "sasl.mechanism=SCRAM-SHA-512\n"
-                    + "security.protocol=SASL_PLAINTEXT\n"
-                    + "sasl.jaas.config=" + saslJaasConfigDecrypted
-            )
-            .build();
-
-        KubeResourceManager.get().createResourceWithWait(
-            kafkaProducerClient.producerStrimzi()
-        );
-
-        String registryUrl = "http://apicurio-registry-service." + namespace + ".svc:8080/apis/ccompat/v6";
-
-        // Create PVC for flink
-        PersistentVolumeClaim flinkPVC = FlinkDeploymentTemplate
-            .getFlinkPVC(namespace, "flink-state-backend")
-            .build();
-        KubeResourceManager.get().createOrUpdateResourceWithWait(flinkPVC);
-
-        // Deploy flink with test filter sql statement which filter to specific topic only payment type paypal
-        // Modify flink default deployment with state backend and pvc configuration
-        FlinkDeployment flink = FlinkDeploymentTemplate.defaultFlinkDeployment(namespace,
-                flinkDeploymentName, List.of(TestStatements.getTestFlinkFilter(
-                    bootstrapServerAuth, registryUrl, kafkaUser, namespace)))
-            .editSpec()
-            .addToFlinkConfiguration(
-                Map.of(
-                    "execution.checkpointing.interval", "60000",
-                    "execution.checkpointing.snapshot-compression", "true",
-                    "kubernetes.operator.job.restart.failed", "true",
-                    "state.backend.rocksdb.compression.per.level_FLINK_JIRA", "SNAPPY_COMPRESSION",
-                    "state.backend.type", "rocksdb",
-                    "state.checkpoints.dir", "file:///flink-state-store/checkpoints",
-                    "state.savepoints.dir", "file:///flink-state-store/savepoints"
+        Allure.step("Create kafka producer and produce payment data", () -> {
+            StrimziKafkaClients kafkaProducerClient = new StrimziKafkaClientsBuilder()
+                .withProducerName(producerName)
+                .withNamespaceName(namespace)
+                .withTopicName("flink.payment.data")
+                .withBootstrapAddress(bootstrapServerAuth)
+                .withMessageCount(10000)
+                .withUsername(kafkaUser)
+                .withDelayMs(10)
+                .withMessageTemplate("payment_fiat")
+                .withAdditionalConfig(
+                    StrimziClientUtils.getApicurioAdditionalProperties(AvroKafkaSerializer.class.getName(),
+                        "http://apicurio-registry-service." + namespace + ".svc:8080/apis/registry/v2") + "\n"
+                        + "sasl.mechanism=SCRAM-SHA-512\n"
+                        + "security.protocol=SASL_PLAINTEXT\n"
+                        + "sasl.jaas.config=" + saslJaasConfigDecrypted
                 )
-            )
-            .editPodTemplate()
-            .editOrNewSpec()
-            .editFirstContainer()
-            .addNewVolumeMount()
-            .withMountPath("/flink-state-store")
-            .withName("flink-state-store")
-            .endVolumeMount()
-            .endContainer()
-            .addNewVolume()
-            .withName("flink-state-store")
-            .withNewPersistentVolumeClaim()
-            .withClaimName(flinkPVC.getMetadata().getName())
-            .endPersistentVolumeClaim()
-            .endVolume()
-            .endSpec()
-            .endPodTemplate()
-            .endSpec()
-            .build();
-        KubeResourceManager.get().createOrUpdateResourceWithWait(flink);
+                .build();
 
-        JobUtils.waitForJobSuccess(namespace, kafkaProducerClient.getProducerName(),
-            TestFrameConstants.GLOBAL_TIMEOUT_MEDIUM);
+            KubeResourceManager.get().createResourceWithWait(
+                kafkaProducerClient.producerStrimzi()
+            );
+        });
 
-        //Check task manager log for presence rocksbd configuration
-        Wait.until("Task manager contains info about rocksdb", TestFrameConstants.GLOBAL_POLL_INTERVAL_LONG,
-            TestFrameConstants.GLOBAL_TIMEOUT, () -> {
-                List<Pod> taskManagerPods = KubeResourceManager.get().kubeClient()
-                    .listPodsByPrefixInName(namespace, flinkDeploymentName + "-taskmanager");
-                for (Pod p : taskManagerPods) {
-                    return KubeResourceManager.get().kubeClient().getLogsFromPod(namespace, p.getMetadata().getName())
-                        .contains("State backend loader loads the state backend as EmbeddedRocksDBStateBackend");
-                }
-                return false;
-            });
+        Allure.step("Create PVC for flink", () -> {
+            // Create PVC for flink
+            PersistentVolumeClaim flinkPVC = FlinkDeploymentTemplate
+                .getFlinkPVC(namespace, "flink-state-backend")
+                .build();
+            KubeResourceManager.get().createOrUpdateResourceWithWait(flinkPVC);
+        });
 
-        // Run consumer and check if data are filtered
-        String consumerName = "kafka-consumer";
-        StrimziKafkaClients kafkaConsumerClient = new StrimziKafkaClientsBuilder()
-            .withConsumerName(consumerName)
-            .withNamespaceName(namespace)
-            .withTopicName("flink.payment.paypal")
-            .withBootstrapAddress(bootstrapServerAuth)
-            .withMessageCount(10)
-            .withAdditionalConfig(
-                "sasl.mechanism=SCRAM-SHA-512\n" +
-                    "security.protocol=SASL_PLAINTEXT\n" +
-                    "sasl.jaas.config=" + saslJaasConfigDecrypted
-            )
-            .withConsumerGroup("flink-filter-test-group").build();
+        Allure.step("Deploy flink application with PVC as state backend", () -> {
+            FlinkDeployment flink = FlinkDeploymentTemplate.defaultFlinkDeployment(namespace,
+                    flinkDeploymentName, List.of(TestStatements.getTestFlinkFilter(
+                        bootstrapServerAuth, registryUrl, kafkaUser, namespace)))
+                .editSpec()
+                .addToFlinkConfiguration(
+                    Map.of(
+                        "execution.checkpointing.interval", "60000",
+                        "execution.checkpointing.snapshot-compression", "true",
+                        "kubernetes.operator.job.restart.failed", "true",
+                        "state.backend.rocksdb.compression.per.level_FLINK_JIRA", "SNAPPY_COMPRESSION",
+                        "state.backend.type", "rocksdb",
+                        "state.checkpoints.dir", "file:///flink-state-store/checkpoints",
+                        "state.savepoints.dir", "file:///flink-state-store/savepoints"
+                    )
+                )
+                .editPodTemplate()
+                .editOrNewSpec()
+                .editFirstContainer()
+                .addNewVolumeMount()
+                .withMountPath("/flink-state-store")
+                .withName("flink-state-store")
+                .endVolumeMount()
+                .endContainer()
+                .addNewVolume()
+                .withName("flink-state-store")
+                .withNewPersistentVolumeClaim()
+                .withClaimName("flink-state-backend")
+                .endPersistentVolumeClaim()
+                .endVolume()
+                .endSpec()
+                .endPodTemplate()
+                .endSpec()
+                .build();
+            KubeResourceManager.get().createOrUpdateResourceWithWait(flink);
+        });
 
-        KubeResourceManager.get().createResourceWithWait(
-            kafkaConsumerClient.consumerStrimzi()
-        );
+        Allure.step("Wait for producer produce payment messages", () -> {
+            JobUtils.waitForJobSuccess(namespace, producerName,
+                TestFrameConstants.GLOBAL_TIMEOUT_MEDIUM);
+        });
 
-        JobUtils.waitForJobSuccess(namespace, kafkaConsumerClient.getConsumerName(),
-            TestFrameConstants.GLOBAL_TIMEOUT_MEDIUM);
-        String consumerPodName = KubeResourceManager.get().kubeClient().listPodsByPrefixInName(namespace, consumerName)
-            .get(0).getMetadata().getName();
-        String log = KubeResourceManager.get().kubeClient().getLogsFromPod(namespace, consumerPodName);
-        assertTrue(log.contains("\"type\":\"paypal\""));
-        assertFalse(log.contains("\"type\":\"creditCard\""));
+        Allure.step("Verify that flink use rocksDB on PVC as state backend", () -> {
+            //Check task manager log for presence rocksbd configuration
+            Wait.until("Task manager contains info about rocksdb", TestFrameConstants.GLOBAL_POLL_INTERVAL_LONG,
+                TestFrameConstants.GLOBAL_TIMEOUT, () -> {
+                    List<Pod> taskManagerPods = KubeResourceManager.get().kubeClient()
+                        .listPodsByPrefixInName(namespace, flinkDeploymentName + "-taskmanager");
+                    for (Pod p : taskManagerPods) {
+                        return KubeResourceManager.get().kubeClient().getLogsFromPod(namespace, p.getMetadata().getName())
+                            .contains("State backend loader loads the state backend as EmbeddedRocksDBStateBackend");
+                    }
+                    return false;
+                });
+        });
+
+        Allure.step("Consume filtered messages", () -> {
+            // Run consumer and check if data are filtered
+            String consumerName = "kafka-consumer";
+            StrimziKafkaClients kafkaConsumerClient = new StrimziKafkaClientsBuilder()
+                .withConsumerName(consumerName)
+                .withNamespaceName(namespace)
+                .withTopicName("flink.payment.paypal")
+                .withBootstrapAddress(bootstrapServerAuth)
+                .withMessageCount(10)
+                .withAdditionalConfig(
+                    "sasl.mechanism=SCRAM-SHA-512\n" +
+                        "security.protocol=SASL_PLAINTEXT\n" +
+                        "sasl.jaas.config=" + saslJaasConfigDecrypted
+                )
+                .withConsumerGroup("flink-filter-test-group").build();
+
+            KubeResourceManager.get().createResourceWithWait(
+                kafkaConsumerClient.consumerStrimzi()
+            );
+
+            JobUtils.waitForJobSuccess(namespace, kafkaConsumerClient.getConsumerName(),
+                TestFrameConstants.GLOBAL_TIMEOUT_MEDIUM);
+            String consumerPodName = KubeResourceManager.get().kubeClient().listPodsByPrefixInName(namespace, consumerName)
+                .get(0).getMetadata().getName();
+            String log = KubeResourceManager.get().kubeClient().getLogsFromPod(namespace, consumerPodName);
+            assertTrue(log.contains("\"type\":\"paypal\""));
+            assertFalse(log.contains("\"type\":\"creditCard\""));
+        });
     }
 
     @TestDoc(
@@ -589,64 +638,54 @@ public class SqlJobRunnerST extends Abstract {
         String kafkaUser = "test-user";
         String bucketName = "flink-bucket";
 
-        // Create namespace
-        KubeResourceManager.get()
-            .createOrUpdateResourceWithWait(
-                new NamespaceBuilder().withNewMetadata()
-                    .withName(namespace)
-                    .endMetadata()
-                    .build());
+        Allure.step("Prepare " + namespace + " namespace", () -> {
+            // Create namespace
+            KubeResourceManager.get()
+                .createOrUpdateResourceWithWait(
+                    new NamespaceBuilder().withNewMetadata()
+                        .withName(namespace)
+                        .endMetadata()
+                        .build());
 
-        // Add flink RBAC
-        KubeResourceManager.get()
-            .createOrUpdateResourceWithWait(
-                FlinkRBAC.getFlinkRbacResources(namespace)
-                    .toArray(new HasMetadata[0]));
+            // Add flink RBAC
+            KubeResourceManager.get()
+                .createOrUpdateResourceWithWait(
+                    FlinkRBAC.getFlinkRbacResources(namespace)
+                        .toArray(new HasMetadata[0]));
+        });
 
-        // Create kafka
-        KubeResourceManager.get()
-            .createOrUpdateResourceWithWait(
-                KafkaNodePoolTemplate.defaultKafkaNodePoolJbod(namespace, "dual-role",
-                        3, kafkaClusterName, List.of(ProcessRoles.BROKER, ProcessRoles.CONTROLLER))
-                    .build());
+        Allure.step("Deploy kafka", () -> {
+            // Create kafka
+            KubeResourceManager.get()
+                .createOrUpdateResourceWithWait(
+                    KafkaNodePoolTemplate.defaultKafkaNodePoolJbod(namespace, "dual-role",
+                            3, kafkaClusterName, List.of(ProcessRoles.BROKER, ProcessRoles.CONTROLLER))
+                        .build());
 
-        KubeResourceManager.get()
-            .createOrUpdateResourceWithWait(
-                KafkaTemplate.defaultKafka(namespace, kafkaClusterName)
-                    .editSpec()
-                    .editKafka()
-                    .withListeners(
-                        new GenericKafkaListenerBuilder()
-                            .withName("plain")
-                            .withTls(false)
-                            .withType(KafkaListenerType.INTERNAL)
-                            .withPort((9092))
-                            .withAuth(new KafkaListenerAuthenticationScramSha512())
-                            .build(),
-                        new GenericKafkaListenerBuilder()
-                            .withName("unsecure")
-                            .withTls(false)
-                            .withType(KafkaListenerType.INTERNAL)
-                            .withPort((9094))
-                            .build()
-                    )
-                    .endKafka()
-                    .endSpec()
-                    .build());
-
-        // Create topic for ksql apicurio
-        KubeResourceManager.get()
-            .createOrUpdateResourceWithWait(
-                ApicurioRegistryTemplate.apicurioKsqlTopic(namespace, kafkaClusterName, 3));
-
-        // Create kafka scram sha user
-        KubeResourceManager.get()
-            .createOrUpdateResourceWithWait(
-                KafkaUserTemplate.defaultKafkaUser(namespace, kafkaUser, kafkaClusterName)
-                    .editSpec()
-                    .withAuthentication(new KafkaUserScramSha512ClientAuthentication())
-                    .endSpec()
-                    .build());
+            KubeResourceManager.get()
+                .createOrUpdateResourceWithWait(
+                    KafkaTemplate.defaultKafka(namespace, kafkaClusterName)
+                        .editSpec()
+                        .editKafka()
+                        .withListeners(
+                            new GenericKafkaListenerBuilder()
+                                .withName("plain")
+                                .withTls(false)
+                                .withType(KafkaListenerType.INTERNAL)
+                                .withPort((9092))
+                                .withAuth(new KafkaListenerAuthenticationScramSha512())
+                                .build(),
+                            new GenericKafkaListenerBuilder()
+                                .withName("unsecure")
+                                .withTls(false)
+                                .withType(KafkaListenerType.INTERNAL)
+                                .withPort((9094))
+                                .build()
+                        )
+                        .endKafka()
+                        .endSpec()
+                        .build());
+        });
 
         String bootstrapServerAuth = KafkaType.kafkaClient()
             .inNamespace(namespace)
@@ -672,14 +711,34 @@ public class SqlJobRunnerST extends Abstract {
             .findFirst()
             .get()
             .getBootstrapServers();
+        String registryUrl = "http://apicurio-registry-service." + namespace + ".svc:8080/apis/ccompat/v6";
 
-        // Add apicurio
-        KubeResourceManager.get()
-            .createOrUpdateResourceWithWait(
-                ApicurioRegistryTemplate.defaultApicurioRegistry("apicurio-registry", namespace,
-                        bootstrapServerUnsecure)
-                    .build());
+        Allure.step("Deploy apicurio registry", () -> {
+            // Create topic for ksql apicurio
+            KubeResourceManager.get()
+                .createOrUpdateResourceWithWait(
+                    ApicurioRegistryTemplate.apicurioKsqlTopic(namespace, kafkaClusterName, 3));
 
+            // Add apicurio
+            KubeResourceManager.get()
+                .createOrUpdateResourceWithWait(
+                    ApicurioRegistryTemplate.defaultApicurioRegistry("apicurio-registry", namespace,
+                            bootstrapServerUnsecure)
+                        .build());
+        });
+
+        Allure.step("Create kafka scram sha user", () -> {
+            // Create kafka scram sha user
+            KubeResourceManager.get()
+                .createOrUpdateResourceWithWait(
+                    KafkaUserTemplate.defaultKafkaUser(namespace, kafkaUser, kafkaClusterName)
+                        .editSpec()
+                        .withAuthentication(new KafkaUserScramSha512ClientAuthentication())
+                        .endSpec()
+                        .build());
+        });
+
+        Allure.step("Get kafka user secret");
         // Get user secret jaas configuration
         final String saslJaasConfigEncrypted = KubeResourceManager.get().kubeClient()
             .getClient()
@@ -691,136 +750,146 @@ public class SqlJobRunnerST extends Abstract {
             .get("sasl.jaas.config");
         final String saslJaasConfigDecrypted = TestUtils.decodeFromBase64(saslJaasConfigEncrypted);
 
-        // Run internal producer and produce data
         String producerName = "kafka-producer";
-        StrimziKafkaClients kafkaProducerClient = new StrimziKafkaClientsBuilder()
-            .withProducerName(producerName)
-            .withNamespaceName(namespace)
-            .withTopicName("flink.payment.data")
-            .withBootstrapAddress(bootstrapServerAuth)
-            .withMessageCount(30000)
-            .withUsername(kafkaUser)
-            .withDelayMs(1)
-            .withMessageTemplate("payment_fiat")
-            .withAdditionalConfig(
-                StrimziClientUtils.getApicurioAdditionalProperties(AvroKafkaSerializer.class.getName(),
-                    "http://apicurio-registry-service." + namespace + ".svc:8080/apis/registry/v2") + "\n"
-                    + "sasl.mechanism=SCRAM-SHA-512\n"
-                    + "security.protocol=SASL_PLAINTEXT\n"
-                    + "sasl.jaas.config=" + saslJaasConfigDecrypted
-            )
-            .build();
+        Allure.step("Create kafka producer and produce payment data", () -> {
+            // Run internal producer and produce data
+            StrimziKafkaClients kafkaProducerClient = new StrimziKafkaClientsBuilder()
+                .withProducerName(producerName)
+                .withNamespaceName(namespace)
+                .withTopicName("flink.payment.data")
+                .withBootstrapAddress(bootstrapServerAuth)
+                .withMessageCount(30000)
+                .withUsername(kafkaUser)
+                .withDelayMs(1)
+                .withMessageTemplate("payment_fiat")
+                .withAdditionalConfig(
+                    StrimziClientUtils.getApicurioAdditionalProperties(AvroKafkaSerializer.class.getName(),
+                        "http://apicurio-registry-service." + namespace + ".svc:8080/apis/registry/v2") + "\n"
+                        + "sasl.mechanism=SCRAM-SHA-512\n"
+                        + "security.protocol=SASL_PLAINTEXT\n"
+                        + "sasl.jaas.config=" + saslJaasConfigDecrypted
+                )
+                .build();
 
-        KubeResourceManager.get()
-            .createResourceWithWait(
-                kafkaProducerClient.producerStrimzi()
-            );
+            KubeResourceManager.get()
+                .createResourceWithWait(
+                    kafkaProducerClient.producerStrimzi()
+                );
+        });
 
-        String registryUrl = "http://apicurio-registry-service." + namespace + ".svc:8080/apis/ccompat/v6";
+        Allure.step("Deploy minio s3", () -> {
+            // Add Minio
+            MinioInstaller.deployMinio(namespace);
+            MinioInstaller.createBucket(namespace, bucketName);
+        });
 
-        // Add Minio
-        MinioInstaller.deployMinio(namespace);
-        MinioInstaller.createBucket(namespace, bucketName);
+        Allure.step("Deploy flink application with s3 as state backend", () -> {
+            // Deploy flink with test filter sql statement which filter to specific topic only payment type paypal
+            // Modify flink default deployment with state backend and pvc configuration
+            HashMap<String, String> flinkConfig = new HashMap();
+            flinkConfig.put("execution.checkpointing.interval", "10000");
+            flinkConfig.put("execution.checkpointing.snapshot-compression", "true");
+            flinkConfig.put("kubernetes.operator.job.restart.failed", "true");
+            // rocksdb can be used as a state backend but the location is referenced in s3 instead on local pvc
+            flinkConfig.put("state.backend", "rocksdb");
+            flinkConfig.put("state.checkpoints.dir", "s3://" + bucketName + "/" + MinioInstaller.MINIO + ":" + MinioInstaller.MINIO_PORT);
+            flinkConfig.put("state.savepoints.dir", "s3://" + bucketName + "/" + MinioInstaller.MINIO + ":" + MinioInstaller.MINIO_PORT);
+            // Currently Minio is deployed only in HTTP mode so we need to specify http in the url
+            flinkConfig.put("s3.endpoint", "http://" + MinioInstaller.MINIO + ":" + MinioInstaller.MINIO_PORT);
+            // This should be set to make sure Flink will properly work with Minio
+            flinkConfig.put("s3.path.style.access", "true");
+            flinkConfig.put("s3.access-key", MinioInstaller.ADMIN_CREDS);
+            flinkConfig.put("s3.secret-key", MinioInstaller.ADMIN_CREDS);
 
-        // Deploy flink with test filter sql statement which filter to specific topic only payment type paypal
-        // Modify flink default deployment with state backend and pvc configuration
-        HashMap<String, String> flinkConfig = new HashMap();
-        flinkConfig.put("execution.checkpointing.interval", "10000");
-        flinkConfig.put("execution.checkpointing.snapshot-compression", "true");
-        flinkConfig.put("kubernetes.operator.job.restart.failed", "true");
-        // rocksdb can be used as a state backend but the location is referenced in s3 instead on local pvc
-        flinkConfig.put("state.backend", "rocksdb");
-        flinkConfig.put("state.checkpoints.dir", "s3://" + bucketName + "/" + MinioInstaller.MINIO + ":" + MinioInstaller.MINIO_PORT);
-        flinkConfig.put("state.savepoints.dir", "s3://" + bucketName + "/" + MinioInstaller.MINIO + ":" + MinioInstaller.MINIO_PORT);
-        // Currently Minio is deployed only in HTTP mode so we need to specify http in the url
-        flinkConfig.put("s3.endpoint", "http://" + MinioInstaller.MINIO + ":" + MinioInstaller.MINIO_PORT);
-        // This should be set to make sure Flink will properly work with Minio
-        flinkConfig.put("s3.path.style.access", "true");
-        flinkConfig.put("s3.access-key", MinioInstaller.ADMIN_CREDS);
-        flinkConfig.put("s3.secret-key", MinioInstaller.ADMIN_CREDS);
+            FlinkDeployment flink = FlinkDeploymentTemplate.defaultFlinkDeployment(namespace,
+                    flinkDeploymentName, List.of(TestStatements.getTestFlinkFilter(
+                        bootstrapServerAuth, registryUrl, kafkaUser, namespace)))
+                .editSpec()
+                .addToFlinkConfiguration(
+                    flinkConfig
+                )
+                .editPodTemplate()
+                .editOrNewSpec()
+                .editFirstContainer()
+                .endContainer()
+                .endSpec()
+                .endPodTemplate()
+                .endSpec()
+                .build();
+            KubeResourceManager.get()
+                .createOrUpdateResourceWithWait(flink);
+        });
 
-        FlinkDeployment flink = FlinkDeploymentTemplate.defaultFlinkDeployment(namespace,
-                flinkDeploymentName, List.of(TestStatements.getTestFlinkFilter(
-                    bootstrapServerAuth, registryUrl, kafkaUser, namespace)))
-            .editSpec()
-            .addToFlinkConfiguration(
-                flinkConfig
-            )
-            .editPodTemplate()
-            .editOrNewSpec()
-            .editFirstContainer()
-            .endContainer()
-            .endSpec()
-            .endPodTemplate()
-            .endSpec()
-            .build();
-        KubeResourceManager.get()
-            .createOrUpdateResourceWithWait(flink);
+        Allure.step("Wait for producer produces all messages", () -> {
+            JobUtils.waitForJobSuccess(namespace, producerName,
+                TestFrameConstants.GLOBAL_TIMEOUT_MEDIUM);
+        });
 
-        JobUtils.waitForJobSuccess(namespace, kafkaProducerClient.getProducerName(),
-            TestFrameConstants.GLOBAL_TIMEOUT_MEDIUM);
-
-        //Check task manager log for presence checkpoint configuration
-        Wait.until("Task manager contains info about state.backend", TestFrameConstants.GLOBAL_POLL_INTERVAL_LONG,
-            TestFrameConstants.GLOBAL_TIMEOUT, () -> {
-                List<Pod> taskManagerPods = KubeResourceManager.get().kubeClient()
-                    .listPodsByPrefixInName(namespace, flinkDeploymentName + "-taskmanager");
-                for (Pod p : taskManagerPods) {
-                    return KubeResourceManager.get().kubeClient()
-                        .getLogsFromPod(namespace, p.getMetadata()
-                            .getName())
+        Allure.step("Verify that flink uses s3 as state backend", () -> {
+            //Check task manager log for presence checkpoint configuration
+            Wait.until("Task manager contains info about state.backend", TestFrameConstants.GLOBAL_POLL_INTERVAL_LONG,
+                TestFrameConstants.GLOBAL_TIMEOUT, () -> {
+                    List<Pod> taskManagerPods = KubeResourceManager.get().kubeClient()
+                        .listPodsByPrefixInName(namespace, flinkDeploymentName + "-taskmanager");
+                    for (Pod p : taskManagerPods) {
+                        return KubeResourceManager.get().kubeClient()
+                            .getLogsFromPod(namespace, p.getMetadata()
+                                .getName())
                             .contains("State backend loader loads the state backend as EmbeddedRocksDBStateBackend");
-                }
-                return false;
-            });
+                    }
+                    return false;
+                });
+        });
 
-        // Run consumer and check if data are filtered
-        String consumerName = "kafka-consumer";
-        StrimziKafkaClients kafkaConsumerClient = new StrimziKafkaClientsBuilder()
-            .withConsumerName(consumerName)
-            .withNamespaceName(namespace)
-            .withTopicName("flink.payment.paypal")
-            .withBootstrapAddress(bootstrapServerAuth)
-            .withMessageCount(100)
-            .withAdditionalConfig(
-                "sasl.mechanism=SCRAM-SHA-512\n" +
-                    "security.protocol=SASL_PLAINTEXT\n" +
-                    "sasl.jaas.config=" + saslJaasConfigDecrypted
-            )
-            .withConsumerGroup("flink-filter-test-group")
-            .build();
+        Allure.step("Consume filtered messages", () -> {
+            // Run consumer and check if data are filtered
+            String consumerName = "kafka-consumer";
+            StrimziKafkaClients kafkaConsumerClient = new StrimziKafkaClientsBuilder()
+                .withConsumerName(consumerName)
+                .withNamespaceName(namespace)
+                .withTopicName("flink.payment.paypal")
+                .withBootstrapAddress(bootstrapServerAuth)
+                .withMessageCount(100)
+                .withAdditionalConfig(
+                    "sasl.mechanism=SCRAM-SHA-512\n" +
+                        "security.protocol=SASL_PLAINTEXT\n" +
+                        "sasl.jaas.config=" + saslJaasConfigDecrypted
+                )
+                .withConsumerGroup("flink-filter-test-group")
+                .build();
 
-        KubeResourceManager.get()
-            .createResourceWithWait(
-                kafkaConsumerClient.consumerStrimzi()
-            );
+            KubeResourceManager.get()
+                .createResourceWithWait(
+                    kafkaConsumerClient.consumerStrimzi()
+                );
 
-        JobUtils.waitForJobSuccess(namespace, kafkaConsumerClient.getConsumerName(),
-            TestFrameConstants.GLOBAL_TIMEOUT_MEDIUM);
-        String consumerPodName = KubeResourceManager.get().kubeClient()
-            .listPodsByPrefixInName(namespace, consumerName)
-            .get(0)
-            .getMetadata()
-            .getName();
-        String log = KubeResourceManager.get().kubeClient()
-            .getLogsFromPod(namespace, consumerPodName);
-        assertTrue(log.contains("\"type\":\"paypal\""));
-        assertFalse(log.contains("\"type\":\"creditCard\""));
+            JobUtils.waitForJobSuccess(namespace, kafkaConsumerClient.getConsumerName(),
+                TestFrameConstants.GLOBAL_TIMEOUT_MEDIUM);
+            String consumerPodName = KubeResourceManager.get().kubeClient()
+                .listPodsByPrefixInName(namespace, consumerName)
+                .get(0)
+                .getMetadata()
+                .getName();
+            String log = KubeResourceManager.get().kubeClient()
+                .getLogsFromPod(namespace, consumerPodName);
+            assertTrue(log.contains("\"type\":\"paypal\""));
+            assertFalse(log.contains("\"type\":\"creditCard\""));
 
-        MinioUtils.waitForObjectsInMinio(namespace, bucketName);
-        String flinkDeploymentPodName = KubeResourceManager.get().kubeClient()
-            .listPodsByPrefixInName(namespace, flinkDeploymentName)
-            .stream()
-            .filter(pod -> !pod.getMetadata()
-                .getName()
-                .contains("taskmanager"))
-            .toList()
-            .get(0)
-            .getMetadata()
-            .getName();
+            MinioUtils.waitForObjectsInMinio(namespace, bucketName);
+            String flinkDeploymentPodName = KubeResourceManager.get().kubeClient()
+                .listPodsByPrefixInName(namespace, flinkDeploymentName)
+                .stream()
+                .filter(pod -> !pod.getMetadata()
+                    .getName()
+                    .contains("taskmanager"))
+                .toList()
+                .get(0)
+                .getMetadata()
+                .getName();
 
-        log = KubeResourceManager.get().kubeClient().getLogsFromPod(namespace, flinkDeploymentPodName);
-        assertTrue(log.contains("Committing minio:9000"));
-        assertTrue(log.contains("Marking checkpoint 1 as completed for source Source: payment_fiat"));
+            log = KubeResourceManager.get().kubeClient().getLogsFromPod(namespace, flinkDeploymentPodName);
+            assertTrue(log.contains("Committing minio:9000"));
+            assertTrue(log.contains("Marking checkpoint 1 as completed for source Source: payment_fiat"));
+        });
     }
 }

@@ -7,6 +7,7 @@ package io.streams.e2e.flink.sql;
 import io.fabric8.kubernetes.api.model.ConfigMapBuilder;
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.NamespaceBuilder;
+import io.qameta.allure.Allure;
 import io.skodjob.annotations.Desc;
 import io.skodjob.annotations.Label;
 import io.skodjob.annotations.Step;
@@ -67,11 +68,11 @@ public class SqlExampleST extends Abstract {
 
     @BeforeAll
     void prepareOperators() throws Exception {
-        OperatorInstaller.installRequiredOperators(
+        Allure.step("Install required operators", () -> OperatorInstaller.installRequiredOperators(
             InstallableOperator.FLINK,
             InstallableOperator.APICURIO,
             InstallableOperator.STRIMZI,
-            InstallableOperator.CERT_MANAGER);
+            InstallableOperator.CERT_MANAGER));
     }
 
     @TestDoc(
@@ -98,93 +99,105 @@ public class SqlExampleST extends Abstract {
     )
     @Test
     void testRecommendationApp() throws IOException {
-        // Create namespace
-        KubeResourceManager.get().createOrUpdateResourceWithWait(
-            new NamespaceBuilder().withNewMetadata().withName(namespace).endMetadata().build());
+        Allure.step("Prepare " + namespace + " namespace", () -> {
+            // Create namespace
+            KubeResourceManager.get().createOrUpdateResourceWithWait(
+                new NamespaceBuilder().withNewMetadata().withName(namespace).endMetadata().build());
 
-        // Add flink RBAC
-        KubeResourceManager.get().createOrUpdateResourceWithWait(
-            FlinkRBAC.getFlinkRbacResources(namespace).toArray(new HasMetadata[0]));
+            // Add flink RBAC
+            KubeResourceManager.get().createOrUpdateResourceWithWait(
+                FlinkRBAC.getFlinkRbacResources(namespace).toArray(new HasMetadata[0]));
+        });
 
-        // Create kafka
-        KubeResourceManager.get().createOrUpdateResourceWithWait(
-            KafkaNodePoolTemplate.defaultKafkaNodePoolJbod(namespace, "dual-role",
-                1, "my-cluster", List.of(ProcessRoles.BROKER, ProcessRoles.CONTROLLER)).build());
+        Allure.step("Deploy kafka", () -> {
+            // Create kafka
+            KubeResourceManager.get().createOrUpdateResourceWithWait(
+                KafkaNodePoolTemplate.defaultKafkaNodePoolJbod(namespace, "dual-role",
+                    1, "my-cluster", List.of(ProcessRoles.BROKER, ProcessRoles.CONTROLLER)).build());
 
-        KubeResourceManager.get().createOrUpdateResourceWithWait(
-            KafkaTemplate.defaultKafka(namespace, "my-cluster")
-                .editSpec()
-                .withCruiseControl(null)
-                .withKafkaExporter(null)
-                .editKafka()
-                .withConfig(Map.of(
-                    "offsets.topic.replication.factor", 1,
-                    "transaction.state.log.replication.factor", 1,
-                    "transaction.state.log.min.isr", 1,
-                    "default.replication.factor", 1,
-                    "min.insync.replicas", 1
-                ))
-                .endKafka()
-                .endSpec()
-                .build());
-
-        // Create topic for ksql apicurio
-        KubeResourceManager.get().createOrUpdateResourceWithWait(
-            ApicurioRegistryTemplate.apicurioKsqlTopic(namespace, "my-cluster", 1));
+            KubeResourceManager.get().createOrUpdateResourceWithWait(
+                KafkaTemplate.defaultKafka(namespace, "my-cluster")
+                    .editSpec()
+                    .withCruiseControl(null)
+                    .withKafkaExporter(null)
+                    .editKafka()
+                    .withConfig(Map.of(
+                        "offsets.topic.replication.factor", 1,
+                        "transaction.state.log.replication.factor", 1,
+                        "transaction.state.log.min.isr", 1,
+                        "default.replication.factor", 1,
+                        "min.insync.replicas", 1
+                    ))
+                    .endKafka()
+                    .endSpec()
+                    .build());
+        });
 
         String bootstrapServer = KafkaType.kafkaClient().inNamespace(namespace).withName("my-cluster").get()
             .getStatus().getListeners().stream().filter(l -> l.getName().equals("plain"))
             .findFirst().get().getBootstrapServers();
 
-        // Add apicurio
-        KubeResourceManager.get().createOrUpdateResourceWithWait(
-            ApicurioRegistryTemplate.defaultApicurioRegistry("apicurio-registry", namespace,
-                bootstrapServer).build());
+        Allure.step("Deploy apicurio registry", () -> {
+            // Create topic for ksql apicurio
+            KubeResourceManager.get().createOrUpdateResourceWithWait(
+                ApicurioRegistryTemplate.apicurioKsqlTopic(namespace, "my-cluster", 1));
 
-        // Create configMap
-        KubeResourceManager.get().createOrUpdateResourceWithWait(
-            new ConfigMapBuilder()
-                .withNewMetadata()
-                .withName("product-inventory")
-                .withNamespace(namespace)
-                .endMetadata()
-                .withData(
-                    Collections.singletonMap("productInventory.csv",
-                        Files.readString(exampleFiles.resolve("productInventory.csv"))))
-                .build());
+            // Add apicurio
+            KubeResourceManager.get().createOrUpdateResourceWithWait(
+                ApicurioRegistryTemplate.defaultApicurioRegistry("apicurio-registry", namespace,
+                    bootstrapServer).build());
+        });
 
-        // Create data-app
-        List<HasMetadata> dataApp = KubeResourceManager.get()
-            .readResourcesFromFile(exampleFiles.resolve("data-generator.yaml"));
-        dataApp.forEach(r -> r.getMetadata().setNamespace(namespace));
-        KubeResourceManager.get().createOrUpdateResourceWithWait(dataApp.toArray(new HasMetadata[0]));
+        Allure.step("Deploy recommendation application", () -> {
+            // Create configMap
+            KubeResourceManager.get().createOrUpdateResourceWithWait(
+                new ConfigMapBuilder()
+                    .withNewMetadata()
+                    .withName("product-inventory")
+                    .withNamespace(namespace)
+                    .endMetadata()
+                    .withData(
+                        Collections.singletonMap("productInventory.csv",
+                            Files.readString(exampleFiles.resolve("productInventory.csv"))))
+                    .build());
+
+            // Create data-app
+            List<HasMetadata> dataApp = KubeResourceManager.get()
+                .readResourcesFromFile(exampleFiles.resolve("data-generator.yaml"));
+            dataApp.forEach(r -> r.getMetadata().setNamespace(namespace));
+            KubeResourceManager.get().createOrUpdateResourceWithWait(dataApp.toArray(new HasMetadata[0]));
+        });
 
         // Deploy flink
         String registryUrl = "http://apicurio-registry-service.flink.svc:8080/apis/ccompat/v6";
 
-        FlinkDeployment flinkApp = FlinkDeploymentTemplate.flinkExampleDeployment(namespace,
-            "recommendation-app", List.of(TestStatements.getTestSqlExample(bootstrapServer, registryUrl))).build();
-        KubeResourceManager.get().createOrUpdateResourceWithWait(flinkApp);
+        Allure.step("Deploy flink application", () -> {
+            FlinkDeployment flinkApp = FlinkDeploymentTemplate.flinkExampleDeployment(namespace,
+                "recommendation-app", List.of(TestStatements.getTestSqlExample(bootstrapServer, registryUrl))).build();
+            KubeResourceManager.get().createOrUpdateResourceWithWait(flinkApp);
+        });
 
-        // Run internal consumer and check if topic contains messages
-        String consumerName = "kafka-consumer";
-        StrimziKafkaClients strimziKafkaClients = new StrimziKafkaClientsBuilder()
-            .withConsumerName(consumerName)
-            .withNamespaceName(namespace)
-            .withTopicName("flink.recommended.products")
-            .withBootstrapAddress(bootstrapServer)
-            .withMessageCount(10)
-            .withConsumerGroup("my-group").build();
+        Allure.step("Deploy consumer and verify filtered messages", () -> {
+            // Run internal consumer and check if topic contains messages
+            String consumerName = "kafka-consumer";
+            StrimziKafkaClients strimziKafkaClients = new StrimziKafkaClientsBuilder()
+                .withConsumerName(consumerName)
+                .withNamespaceName(namespace)
+                .withTopicName("flink.recommended.products")
+                .withBootstrapAddress(bootstrapServer)
+                .withMessageCount(10)
+                .withConsumerGroup("my-group").build();
 
-        KubeResourceManager.get().createResourceWithWait(
-            strimziKafkaClients.consumerStrimzi()
-        );
-        JobUtils.waitForJobSuccess(namespace, strimziKafkaClients.getConsumerName(),
-            TestFrameConstants.GLOBAL_TIMEOUT_MEDIUM);
-        String consumerPodName = KubeResourceManager.get().kubeClient().listPodsByPrefixInName(namespace, consumerName)
-            .get(0).getMetadata().getName();
+            KubeResourceManager.get().createResourceWithWait(
+                strimziKafkaClients.consumerStrimzi()
+            );
+            JobUtils.waitForJobSuccess(namespace, strimziKafkaClients.getConsumerName(),
+                TestFrameConstants.GLOBAL_TIMEOUT_MEDIUM);
+            String consumerPodName = KubeResourceManager.get().kubeClient().listPodsByPrefixInName(namespace, consumerName)
+                .get(0).getMetadata().getName();
 
-        String log = KubeResourceManager.get().kubeClient().getLogsFromPod(namespace, consumerPodName);
-        assertTrue(log.contains("user-"));
+            String log = KubeResourceManager.get().kubeClient().getLogsFromPod(namespace, consumerPodName);
+            assertTrue(log.contains("user-"));
+        });
     }
 }

@@ -36,3 +36,7 @@ build/
 
 ### Operator install files ###
 operator-install-files/
+
+### Alure reports ###
+allure-report/
+.allure/
