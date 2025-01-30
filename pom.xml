@@ -327,10 +327,20 @@
                 <artifactId>maven-failsafe-plugin</artifactId>
                 <version>${maven.surefire.version}</version>
                 <executions>
+                    <!-- Run the tests -->
                     <execution>
+                        <id>integration-tests</id>
+                        <phase>integration-test</phase>
+                        <goals>
+                            <goal>integration-test</goal>
+                        </goals>
+                    </execution>
+                    <!-- Fail the build if tests failed, but only AFTER the verify phase -->
+                    <execution>
+                        <id>verify-tests</id>
+                        <phase>verify</phase>
                         <goals>
                             <goal>verify</goal>
-                            <goal>integration-test</goal>
                         </goals>
                     </execution>
                 </executions>
