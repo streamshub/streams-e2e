@@ -5,7 +5,7 @@
 package io.streams.constants;
 
 public interface KubeResourceConstants {
-    // Kubernetes default resoruces
+    // Kubernetes default resources
     String DEPLOYMENT = "deployment";
     String SUBSCRIPTION = "subscription";
     String OPERATOR_GROUP = "operatorgroup";
@@ -18,6 +18,12 @@ public interface KubeResourceConstants {
     String NODE = "node";
     String PV = "pv";
     String PVC = "pvc";
+    String STATEFUL_SET = "statefulset";
+    String REPLICA_SET = "replicasets";
+    String SERVICE = "service";
+    String ROUTE = "route";
+    String NETWORK_POLICY = "networkpolicies";
+    String INGRESS = "ingress";
 
     // Custom resources
     String FLINK_DEPLOYMENT = "FlinkDeployment";
