@@ -31,8 +31,8 @@
         <slf4j.version>2.0.16</slf4j.version>
         <jackson.version>2.17.2</jackson.version>
 
-        <junit.jupiter.version>5.11.4</junit.jupiter.version>
-        <junit.platform.version>1.11.4</junit.platform.version>
+        <junit.jupiter.version>5.12.0</junit.jupiter.version>
+        <junit.platform.version>1.12.0</junit.platform.version>
         <maven.surefire.version>3.5.2</maven.surefire.version>
         <allure.junit.version>2.29.1</allure.junit.version>
         <allure.maven.version>2.15.2</allure.maven.version>
@@ -41,7 +41,7 @@
         <spotbugs.version>4.9.1</spotbugs.version>
         <maven.spotbugs.version>4.9.1.0</maven.spotbugs.version>
         <maven.checkstyle.version>3.6.0</maven.checkstyle.version>
-        <maven.compile.plugin.version>3.13.0</maven.compile.plugin.version>
+        <maven.compile.plugin.version>3.14.0</maven.compile.plugin.version>
         <maven.dependency.version>3.8.1</maven.dependency.version>
         <maven.download.plugin.version>1.13.0</maven.download.plugin.version>
         <maven.exec.plugin.version>3.5.0</maven.exec.plugin.version>
