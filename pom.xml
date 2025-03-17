@@ -31,15 +31,15 @@
         <slf4j.version>2.0.17</slf4j.version>
         <jackson.version>2.17.2</jackson.version>
 
-        <junit.jupiter.version>5.12.0</junit.jupiter.version>
-        <junit.platform.version>1.12.0</junit.platform.version>
+        <junit.jupiter.version>5.12.1</junit.jupiter.version>
+        <junit.platform.version>1.12.1</junit.platform.version>
         <maven.surefire.version>3.5.2</maven.surefire.version>
         <allure.junit.version>2.29.1</allure.junit.version>
         <allure.maven.version>2.15.2</allure.maven.version>
 
         <!--   Build tools' properties     -->
-        <spotbugs.version>4.9.2</spotbugs.version>
-        <maven.spotbugs.version>4.9.2.0</maven.spotbugs.version>
+        <spotbugs.version>4.9.3</spotbugs.version>
+        <maven.spotbugs.version>4.9.3.0</maven.spotbugs.version>
         <maven.checkstyle.version>3.6.0</maven.checkstyle.version>
         <maven.compile.plugin.version>3.14.0</maven.compile.plugin.version>
         <maven.dependency.version>3.8.1</maven.dependency.version>
