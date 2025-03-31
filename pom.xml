@@ -33,7 +33,7 @@
 
         <junit.jupiter.version>5.12.1</junit.jupiter.version>
         <junit.platform.version>1.12.1</junit.platform.version>
-        <maven.surefire.version>3.5.2</maven.surefire.version>
+        <maven.surefire.version>3.5.3</maven.surefire.version>
         <allure.junit.version>2.29.1</allure.junit.version>
         <allure.maven.version>2.15.2</allure.maven.version>
 
