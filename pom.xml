@@ -359,9 +359,9 @@
                             junit.jupiter.extensions.autodetection.enabled = true
                         </configurationParameters>
                     </properties>
-                    <systemProperties>
+                    <systemPropertyVariables>
                         <resultsDirectory>${project.build.directory}/allure-results</resultsDirectory>
-                    </systemProperties>
+                    </systemPropertyVariables>
                 </configuration>
             </plugin>
             <plugin>
