@@ -4,6 +4,7 @@
  */
 package io.streams.e2e;
 
+import io.skodjob.testframe.annotations.MustGather;
 import io.skodjob.testframe.annotations.ResourceManager;
 import io.skodjob.testframe.annotations.TestVisualSeparator;
 import io.skodjob.testframe.resources.DeploymentType;
@@ -16,7 +17,7 @@ import io.skodjob.testframe.resources.SubscriptionType;
 import io.skodjob.testframe.utils.KubeUtils;
 import io.streams.Environment;
 import io.streams.constants.TestConstants;
-import io.streams.listeners.TestExceptionCallbackListener;
+import io.streams.listeners.MustGatherImpl;
 import io.streams.operands.apicurio.resources.ApicurioRegistryType;
 import io.streams.operands.flink.resoruces.FlinkDeploymentType;
 import io.streams.operands.strimzi.resources.KafkaBridgeType;
@@ -29,7 +30,6 @@ import io.streams.operands.strimzi.resources.KafkaTopicType;
 import io.streams.operands.strimzi.resources.KafkaType;
 import io.streams.operands.strimzi.resources.KafkaUserType;
 import org.junit.jupiter.api.TestInstance;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,7 +38,7 @@ import java.io.IOException;
 @ResourceManager
 @TestVisualSeparator
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-@ExtendWith(TestExceptionCallbackListener.class)
+@MustGather(config = MustGatherImpl.class)
 public class Abstract {
     static final Logger LOGGER = LoggerFactory.getLogger(Abstract.class);
 
