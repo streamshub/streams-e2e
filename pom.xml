@@ -24,7 +24,7 @@
         <maven.compiler.release>17</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <test-frame.version>0.11.0</test-frame.version>
+        <test-frame.version>0.12.0</test-frame.version>
         <skodjob-doc.version>0.4.0</skodjob-doc.version>
         <fabric8.version>7.1.0</fabric8.version>
         <log4j.version>2.24.3</log4j.version>
