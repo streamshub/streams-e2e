@@ -26,7 +26,7 @@
 
         <test-frame.version>0.13.0</test-frame.version>
         <skodjob-doc.version>0.4.0</skodjob-doc.version>
-        <fabric8.version>7.1.0</fabric8.version>
+        <fabric8.version>7.2.0</fabric8.version>
         <log4j.version>2.24.3</log4j.version>
         <slf4j.version>2.0.17</slf4j.version>
         <jackson.version>2.17.2</jackson.version>
@@ -55,7 +55,7 @@
         <apicurio.registry.files.destination>apicurio-registry</apicurio.registry.files.destination>
         <debezium.operator.files.destination>debezium</debezium.operator.files.destination>
         <!-- Operators versions -->
-        <strimzi.version>0.45.0</strimzi.version>
+        <strimzi.version>0.46.0</strimzi.version>
         <flink.version>1.11.0</flink.version>
         <cert.manager.version>1.17.2</cert.manager.version>
         <apicurio.registry.version>1.1.3-v2.6.4.final</apicurio.registry.version>
