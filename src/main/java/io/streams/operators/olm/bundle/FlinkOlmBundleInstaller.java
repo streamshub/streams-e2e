@@ -54,7 +54,7 @@ public class FlinkOlmBundleInstaller {
                     try {
                         return osr.run();
                     } catch (Exception ex) {
-                        KubeResourceManager.get().deleteResource(ns);
+                        KubeResourceManager.get().deleteResourceAsyncWait(ns);
                         throw ex;
                     }
                 });
