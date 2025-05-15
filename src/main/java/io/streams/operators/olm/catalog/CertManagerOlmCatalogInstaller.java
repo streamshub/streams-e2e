@@ -118,14 +118,14 @@ public class CertManagerOlmCatalogInstaller {
     private static void cleanClusterRoleBindings() {
         KubeResourceManager.get().kubeClient().getClient().rbac().clusterRoleBindings()
             .withLabel("app.kubernetes.io/component", "cert-manager").list().getItems().forEach(crb -> {
-                KubeResourceManager.get().deleteResource(crb);
+                KubeResourceManager.get().deleteResourceAsyncWait(crb);
             });
     }
 
     private static void cleanClusterRole() {
         KubeResourceManager.get().kubeClient().getClient().rbac().clusterRoles()
             .withLabel("app.kubernetes.io/part-of", "cert-manager-operator").list().getItems().forEach(cr -> {
-                KubeResourceManager.get().deleteResource(cr);
+                KubeResourceManager.get().deleteResourceAsyncWait(cr);
             });
     }
 
