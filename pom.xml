@@ -631,7 +631,7 @@
                                     <goal>wget</goal>
                                 </goals>
                                 <configuration>
-                                    <url>https://raw.githubusercontent.com/streamshub/flink-sql-examples/main/recommendation-app/data-generator.yaml</url>
+                                    <url>https://raw.githubusercontent.com/streamshub/flink-sql-examples/main/tutorials/recommendation-app/data-generator.yaml</url>
                                     <outputDirectory>${basedir}/${operator.files.destination}/examples/sql-example</outputDirectory>
                                     <outputFileName>data-generator.yaml</outputFileName>
                                 </configuration>
@@ -643,7 +643,7 @@
                                     <goal>wget</goal>
                                 </goals>
                                 <configuration>
-                                    <url>https://raw.githubusercontent.com/streamshub/flink-sql-examples/main/recommendation-app/productInventory.csv</url>
+                                    <url>https://raw.githubusercontent.com/streamshub/flink-sql-examples/main/tutorials/recommendation-app/productInventory.csv</url>
                                     <outputDirectory>${basedir}/${operator.files.destination}/examples/sql-example</outputDirectory>
                                     <outputFileName>productInventory.csv</outputFileName>
                                 </configuration>
