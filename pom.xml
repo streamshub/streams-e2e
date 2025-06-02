@@ -31,8 +31,8 @@
         <slf4j.version>2.0.17</slf4j.version>
         <jackson.version>2.17.2</jackson.version>
 
-        <junit.jupiter.version>5.12.2</junit.jupiter.version>
-        <junit.platform.version>1.12.2</junit.platform.version>
+        <junit.jupiter.version>5.13.0</junit.jupiter.version>
+        <junit.platform.version>1.13.0</junit.platform.version>
         <maven.surefire.version>3.5.3</maven.surefire.version>
         <allure.junit.version>2.29.1</allure.junit.version>
         <allure.maven.version>2.15.2</allure.maven.version>
@@ -44,7 +44,7 @@
         <maven.compile.plugin.version>3.14.0</maven.compile.plugin.version>
         <maven.dependency.version>3.8.1</maven.dependency.version>
         <maven.download.plugin.version>2.0.0</maven.download.plugin.version>
-        <maven.exec.plugin.version>3.5.0</maven.exec.plugin.version>
+        <maven.exec.plugin.version>3.5.1</maven.exec.plugin.version>
 
         <skipITs>true</skipITs>
 
@@ -60,7 +60,7 @@
         <cert.manager.version>1.17.2</cert.manager.version>
         <apicurio.registry.version>1.1.3-v2.6.4.final</apicurio.registry.version>
         <apicurio.api.version>1.1.2</apicurio.api.version>
-        <apicurio.lib.version>2.6.8.Final</apicurio.lib.version>
+        <apicurio.lib.version>2.6.9.Final</apicurio.lib.version>
         <debezium.operator.version>3.1.1</debezium.operator.version>
         <kafka.version>3.9.0</kafka.version>
     </properties>
