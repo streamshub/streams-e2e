@@ -56,7 +56,7 @@
         <debezium.operator.files.destination>debezium</debezium.operator.files.destination>
         <!-- Operators versions -->
         <strimzi.version>0.46.0</strimzi.version>
-        <flink.version>1.11.0</flink.version>
+        <flink.version>1.12.0</flink.version>
         <cert.manager.version>1.17.2</cert.manager.version>
         <apicurio.registry.version>1.1.3-v2.6.4.final</apicurio.registry.version>
         <apicurio.api.version>1.1.2</apicurio.api.version>
