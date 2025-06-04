@@ -304,7 +304,9 @@ public class SqlJobRunnerST extends Abstract {
                 TestFrameConstants.GLOBAL_TIMEOUT_MEDIUM, () -> {
                     String error = new FlinkDeploymentType().getClient().inNamespace(namespace).withName(flinkDeploymentName)
                         .get().getStatus().getError();
-                    return error.contains("DeploymentFailedException") || error.contains("ReconciliationException");
+                    return error.contains("DeploymentFailedException") ||
+                        error.contains("ReconciliationException") ||
+                        error.contains("SerializedThrowable");
                 });
 
             String podName = KubeResourceManager.get().kubeClient().listPodsByPrefixInName(namespace, flinkDeploymentName)
