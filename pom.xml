@@ -31,15 +31,15 @@
         <slf4j.version>2.0.17</slf4j.version>
         <jackson.version>2.17.2</jackson.version>
 
-        <junit.jupiter.version>5.13.1</junit.jupiter.version>
-        <junit.platform.version>1.13.1</junit.platform.version>
+        <junit.jupiter.version>5.13.2</junit.jupiter.version>
+        <junit.platform.version>1.13.2</junit.platform.version>
         <maven.surefire.version>3.5.3</maven.surefire.version>
         <allure.junit.version>2.29.1</allure.junit.version>
         <allure.maven.version>2.15.2</allure.maven.version>
 
         <!--   Build tools' properties     -->
         <spotbugs.version>4.9.3</spotbugs.version>
-        <maven.spotbugs.version>4.9.3.0</maven.spotbugs.version>
+        <maven.spotbugs.version>4.9.3.2</maven.spotbugs.version>
         <maven.checkstyle.version>3.6.0</maven.checkstyle.version>
         <maven.compile.plugin.version>3.14.0</maven.compile.plugin.version>
         <maven.dependency.version>3.8.1</maven.dependency.version>
@@ -55,7 +55,7 @@
         <apicurio.registry.files.destination>apicurio-registry</apicurio.registry.files.destination>
         <debezium.operator.files.destination>debezium</debezium.operator.files.destination>
         <!-- Operators versions -->
-        <strimzi.version>0.46.0</strimzi.version>
+        <strimzi.version>0.46.1</strimzi.version>
         <flink.version>1.12.0</flink.version>
         <cert.manager.version>1.17.2</cert.manager.version>
         <apicurio.registry.version>1.1.3-v2.6.4.final</apicurio.registry.version>
