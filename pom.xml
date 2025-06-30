@@ -45,7 +45,7 @@
         <maven.dependency.version>3.8.1</maven.dependency.version>
         <maven.download.plugin.version>2.0.0</maven.download.plugin.version>
         <maven.exec.plugin.version>3.5.1</maven.exec.plugin.version>
-        <codehouse.mojo.builder.helper.version>3.2.0</codehouse.mojo.builder.helper.version>
+        <codehouse.mojo.builder.helper.version>3.6.1</codehouse.mojo.builder.helper.version>
 
         <skipITs>true</skipITs>
 
