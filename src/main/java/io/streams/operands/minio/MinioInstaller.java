@@ -117,9 +117,8 @@ public class MinioInstaller {
 
         KubeResourceManager.get().kubeCmdClient().inNamespace(namespace).execInPod(minioPod,
             "mc",
-            "config",
-            "host",
-            "add",
+            "alias",
+            "set",
             MINIO_STORAGE_ALIAS,
             "http://localhost:" + MINIO_PORT,
             ADMIN_CREDS, ADMIN_CREDS);
