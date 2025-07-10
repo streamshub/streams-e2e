@@ -29,7 +29,7 @@ public class MinioInstaller {
     public static final String MINIO_STORAGE_ALIAS = "local";
     public static final int MINIO_PORT = 9000;
     public static final int MINIO_CONSOLE_PORT = 9090;
-    private static final String MINIO_IMAGE = "quay.io/minio/minio:latest";
+    private static final String MINIO_IMAGE = "quay.io/minio/minio:RELEASE.2025-06-13T11-33-47Z";
 
     /**
      * Deploy minio to a specific namespace, creates service for it and init client inside the Minio pod
