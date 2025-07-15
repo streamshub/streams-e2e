@@ -7,6 +7,7 @@ package io.streams.e2e.flink.sql;
 import io.fabric8.kubernetes.api.model.ConfigMapBuilder;
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.NamespaceBuilder;
+import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.qameta.allure.Allure;
 import io.skodjob.annotations.Desc;
 import io.skodjob.annotations.Label;
@@ -165,6 +166,10 @@ public class SqlExampleST extends Abstract {
             List<HasMetadata> dataApp = KubeResourceManager.get()
                 .readResourcesFromFile(exampleFiles.resolve("data-generator.yaml"));
             dataApp.forEach(r -> r.getMetadata().setNamespace(namespace));
+            dataApp.stream().filter(r -> r.getKind().equals("Deployment")).forEach(r -> {
+                Deployment d = (Deployment) r;
+                d.getSpec().getTemplate().getSpec().getContainers().get(0).setImagePullPolicy(TestConstants.ALWAYS_IMAGE_PULL_POLICY);
+            });
             KubeResourceManager.get().createOrUpdateResourceWithWait(dataApp.toArray(new HasMetadata[0]));
         });
 
