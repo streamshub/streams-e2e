@@ -298,6 +298,10 @@ public class SqlExampleST extends Abstract {
             List<HasMetadata> dataApp = KubeResourceManager.get()
                 .readResourcesFromFile(exampleFiles.resolve("data-generator.yaml"));
             dataApp.forEach(r -> r.getMetadata().setNamespace(namespace));
+            dataApp.stream().filter(r -> r.getKind().equals("Deployment")).forEach(r -> {
+                Deployment d = (Deployment) r;
+                d.getSpec().getTemplate().getSpec().getContainers().get(0).setImagePullPolicy(TestConstants.ALWAYS_IMAGE_PULL_POLICY);
+            });
             KubeResourceManager.get().createOrUpdateResourceWithWait(dataApp.toArray(new HasMetadata[0]));
         });
 
