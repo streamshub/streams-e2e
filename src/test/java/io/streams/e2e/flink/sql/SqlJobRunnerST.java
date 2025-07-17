@@ -788,7 +788,7 @@ public class SqlJobRunnerST extends Abstract {
         Allure.step("Deploy flink application with s3 as state backend", () -> {
             // Deploy flink with test filter sql statement which filter to specific topic only payment type paypal
             // Modify flink default deployment with state backend and pvc configuration
-            HashMap<String, String> flinkConfig = new HashMap();
+            HashMap<String, String> flinkConfig = new HashMap<>();
             flinkConfig.put("execution.checkpointing.interval", "10000");
             flinkConfig.put("execution.checkpointing.snapshot-compression", "true");
             flinkConfig.put("kubernetes.operator.job.restart.failed", "true");
