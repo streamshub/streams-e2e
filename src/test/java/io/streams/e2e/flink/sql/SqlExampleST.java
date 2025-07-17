@@ -205,4 +205,149 @@ public class SqlExampleST extends Abstract {
             assertTrue(log.contains("user-"));
         });
     }
+
+    @TestDoc(
+            description = @Desc("Test verifies that flink-sql-example recommended app " +
+                "https://github.com/streamshub/flink-sql-examples/tree/main/recommendation-app works "+
+                "when using SQL from ConfigMap"),
+            steps = {
+                @Step(value = "Create namespace, serviceaccount and roles for Flink", expected = "Resources created"),
+                @Step(value = "Deploy Apicurio registry", expected = "Apicurio registry is up and running"),
+                @Step(value = "Deploy simple example Kafka my-cluster", expected = "Kafka is up and running"),
+                @Step(value = "Deploy productInventory.csv as configmap", expected = "Product Inventory Configmap created"),
+                @Step(value = "Deploy data-generator deployment", expected = "Deployment is up and running"),
+                @Step(value = "Deploy recommendation-app-sql configmap", expected = "SQL Configmap created"),
+                @Step(value = "Deploy FlinkDeployment from sql-example",
+                    expected = "FlinkDeployment is up and tasks are deployed and it sends filtered " +
+                        "data into flink.recommended.products topic"),
+                @Step(value = "Deploy strimzi-kafka-clients consumer as job and consume messages from" +
+                    "kafka topic flink.recommended.products",
+                    expected = "Consumer is deployed and it consumes messages"),
+                @Step(value = "Verify that messages are present", expected = "Messages are present"),
+            },
+            labels = {
+                @Label(value = FLINK_SQL_EXAMPLE),
+                @Label(value = FLINK),
+            }
+    )
+    @Test
+    void testRecommendationAppWithSqlConfigMap() throws IOException {
+        Allure.step("Prepare " + namespace + " namespace", () -> {
+            // Create namespace
+            KubeResourceManager.get().createOrUpdateResourceWithWait(
+                new NamespaceBuilder().withNewMetadata().withName(namespace).endMetadata().build());
+
+            // Add flink RBAC
+            KubeResourceManager.get().createOrUpdateResourceWithWait(
+                FlinkRBAC.getFlinkRbacResources(namespace).toArray(new HasMetadata[0]));
+        });
+
+        Allure.step("Deploy kafka", () -> {
+            // Create kafka
+            KubeResourceManager.get().createOrUpdateResourceWithWait(
+                KafkaNodePoolTemplate.defaultKafkaNodePoolJbod(namespace, "dual-role",
+                    1, "my-cluster", List.of(ProcessRoles.BROKER, ProcessRoles.CONTROLLER)).build());
+
+            KubeResourceManager.get().createOrUpdateResourceWithWait(
+                KafkaTemplate.defaultKafka(namespace, "my-cluster")
+                    .editSpec()
+                    .withCruiseControl(null)
+                    .withKafkaExporter(null)
+                    .editKafka()
+                    .withConfig(Map.of(
+                        "offsets.topic.replication.factor", 1,
+                        "transaction.state.log.replication.factor", 1,
+                        "transaction.state.log.min.isr", 1,
+                        "default.replication.factor", 1,
+                        "min.insync.replicas", 1
+                    ))
+                    .endKafka()
+                    .endSpec()
+                    .build());
+        });
+
+        String bootstrapServer = KafkaType.kafkaClient().inNamespace(namespace).withName("my-cluster").get()
+                .getStatus().getListeners().stream().filter(l -> l.getName().equals("plain"))
+                .findFirst().get().getBootstrapServers();
+
+        Allure.step("Deploy apicurio registry", () -> {
+            // Create topic for ksql apicurio
+            KubeResourceManager.get().createOrUpdateResourceWithWait(
+                ApicurioRegistryTemplate.apicurioKsqlTopic(namespace, "my-cluster", 1));
+
+            // Add apicurio
+            KubeResourceManager.get().createOrUpdateResourceWithWait(
+                ApicurioRegistryTemplate.defaultApicurioRegistry("apicurio-registry", namespace,
+                    bootstrapServer).build());
+        });
+
+        Allure.step("Deploy recommendation application", () -> {
+            // Create configMap
+            KubeResourceManager.get().createOrUpdateResourceWithWait(
+                new ConfigMapBuilder()
+                    .withNewMetadata()
+                    .withName("product-inventory")
+                    .withNamespace(namespace)
+                    .endMetadata()
+                    .withData(
+                        Collections.singletonMap("productInventory.csv",
+                            Files.readString(exampleFiles.resolve("productInventory.csv"))))
+                    .build());
+
+            // Create data-app
+            List<HasMetadata> dataApp = KubeResourceManager.get()
+                .readResourcesFromFile(exampleFiles.resolve("data-generator.yaml"));
+            dataApp.forEach(r -> r.getMetadata().setNamespace(namespace));
+            dataApp.stream().filter(r -> r.getKind().equals("Deployment")).forEach(r -> {
+                Deployment d = (Deployment) r;
+                d.getSpec().getTemplate().getSpec().getContainers().get(0).setImagePullPolicy(TestConstants.ALWAYS_IMAGE_PULL_POLICY);
+            });
+            KubeResourceManager.get().createOrUpdateResourceWithWait(dataApp.toArray(new HasMetadata[0]));
+        });
+
+        // Deploy flink
+        String registryUrl = "http://apicurio-registry-service.flink.svc:8080/apis/ccompat/v6";
+
+        Allure.step("Deploy recommendation-app-sql configmap", () -> {
+            KubeResourceManager.get().createOrUpdateResourceWithWait(
+                new ConfigMapBuilder()
+                    .withNewMetadata()
+                    .withName("recommendation-app-sql")
+                    .withNamespace(namespace)
+                    .endMetadata()
+                    .withData(
+                        Collections.singletonMap("SQL_STATEMENTS", TestStatements.getTestSqlExample(bootstrapServer, registryUrl))
+                    )
+                    .build());
+        });
+
+        Allure.step("Deploy flink application", () -> {
+            FlinkDeployment flinkApp = FlinkDeploymentTemplate.flinkExampleDeploymentWithSqlConfigMap(namespace,
+                    "recommendation-app", "recommendation-app-sql").build();
+            KubeResourceManager.get().createOrUpdateResourceWithWait(flinkApp);
+        });
+
+        Allure.step("Deploy consumer and verify filtered messages", () -> {
+            // Run internal consumer and check if topic contains messages
+            String consumerName = "kafka-consumer";
+            StrimziKafkaClients strimziKafkaClients = new StrimziKafkaClientsBuilder()
+                    .withConsumerName(consumerName)
+                    .withNamespaceName(namespace)
+                    .withTopicName("flink.recommended.products")
+                    .withBootstrapAddress(bootstrapServer)
+                    .withMessageCount(10)
+                    .withConsumerGroup("my-group").build();
+
+            KubeResourceManager.get().createResourceWithWait(
+                    strimziKafkaClients.consumerStrimzi()
+            );
+            JobUtils.waitForJobSuccess(namespace, strimziKafkaClients.getConsumerName(),
+                    TestFrameConstants.GLOBAL_TIMEOUT_MEDIUM);
+            String consumerPodName = KubeResourceManager.get().kubeClient().listPodsByPrefixInName(namespace, consumerName)
+                    .get(0).getMetadata().getName();
+
+            String log = KubeResourceManager.get().kubeClient().getLogsFromPod(namespace, consumerPodName);
+            assertTrue(log.contains("user-"));
+        });
+    }
 }

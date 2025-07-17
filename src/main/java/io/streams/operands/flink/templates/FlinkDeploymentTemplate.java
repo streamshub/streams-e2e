@@ -119,6 +119,31 @@ public class FlinkDeploymentTemplate {
     }
 
     /**
+     * Return default flink deployment with sql configmap for sql runner
+     *
+     * @param namespace         namespace of flink deployment
+     * @param name              name of deployment
+     * @param sqlConfigMapName  name of ConfigMap with SQL_STATEMENTS key
+     * @return flink deployment builder
+     */
+    public static FlinkDeploymentBuilder flinkExampleDeploymentWithSqlConfigMap(String namespace, String name, String sqlConfigMapName) {
+        return flinkExampleDeployment(namespace, name, null)
+                .editSpec()
+                .editPodTemplate()
+                .editSpec()
+                .editFirstContainer()
+                .addNewEnvFrom()
+                .withNewConfigMapRef()
+                .withName(sqlConfigMapName)
+                .endConfigMapRef()
+                .endEnvFrom()
+                .endContainer()
+                .endSpec()
+                .endPodTemplate()
+                .endSpec();
+    }
+
+    /**
      * Returns default kube pvc for flink state backend
      *
      * @param namespace namespace
