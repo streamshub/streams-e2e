@@ -40,3 +40,27 @@
 * `flink-sql-example` (description file doesn't exist)
 * `flink` (description file doesn't exist)
 
+
+## testRecommendationAppWithSqlConfigMap
+
+**Description:** Test verifies that flink-sql-example recommended app https://github.com/streamshub/flink-sql-examples/tree/main/recommendation-app works when using SQL from ConfigMap
+
+**Steps:**
+
+| Step | Action | Result |
+| - | - | - |
+| 1. | Create namespace, serviceaccount and roles for Flink | Resources created |
+| 2. | Deploy Apicurio registry | Apicurio registry is up and running |
+| 3. | Deploy simple example Kafka my-cluster | Kafka is up and running |
+| 4. | Deploy productInventory.csv as configmap | Product Inventory Configmap created |
+| 5. | Deploy data-generator deployment | Deployment is up and running |
+| 6. | Deploy recommendation-app-sql configmap | SQL Configmap created |
+| 7. | Deploy FlinkDeployment from sql-example | FlinkDeployment is up and tasks are deployed and it sends filtered data into flink.recommended.products topic |
+| 8. | Deploy strimzi-kafka-clients consumer as job and consume messages fromkafka topic flink.recommended.products | Consumer is deployed and it consumes messages |
+| 9. | Verify that messages are present | Messages are present |
+
+**Labels:**
+
+* `flink-sql-example` (description file doesn't exist)
+* `flink` (description file doesn't exist)
+
