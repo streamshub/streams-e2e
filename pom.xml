@@ -720,7 +720,13 @@
                                     <executable>sh</executable>
                                     <arguments>
                                         <argument>-c</argument>
-                                        <argument>helm template flink-kubernetes-operator flink-operator-repo/flink-kubernetes-operator --set watchNamespaces=""  --set podSecurityContext=null --namespace flink-kubernetes-operator > ${basedir}/${operator.files.destination}/flink/deploy.yaml</argument>
+                                        <argument>helm template flink-kubernetes-operator flink-operator-repo/flink-kubernetes-operator \
+                                            --set watchNamespaces="" \
+                                            --set podSecurityContext=null \
+                                            --set defaultConfiguration."log4j-operator\.properties"=monitorInterval\=30 \
+                                            --set defaultConfiguration."log4j-console\.properties"=monitorInterval\=30 \
+                                            --set defaultConfiguration."flink-conf\.yaml"="kubernetes.operator.metrics.reporter.prom.factory.class\:\ org.apache.flink.metrics.prometheus.PrometheusReporterFactory kubernetes.operator.metrics.reporter.prom.port\:\ 9249 " \
+                                            --namespace flink-kubernetes-operator > ${basedir}/${operator.files.destination}/flink/deploy.yaml</argument>
                                     </arguments>
                                 </configuration>
                             </execution>
