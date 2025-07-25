@@ -16,13 +16,9 @@ import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.api.model.apps.DeploymentBuilder;
 import io.skodjob.testframe.resources.KubeResourceManager;
 import io.streams.constants.TestConstants;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import java.util.Map;
 
 public class MinioInstaller {
-    private static final Logger LOGGER = LogManager.getLogger(MinioInstaller.class);
 
     public static final String MINIO = "minio";
     public static final String ADMIN_CREDS = "minioadminLongerThan16BytesForFIPS";
