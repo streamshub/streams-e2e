@@ -52,6 +52,24 @@ $ ./mvnw verify -P test -Dit.tests=io.streams.e2e.flink.sql.SqlExampleST
 $ ./mvnw verify -P test -Dit.tests=io.streams.e2e.flink.sql.SqlExampleST#testRecommendationApp
 ```
 
+## Build the container and use it
+Build image
+```bash
+podman build -t streams-e2e:latest .
+```
+
+Run all tests
+```bash
+podman run --rm -v ~/.kube:/opt/kubeconfig:ro streams-e2e:latest ./mvnw verify -Ptest
+```
+
+Run specific groups
+```bash
+podman run --rm -v ~/.kube:/opt/kubeconfig:ro streams-e2e:latest ./mvnw verify -Ptest -Dgroups=flink-sql-example
+```
+
+
+
 ## Test configuration
 ### Using env vars
 - To configure sql runner image set env var `SQL_RUNNER_IMAGE`
