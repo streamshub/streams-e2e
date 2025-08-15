@@ -1,0 +1,31 @@
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  name: streams-e2e-tests-run
+  annotations:
+    description: "Example PipelineRun for streams e2e tests"
+spec:
+  pipelineRef:
+    name: streams-e2e-tests
+  params:
+    - name: test-image
+      value: "quay.io/streamshub/streams-e2e:latest"
+    - name: test-namespace
+      value: "default"
+    - name: kubeconfig-secret
+      value: "kubeconfig-secret"
+    - name: test
+      value: ""
+    - name: groups
+      value: ""
+  workspaces:
+    - name: test-results
+      volumeClaimTemplate:
+        spec:
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: 1Gi
+  timeouts:
+    pipeline: "60m"
