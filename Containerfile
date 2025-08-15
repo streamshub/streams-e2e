@@ -14,6 +14,21 @@ COPY . /opt/streams-e2e
 
 USER root
 RUN microdnf install -y unzip git && microdnf clean all
+
+# Install kubectl and oc
+RUN ARCH=$(uname -m) && \
+    if [ "$ARCH" = "x86_64" ]; then \
+        ARCH="amd64"; \
+    elif [ "$ARCH" = "aarch64" ]; then \
+        ARCH="arm64"; \
+    fi && \
+    curl -LO "https://mirror.openshift.com/pub/openshift-v4/clients/ocp/stable/openshift-client-linux-${ARCH}.tar.gz" && \
+    tar -xzf openshift-client-linux-${ARCH}.tar.gz && \
+    chmod +x oc kubectl && \
+    mv oc /usr/local/bin/ && \
+    mv kubectl /usr/local/bin/ && \
+    rm -f openshift-client-linux-${ARCH}.tar.gz README.md
+
 RUN mkdir -p /opt/kubeconfig && chown 185:0 /opt/kubeconfig
 RUN chown -R 185:0 /opt/streams-e2e && chmod +x /opt/streams-e2e/mvnw
 

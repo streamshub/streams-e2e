@@ -1,0 +1,123 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: streams-e2e-test-task
+  annotations:
+    description: "Task for running streams e2e tests in a containerized environment"
+spec:
+  params:
+    - name: test-image
+      type: string
+      description: "Container image containing the test suite"
+    - name: test-namespace
+      type: string
+      default: "default"
+      description: "Kubernetes namespace for running tests"
+    - name: kubeconfig-secret
+      type: string
+      description: "Name of the secret containing kubeconfig for cluster access"
+    - name: test
+      type: string
+      default: ""
+      description: "Specific integration test class or method to run (optional, for -Dit.test parameter)"
+    - name: groups
+      type: string
+      default: ""
+      description: "Test groups to run (optional, for -Dgroups parameter)"
+  workspaces:
+    - name: test-results
+      description: "Workspace for storing test results and logs"
+      mountPath: /workspace/test-results
+  steps:
+    - name: run-tests
+      image: $(params.test-image)
+      workingDir: /opt/streams-e2e
+      volumeMounts:
+        - name: kubeconfig-volume
+          mountPath: /opt/kubeconfig
+          readOnly: true
+      script: |
+        #!/bin/bash
+        set -e
+        
+        echo "Starting streams e2e tests..."
+        echo "Test image: $(params.test-image)"
+        echo "Test namespace: $(params.test-namespace)"
+        echo "IT test filter: $(params.test)"
+        echo "Test groups: $(params.groups)"
+        echo "Working directory: $(pwd)"
+        
+        # Set up test environment variables
+        export TEST_NAMESPACE=$(params.test-namespace)
+        
+        # Verify kubeconfig and kubectl/oc are accessible
+        if [ -f "$KUBECONFIG" ]; then
+          echo "Kubeconfig found at $KUBECONFIG"
+        else
+          echo "Warning: Kubeconfig not found at $KUBECONFIG"
+        fi
+        
+        # Build maven command
+        MAVEN_CMD="./mvnw verify -Ptest"
+        
+        # Add test filtering if specified
+        if [ -n "$(params.test)" ]; then
+          MAVEN_CMD="$MAVEN_CMD -Dit.test=$(params.test)"
+        fi
+        
+        if [ -n "$(params.groups)" ]; then
+          MAVEN_CMD="$MAVEN_CMD -Dgroups=$(params.groups)"
+        fi
+        
+        # Add standard test options
+        MAVEN_CMD="$MAVEN_CMD -Dmaven.test.failure.ignore=true -DforkCount=1 -DreuseForks=false"
+        
+        echo "Executing: $MAVEN_CMD"
+        
+        # Run the tests
+        eval $MAVEN_CMD
+        
+        # Copy test results to workspace
+        echo "Copying test results and logs..."
+        
+        # Create results directory structure
+        mkdir -p /workspace/test-results
+        
+        # Copy failsafe reports (integration tests)
+        if [ -d "target/failsafe-reports" ]; then
+          echo "Copying failsafe test results..."
+          cp -r target/failsafe-reports/* /workspace/test-results/ || true
+        fi
+        
+        # Copy test logs if they exist
+        if [ -d "target/logs" ]; then
+          echo "Copying test logs..."
+          cp -r target/logs/* /workspace/test-results/ || true
+        fi
+        
+        # Copy allure results if they exist
+        if [ -d "target/allure-results" ]; then
+          echo "Copying allure results..."
+          cp -r target/allure-results/* /workspace/test-results/ || true
+        fi
+        
+        echo "Test execution completed"
+      resources:
+        requests:
+          memory: "2Gi"
+          cpu: "1"
+        limits:
+          memory: "4Gi"
+          cpu: "2"
+      env:
+        - name: MAVEN_OPTS
+          value: "-Xmx2g -XX:+UseG1GC"
+        - name: KUBECONFIG
+          value: "/opt/kubeconfig/config"
+  volumes:
+    - name: kubeconfig-volume
+      secret:
+        secretName: $(params.kubeconfig-secret)
+        items:
+          - key: config
+            path: config

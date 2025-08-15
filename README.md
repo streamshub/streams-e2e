@@ -68,6 +68,8 @@ Run specific groups
 podman run --rm -v ~/.kube:/opt/kubeconfig:ro streams-e2e:latest ./mvnw verify -Ptest -Dgroups=flink-sql-example
 ```
 
+## Run tekton pipeline with streams-e2e
+Please read [documentation](tekton/README.md)
 
 
 ## Test configuration

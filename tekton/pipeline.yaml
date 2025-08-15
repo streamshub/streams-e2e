@@ -1,0 +1,48 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: streams-e2e-tests
+  annotations:
+    description: "Pipeline for running streams e2e tests using containerized test suite"
+spec:
+  params:
+    - name: test-image
+      type: string
+      default: "quay.io/streamshub/streams-e2e:latest"
+      description: "Container image containing the test suite"
+    - name: test-namespace
+      type: string
+      default: "default"
+      description: "Kubernetes namespace for running tests"
+    - name: kubeconfig-secret
+      type: string
+      description: "Name of the secret containing kubeconfig for cluster access"
+    - name: test
+      type: string
+      default: ""
+      description: "Specific integration test class or method to run (optional, for -Dit.test parameter)"
+    - name: groups
+      type: string
+      default: ""
+      description: "Test groups to run (optional, for -Dgroups parameter)"
+  workspaces:
+    - name: test-results
+      description: "Workspace for storing test results and logs"
+  tasks:
+    - name: run-streams-e2e-tests
+      taskRef:
+        name: streams-e2e-test-task
+      params:
+        - name: test-image
+          value: $(params.test-image)
+        - name: test-namespace
+          value: $(params.test-namespace)
+        - name: kubeconfig-secret
+          value: $(params.kubeconfig-secret)
+        - name: it-test
+          value: $(params.test)
+        - name: groups
+          value: $(params.groups)
+      workspaces:
+        - name: test-results
+          workspace: test-results
