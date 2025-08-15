@@ -22,12 +22,12 @@ RUN ARCH=$(uname -m) && \
     elif [ "$ARCH" = "aarch64" ]; then \
         ARCH="arm64"; \
     fi && \
-    curl -LO "https://mirror.openshift.com/pub/openshift-v4/clients/ocp/stable/openshift-client-linux-${ARCH}-rhel9.tar.gz" && \
-    tar -xzf openshift-client-linux-${ARCH}.tar.gz && \
+    curl -L "https://mirror.openshift.com/pub/openshift-v4/clients/ocp/stable/openshift-client-linux-${ARCH}-rhel9.tar.gz" -o openshift-client-linux.tar.gz && \
+    tar -xzf openshift-client-linux.tar.gz && \
     chmod +x oc kubectl && \
     mv oc /usr/local/bin/ && \
     mv kubectl /usr/local/bin/ && \
-    rm -f openshift-client-linux-${ARCH}.tar.gz README.md
+    rm -f openshift-client-linux.tar.gz README.md
 
 RUN mkdir -p /opt/kubeconfig && chown 185:0 /opt/kubeconfig
 RUN chown -R 185:0 /opt/streams-e2e && chmod +x /opt/streams-e2e/mvnw
