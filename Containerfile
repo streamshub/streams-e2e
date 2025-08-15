@@ -22,7 +22,7 @@ RUN ARCH=$(uname -m) && \
     elif [ "$ARCH" = "aarch64" ]; then \
         ARCH="arm64"; \
     fi && \
-    curl -LO "https://mirror.openshift.com/pub/openshift-v4/clients/ocp/stable/openshift-client-linux-${ARCH}.tar.gz" && \
+    curl -LO "https://mirror.openshift.com/pub/openshift-v4/clients/ocp/stable/openshift-client-linux-${ARCH}-rhel9.tar.gz" && \
     tar -xzf openshift-client-linux-${ARCH}.tar.gz && \
     chmod +x oc kubectl && \
     mv oc /usr/local/bin/ && \
