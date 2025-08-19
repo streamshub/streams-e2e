@@ -29,6 +29,13 @@ RUN ARCH=$(uname -m) && \
     mv kubectl /usr/local/bin/ && \
     rm -f openshift-client-linux.tar.gz README.md
 
+RUN export ARCH=$(case $(uname -m) in x86_64) echo -n amd64 ;; aarch64) echo -n arm64 ;; *) echo -n $(uname -m) ;; esac) && \
+    export OS=$(uname | awk '{print tolower($0)}') && \
+    export OPERATOR_SDK_DL_URL=https://github.com/operator-framework/operator-sdk/releases/download/v1.41.1 && \
+    curl -LO ${OPERATOR_SDK_DL_URL}/operator-sdk_${OS}_${ARCH} && \
+    chmod +x operator-sdk_${OS}_${ARCH} && \
+    mv operator-sdk_${OS}_${ARCH} /usr/local/bin/operator-sdk
+
 RUN mkdir -p /opt/kubeconfig && chown 185:0 /opt/kubeconfig
 RUN chown -R 185:0 /opt/streams-e2e && chmod +x /opt/streams-e2e/mvnw
 
