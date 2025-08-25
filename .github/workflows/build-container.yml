@@ -4,9 +4,21 @@ on:
   push:
     branches:
       - main
+    paths:
+      - 'pom.xml'
+      - 'Containerfile'
+      - 'src/**'
+      - '.github/workflows/build-container.yaml'
+      - '.mvn/**'
   pull_request:
     branches:
       - main
+    paths:
+      - 'pom.xml'
+      - 'Containerfile'
+      - 'src/**'
+      - '.github/workflows/build-container.yaml'
+      - '.mvn/**'
 env:
   REGISTRY: quay.io
   IMAGE_NAME: streamshub/streams-e2e
