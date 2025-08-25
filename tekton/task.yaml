@@ -41,7 +41,7 @@ spec:
           mountPath: /opt/kubeconfig
           readOnly: true
         - name: config-volume
-          mountPath: /opt/streams-e2e/config.yaml
+          mountPath: /opt/streams-e2e/config/config.yaml
           subPath: config.yaml
           readOnly: true
       script: |
@@ -66,8 +66,9 @@ spec:
         fi
         
         # Check if config.yaml is available from configmap
-        if [ -f "/opt/streams-e2e/config.yaml" ] && [ "$(params.config-configmap)" != "" ]; then
-          echo "Config file found from configmap at /opt/streams-e2e/config.yaml"
+        if [ -f "/opt/streams-e2e/config/config.yaml" ] && [ "$(params.config-configmap)" != "" ]; then
+          echo "Config file found from configmap at /opt/streams-e2e/config/config.yaml"
+          export STREAMS_E2E_CONFIG_FILE="/opt/streams-e2e/config/config.yaml"
         else
           echo "No config.yaml found in configmap, using default config.yaml"
         fi
@@ -142,4 +143,4 @@ spec:
         optional: true
         items:
           - key: config.yaml
-            path: config.yaml
+            path: config/config.yaml

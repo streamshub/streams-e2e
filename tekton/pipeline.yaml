@@ -19,7 +19,7 @@ spec:
       description: "Name of the secret containing kubeconfig for cluster access"
     - name: config-configmap
       type: string
-      default: ""
+      default: "dummy"
       description: "Name of the configmap containing config.yaml (optional)"
     - name: test
       type: string
