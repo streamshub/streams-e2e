@@ -43,7 +43,6 @@ WORKDIR $STREAMS_HOME
 
 VOLUME ["/opt/kubeconfig"]
 VOLUME ["${STREAMS_HOME}/operator-install-files"]
-V
 
 RUN ./mvnw dependency:go-offline -B -q \
     && ./mvnw install -Pget-operator-files \
