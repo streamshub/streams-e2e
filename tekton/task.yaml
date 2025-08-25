@@ -16,6 +16,10 @@ spec:
     - name: kubeconfig-secret
       type: string
       description: "Name of the secret containing kubeconfig for cluster access"
+    - name: config-configmap
+      type: string
+      default: ""
+      description: "Name of the configmap containing config.yaml (optional)"
     - name: test
       type: string
       default: ""
@@ -36,6 +40,10 @@ spec:
         - name: kubeconfig-volume
           mountPath: /opt/kubeconfig
           readOnly: true
+        - name: config-volume
+          mountPath: /opt/streams-e2e/config.yaml
+          subPath: config.yaml
+          readOnly: true
       script: |
         #!/bin/bash
         set -e
@@ -55,6 +63,13 @@ spec:
           echo "Kubeconfig found at $KUBECONFIG"
         else
           echo "Warning: Kubeconfig not found at $KUBECONFIG"
+        fi
+        
+        # Check if config.yaml is available from configmap
+        if [ -f "/opt/streams-e2e/config.yaml" ] && [ "$(params.config-configmap)" != "" ]; then
+          echo "Config file found from configmap at /opt/streams-e2e/config.yaml"
+        else
+          echo "No config.yaml found in configmap, using default config.yaml"
         fi
         
         # Build maven command
@@ -121,3 +136,10 @@ spec:
         items:
           - key: config
             path: config
+    - name: config-volume
+      configMap:
+        name: $(params.config-configmap)
+        optional: true
+        items:
+          - key: config.yaml
+            path: config.yaml

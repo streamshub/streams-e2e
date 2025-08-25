@@ -36,8 +36,25 @@ kubectl apply -f tekton/pipeline.yaml
 
 ### 3. Run the pipeline
 
+(Optional) Update and apply configmap with test configuration.
+
+```bash
+kubectl apply -f tekton/config-configmap.yaml
+```
+
+Run pipeline
+
 ```bash
 kubectl apply -f tekton/pipelinerun.yaml
+```
+
+Or use tkn cli
+
+```bash
+  tkn pipeline start streams-e2e-tests \
+    --name streams-e2e-tests-run \
+    --param config-configmap=streams-e2e-config \
+    --param kubeconfig-secret=your-kubeconfig-secret
 ```
 
 ### 4. Monitor the pipeline run
@@ -57,6 +74,7 @@ The pipeline accepts the following parameters:
 - **test-image**: Container image containing the test suite (default: `quay.io/streamshub/streams-e2e:latest`)
 - **test-namespace**: Kubernetes namespace for running tests (default: `default`)
 - **kubeconfig-secret**: Name of the secret containing kubeconfig for cluster access
+- **streams-e2e-config**: Name of the configmap containing config.yaml (optional)
 - **test**: Specific integration test class or method to run (optional, for -Dit.test parameter)
 - **groups**: Test groups to run (optional, for -Dgroups parameter)
 
@@ -99,6 +117,7 @@ params:
 ## Kubeconfig Requirements
 
 The kubeconfig secret must contain a valid Kubernetes configuration that allows the test container to:
+
 - Access the target Kubernetes cluster where tests will be executed
 - Have appropriate permissions for creating/managing test resources
 - Connect to the cluster (network access, authentication, etc.)
