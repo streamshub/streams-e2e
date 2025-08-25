@@ -17,6 +17,10 @@ spec:
     - name: kubeconfig-secret
       type: string
       description: "Name of the secret containing kubeconfig for cluster access"
+    - name: config-configmap
+      type: string
+      default: ""
+      description: "Name of the configmap containing config.yaml (optional)"
     - name: test
       type: string
       default: ""
@@ -39,6 +43,8 @@ spec:
           value: $(params.test-namespace)
         - name: kubeconfig-secret
           value: $(params.kubeconfig-secret)
+        - name: config-configmap
+          value: $(params.config-configmap)
         - name: it-test
           value: $(params.test)
         - name: groups
