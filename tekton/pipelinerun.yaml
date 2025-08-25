@@ -17,7 +17,7 @@ spec:
     - name: test
       value: ""
     - name: groups
-      value: ""
+      value: "smoke"
   workspaces:
     - name: test-results
       volumeClaimTemplate:
