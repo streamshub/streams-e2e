@@ -14,12 +14,10 @@ spec:
       value: "default"
     - name: kubeconfig-secret
       value: "kubeconfig-secret"
-    - name: config-configmap
-      value: ""
     - name: test
       value: ""
     - name: groups
-      value: ""
+      value: "smoke"
   workspaces:
     - name: test-results
       volumeClaimTemplate:
