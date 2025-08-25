@@ -114,6 +114,14 @@ params:
     value: "my-kubeconfig-secret"
 ```
 
+### Using a test config configmap
+
+```yaml
+params:
+  - name: config-configmap
+    value: "streams-e2e-config"
+```
+
 ## Kubeconfig Requirements
 
 The kubeconfig secret must contain a valid Kubernetes configuration that allows the test container to:
