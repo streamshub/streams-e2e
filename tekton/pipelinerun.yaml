@@ -10,8 +10,6 @@ spec:
   params:
     - name: test-image
       value: "quay.io/streamshub/streams-e2e:latest"
-    - name: test-namespace
-      value: "default"
     - name: kubeconfig-secret
       value: "kubeconfig-secret"
     - name: test
