@@ -72,7 +72,6 @@ tkn pipelinerun logs streams-e2e-tests-run -f
 The pipeline accepts the following parameters:
 
 - **test-image**: Container image containing the test suite (default: `quay.io/streamshub/streams-e2e:latest`)
-- **test-namespace**: Kubernetes namespace for running tests (default: `default`)
 - **kubeconfig-secret**: Name of the secret containing kubeconfig for cluster access
 - **streams-e2e-config**: Name of the configmap containing config.yaml (optional)
 - **test**: Specific integration test class or method to run (optional, for -Dit.test parameter)

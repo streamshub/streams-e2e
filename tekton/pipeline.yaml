@@ -10,10 +10,6 @@ spec:
       type: string
       default: "quay.io/streamshub/streams-e2e:latest"
       description: "Container image containing the test suite"
-    - name: test-namespace
-      type: string
-      default: "default"
-      description: "Kubernetes namespace for running tests"
     - name: kubeconfig-secret
       type: string
       description: "Name of the secret containing kubeconfig for cluster access"

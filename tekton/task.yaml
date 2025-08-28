@@ -9,10 +9,6 @@ spec:
     - name: test-image
       type: string
       description: "Container image containing the test suite"
-    - name: test-namespace
-      type: string
-      default: "default"
-      description: "Kubernetes namespace for running tests"
     - name: kubeconfig-secret
       type: string
       description: "Name of the secret containing kubeconfig for cluster access"
@@ -50,13 +46,9 @@ spec:
         
         echo "Starting streams e2e tests..."
         echo "Test image: $(params.test-image)"
-        echo "Test namespace: $(params.test-namespace)"
         echo "IT test filter: $(params.test)"
         echo "Test groups: $(params.groups)"
         echo "Working directory: $(pwd)"
-        
-        # Set up test environment variables
-        export TEST_NAMESPACE=$(params.test-namespace)
         
         # Verify kubeconfig and kubectl/oc are accessible
         if [ -f "$KUBECONFIG" ]; then
