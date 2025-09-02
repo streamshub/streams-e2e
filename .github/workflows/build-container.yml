@@ -8,7 +8,7 @@ on:
       - 'pom.xml'
       - 'Containerfile'
       - 'src/**'
-      - '.github/workflows/build-container.yaml'
+      - '.github/workflows/build-container.yml'
       - '.mvn/**'
   pull_request:
     branches:
@@ -17,7 +17,7 @@ on:
       - 'pom.xml'
       - 'Containerfile'
       - 'src/**'
-      - '.github/workflows/build-container.yaml'
+      - '.github/workflows/build-container.yml'
       - '.mvn/**'
 env:
   REGISTRY: quay.io
