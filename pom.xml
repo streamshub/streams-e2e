@@ -55,6 +55,7 @@
         <cert.manager.files.destination>cert-manager</cert.manager.files.destination>
         <apicurio.registry.files.destination>apicurio-registry</apicurio.registry.files.destination>
         <debezium.operator.files.destination>debezium</debezium.operator.files.destination>
+        <keycloak.operator.files.destination>keycloak</keycloak.operator.files.destination>
         <!-- Operators versions -->
         <strimzi.version>0.47.0</strimzi.version>
         <flink.version>1.12.1</flink.version>
@@ -64,6 +65,7 @@
         <apicurio.lib.version>2.6.13.Final</apicurio.lib.version>
         <debezium.operator.version>3.1.1</debezium.operator.version>
         <kafka.version>4.0.0</kafka.version>
+        <keycloak.version>26.3.3</keycloak.version>
     </properties>
 
     <dependencyManagement>
@@ -641,6 +643,45 @@
                                     <url>https://raw.githubusercontent.com/debezium/debezium-operator/v${debezium.operator.version}.Final/k8/debeziumservers.debezium.io-v1.yml</url>
                                     <outputDirectory>${basedir}/${operator.files.destination}/${debezium.operator.files.destination}/</outputDirectory>
                                     <outputFileName>debeziumservers.debezium.io-v1.yaml</outputFileName>
+                                </configuration>
+                            </execution>
+                            <!-- Keycloak crd -->
+                            <execution>
+                                <id>get-keycloak-crd</id>
+                                <phase>generate-sources</phase>
+                                <goals>
+                                    <goal>wget</goal>
+                                </goals>
+                                <configuration>
+                                    <url>https://raw.githubusercontent.com/keycloak/keycloak-k8s-resources/${keycloak.version}/kubernetes/keycloaks.k8s.keycloak.org-v1.yml</url>
+                                    <outputDirectory>${basedir}/${operator.files.destination}/${keycloak.operator.files.destination}</outputDirectory>
+                                    <outputFileName>keycloaks.k8s.keycloak.org-v1.yml</outputFileName>
+                                </configuration>
+                            </execution>
+                            <!-- Keycloak realm import crd -->
+                            <execution>
+                                <id>get-keycloakrealmimport-crd</id>
+                                <phase>generate-sources</phase>
+                                <goals>
+                                    <goal>wget</goal>
+                                </goals>
+                                <configuration>
+                                    <url>https://raw.githubusercontent.com/keycloak/keycloak-k8s-resources/${keycloak.version}/kubernetes/keycloakrealmimports.k8s.keycloak.org-v1.yml</url>
+                                    <outputDirectory>${basedir}/${operator.files.destination}/${keycloak.operator.files.destination}</outputDirectory>
+                                    <outputFileName>keycloakrealmimports.k8s.keycloak.org-v1.yml</outputFileName>
+                                </configuration>
+                            </execution>
+                            <!-- Keycloak operator -->
+                            <execution>
+                                <id>get-keycloak-operator-deployment</id>
+                                <phase>generate-sources</phase>
+                                <goals>
+                                    <goal>wget</goal>
+                                </goals>
+                                <configuration>
+                                    <url>https://raw.githubusercontent.com/keycloak/keycloak-k8s-resources/${keycloak.version}/kubernetes/kubernetes.yml</url>
+                                    <outputDirectory>${basedir}/${operator.files.destination}/${keycloak.operator.files.destination}</outputDirectory>
+                                    <outputFileName>deploy.yml</outputFileName>
                                 </configuration>
                             </execution>
                             <!-- Flink SQL Example https://github.com/streamshub/flink-sql-examples -->

@@ -9,5 +9,6 @@ public enum InstallableOperator {
     FLINK,
     CERT_MANAGER,
     APICURIO,
-    DEBEZIUM
+    DEBEZIUM,
+    KEYCLOAK
 }

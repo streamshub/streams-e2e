@@ -81,6 +81,14 @@ public class Environment {
         false);
 
     /**
+     * Use redhat catalog to install keyclaok (RHBK) operator
+     */
+    public static final boolean INSTALL_KEYCLOAK_FROM_RH_CATALOG = ENVIRONMENT_VARIABLES.getOrDefault(
+        "INSTALL_KEYCLOAK_FROM_RH_CATALOG",
+        Boolean::valueOf,
+        false);
+
+    /**
      * Prints configured environment variables or values from config
      */
     public static void printEnvVars() {

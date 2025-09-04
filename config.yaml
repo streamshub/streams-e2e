@@ -12,11 +12,14 @@ FLINK_OPERATOR_BUNDLE_IMAGE: ""
 # Operator bundle image of strimzi operator (leave empty if this install type is not used)
 STRIMZI_OPERATOR_BUNDLE_IMAGE: ""
 
-# Use latest released downstream version of strimzi (amq-streams) from catalog
+# Use the latest released downstream version of strimzi (amq-streams) from catalog
 INSTALL_STRIMZI_FROM_RH_CATALOG: "false"
 
-# Use latest released downstream version of apicurio (service-registry) from catalog
+# Use the latest released downstream version of apicurio (service-registry) from catalog
 INSTALL_APICURIO_FROM_RH_CATALOG: "false"
 
-# Use latest released downstream version of cert-manager from catalog
+# Use the latest released downstream version of cert-manager from catalog
 INSTALL_CERT_MANAGER_FROM_RH_CATALOG: "false"
+
+# Use the latest released downstream version of keycloak (RHBK) from catalog
+INSTALL_KEYCLOAK_FROM_RH_CATALOG: "false"
