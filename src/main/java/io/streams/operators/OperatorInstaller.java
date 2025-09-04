@@ -10,11 +10,13 @@ import io.streams.operators.manifests.ApicurioRegistryManifestInstaller;
 import io.streams.operators.manifests.CertManagerManifestInstaller;
 import io.streams.operators.manifests.DebeziumManifestInstaller;
 import io.streams.operators.manifests.FlinkManifestInstaller;
+import io.streams.operators.manifests.KeycloakManifestInstaller;
 import io.streams.operators.manifests.StrimziManifestInstaller;
 import io.streams.operators.olm.bundle.FlinkOlmBundleInstaller;
 import io.streams.operators.olm.bundle.StrimziOlmBundleInstaller;
 import io.streams.operators.olm.catalog.ApicurioOlmCatalogInstaller;
 import io.streams.operators.olm.catalog.CertManagerOlmCatalogInstaller;
+import io.streams.operators.olm.catalog.KeycloakOlmCatalogInstaller;
 import io.streams.operators.olm.catalog.StrimziOlmCatalogInstaller;
 
 import java.io.IOException;
@@ -49,6 +51,7 @@ public class OperatorInstaller {
                 case APICURIO -> operatorWaiting.add(installApicurioOperator());
                 case CERT_MANAGER -> operatorWaiting.add(installCertManagerOperator());
                 case DEBEZIUM -> operatorWaiting.add(installDebeziumOperator());
+                case KEYCLOAK -> operatorWaiting.add(installKeycloakOperator());
                 case FLINK -> {
                     // Skip flink install due to requirement to running cert-manager
                 }
@@ -103,6 +106,16 @@ public class OperatorInstaller {
                 "redhat-operators", "openshift-marketplace");
         } else {
             return ApicurioRegistryManifestInstaller.install();
+        }
+    }
+
+    private static CompletableFuture<?> installKeycloakOperator() throws IOException {
+        if (Environment.INSTALL_KEYCLOAK_FROM_RH_CATALOG) {
+            return KeycloakOlmCatalogInstaller.install("rhbk-operator",
+                KeycloakManifestInstaller.OPERATOR_NS, null, "stable-v26.2",
+                "redhat-operators", "openshift-marketplace");
+        } else {
+            return KeycloakManifestInstaller.install();
         }
     }
 
