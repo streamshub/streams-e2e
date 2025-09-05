@@ -1,0 +1,72 @@
+kind: Secret
+apiVersion: v1
+metadata:
+  name: keycloak-db-secret
+type: Opaque
+data:
+  username: YWRtaW4K
+  password: YWRtaW4K
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: postgres-pv-claim
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgresql-db
+spec:
+  serviceName: postgresql-db-service
+  selector:
+    matchLabels:
+      app: postgresql-db
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: postgresql-db
+    spec:
+      containers:
+        - name: postgresql-db
+          image: mirror.gcr.io/postgres:17
+          volumeMounts:
+            - mountPath: /data
+              name: cache-volume
+          env:
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: keycloak-db-secret
+                  key: username
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: keycloak-db-secret
+                  key: password
+            - name: PGDATA
+              value: /data/pgdata
+            - name: POSTGRES_DB
+              value: keycloak
+      volumes:
+        - name: cache-volume
+          persistentVolumeClaim:
+            claimName: postgres-pv-claim
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-db
+spec:
+  selector:
+    app: postgresql-db
+  type: LoadBalancer
+  ports:
+    - port: 5432
+      targetPort: 5432

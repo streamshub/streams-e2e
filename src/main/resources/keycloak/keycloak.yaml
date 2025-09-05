@@ -1,0 +1,29 @@
+kind: Secret
+apiVersion: v1
+metadata:
+  name: keycloak-admin
+type: Opaque
+data:
+  username: YWRtaW4K
+  password: YWRtaW4K
+---
+apiVersion: k8s.keycloak.org/v2alpha1
+kind: Keycloak
+metadata:
+  name: keycloak
+spec:
+  bootstrapAdmin:
+    user:
+      secret: keycloak-admin
+  db:
+    host: postgres-db
+    passwordSecret:
+      key: password
+      name: keycloak-db-secret
+    usernameSecret:
+      key: username
+      name: keycloak-db-secret
+    vendor: postgres
+  ingress:
+    enabled: false
+  instances: 1

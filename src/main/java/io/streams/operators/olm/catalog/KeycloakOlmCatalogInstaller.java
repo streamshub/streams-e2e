@@ -85,14 +85,14 @@ public class KeycloakOlmCatalogInstaller {
 
         KubeResourceManager.get().createOrUpdateResourceWithoutWait(subscription);
         return Wait.untilAsync(operatorName + " is ready", TestFrameConstants.GLOBAL_POLL_INTERVAL_1_SEC,
-            TestFrameConstants.GLOBAL_TIMEOUT, () -> isOperatorReady(operatorNamespace));
+            TestFrameConstants.GLOBAL_TIMEOUT, () -> isOperatorReady(operatorName, operatorNamespace));
     }
 
     @SuppressFBWarnings("REC_CATCH_EXCEPTION")
-    private static boolean isOperatorReady(String ns) {
+    private static boolean isOperatorReady(String name, String ns) {
         try {
             PodUtils.waitForPodsReadyWithRestart(ns, new LabelSelectorBuilder()
-                .withMatchLabels(Map.of("name", "keycloak-operator")).build(), 1, true);
+                .withMatchLabels(Map.of("name", name)).build(), 1, true);
             LOGGER.info("Keycloak operator in namespace {} is ready", ns);
             return true;
         } catch (Exception ex) {
