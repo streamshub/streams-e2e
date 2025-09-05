@@ -1,0 +1,557 @@
+apiVersion: k8s.keycloak.org/v2alpha1
+kind: KeycloakRealmImport
+metadata:
+  name: authz-realm-import
+spec:
+  keycloakCRName: keycloak
+  realm:
+    realm: "streams-e2e"
+    enabled: true
+    sslRequired: external
+
+    roles:
+      realm:
+        - name: "ops-team"
+          description: "Service Account of Operations team"
+        - name: "flights-team"
+          description: "Service Account of Flights team"
+        - name: "payments-team"
+          description: "Service Account of Payments team"
+        - name: "marketing-team"
+          description: "Service Account of Marketing team"
+      client:
+        team-flights-client: [ ]
+        team-payments-client: [ ]
+        team-marketing-client: [ ]
+        team-ops-client: [ ]
+        ra-mirror-maker-2: [ ]
+        ra-kafka:
+          - name: "uma_protection"
+            clientRole: true
+    groups:
+      - name: "ops-team-group"
+        path: "/ops-team-group"
+      - name: "marketing-team-group"
+        path: "/marketing-team-group"
+      - name: "flights-team-group"
+        path: "/flights-team-group"
+      - name: "payments-team-group"
+        path: "/payments-team-group"
+    users:
+      - username: arnost
+        enabled: true
+        credentials:
+          - type: password
+            value: "password"
+        realmRoles:
+          - "offline_access"
+          - "uma_authorization"
+        clientRoles:
+          account:
+            - "view-profile"
+            - "manage-account"
+        groups:
+          - "/flights-team-group"
+
+      - username: nancy
+        enabled: true
+        credentials:
+          - type: password
+            value: "password"
+        realmRoles:
+          - "offline_access"
+          - "uma_authorization"
+        clientRoles:
+          account:
+            - "view-profile"
+            - "manage-account"
+        groups:
+          - "/flights-team-group"
+
+      - username: karel
+        enabled: true
+        credentials:
+          - type: password
+            value: "password"
+        realmRoles:
+          - "offline_access"
+          - "uma_authorization"
+        clientRoles:
+          account:
+            - "view-profile"
+            - "manage-account"
+        groups:
+          - "/payments-team-group"
+
+      - username: tracy
+        enabled: true
+        credentials:
+          - type: password
+            value: "password"
+        realmRoles:
+          - "offline_access"
+          - "uma_authorization"
+        clientRoles:
+          account:
+            - "view-profile"
+            - "manage-account"
+        groups:
+          - "/payments-team-group"
+
+      - username: josef
+        enabled: true
+        credentials:
+          - type: password
+            value: "password"
+        realmRoles:
+          - "offline_access"
+          - "uma_authorization"
+        clientRoles:
+          account:
+            - "view-profile"
+            - "manage-account"
+        groups:
+          - "/marketing-team-group"
+
+      - username: jarmila
+        enabled: true
+        credentials:
+          - type: password
+            value: "password"
+        realmRoles:
+          - "offline_access"
+          - "uma_authorization"
+        clientRoles:
+          account:
+            - "view-profile"
+            - "manage-account"
+        groups:
+          - "/marketing-team-group"
+
+      - username: civril
+        enabled: true
+        credentials:
+          - type: password
+            value: "password"
+        realmRoles:
+          - "offline_access"
+        clientRoles:
+          account:
+            - "view-profile"
+            - "manage-account"
+        groups:
+          - "/ops-team-group"
+
+      - username: opsuser
+        enabled: true
+        credentials:
+          - type: password
+            value: "{password"
+        realmRoles:
+          - "offline_access"
+        clientRoles:
+          account:
+            - "view-profile"
+            - "manage-account"
+        groups:
+          - "/ops-team-group"
+
+      ##################################
+      ### Service Accounts / Clients ###
+      ##################################
+      - username: "service-account-ra-mirror-maker-2"
+        enabled: true
+        serviceAccountClientId: "ra-mirror-maker-2"
+        realmRoles:
+          - "offline_access"
+          - "ops-team"
+          - "uma_authorization"
+        clientRoles:
+          account:
+            - "manage-account"
+            - "view-profile"
+      - username: "service-account-team-flights-client"
+        enabled: true
+        serviceAccountClientId: "team-flights-client"
+        realmRoles:
+          - "offline_access"
+          - "flights-team"
+          - "uma_authorization"
+        clientRoles:
+          account:
+            - "manage-account"
+            - "view-profile"
+      - username: "service-account-team-payments-client"
+        enabled: true
+        serviceAccountClientId: "team-payments-client"
+        realmRoles:
+          - "offline_access"
+          - "payments-team"
+          - "uma_authorization"
+        clientRoles:
+          account:
+            - "manage-account"
+            - "view-profile"
+      - username: "service-account-team-marketing-client"
+        enabled: true
+        serviceAccountClientId: "team-marketing-client"
+        realmRoles:
+          - "offline_access"
+          - "marketing-team"
+          - "uma_authorization"
+        clientRoles:
+          account:
+            - "manage-account"
+            - "view-profile"
+      - username: "service-account-team-ops-client"
+        enabled: true
+        serviceAccountClientId: "team-ops-client"
+        realmRoles:
+          - "offline_access"
+          - "ops-team"
+          - "uma_authorization"
+        clientRoles:
+          account:
+            - "manage-account"
+            - "view-profile"
+    ##############################
+    ### Clients configurations ###
+    ##############################
+    clients:
+      - clientId: ra-kafka
+        enabled: true
+        clientAuthenticatorType: client-secret
+        secret: "secret"
+        bearerOnly: false
+        standardFlowEnabled: false
+        implicitFlowEnabled: false
+        directAccessGrantsEnabled: false
+        serviceAccountsEnabled: true
+        authorizationServicesEnabled: true
+        publicClient: false
+        fullScopeAllowed: true
+        authorizationSettings:
+          allowRemoteResourceManagement: true
+          policyEnforcementMode: "ENFORCING"
+          decisionStrategy: "AFFIRMATIVE"
+          scopes:
+            - name: "Create"
+            - name: "Read"
+            - name: "Write"
+            - name: "Delete"
+            - name: "Alter"
+            - name: "Describe"
+            - name: "ClusterAction"
+            - name: "DescribeConfigs"
+            - name: "AlterConfigs"
+            - name: "IdempotentWrite"
+          resources:
+            - name: "Topic:flights*"
+              displayName: "Topics that start with flights prefix"
+              type: Topic
+              ownerManagedAccess: false
+              scopes:
+                - name: "Create"
+                - name: "Delete"
+                - name: "Describe"
+                - name: "Write"
+                - name: "Read"
+                - name: "Alter"
+                - name: "DescribeConfigs"
+                - name: "AlterConfigs"
+            - name: "Topic:anubis.flights*"
+              displayName: "Topics that start with anubis.flights prefix"
+              type: Topic
+              ownerManagedAccess: false
+              scopes:
+                - name: "Create"
+                - name: "Delete"
+                - name: "Describe"
+                - name: "Write"
+                - name: "Read"
+                - name: "Alter"
+                - name: "DescribeConfigs"
+                - name: "AlterConfigs"
+
+            - name: "Topic:payment*"
+              type: Topic
+              scopes:
+                - name: "Create"
+                - name: "Delete"
+                - name: "Describe"
+                - name: "Write"
+                - name: "Read"
+                - name: "Alter"
+                - name: "DescribeConfigs"
+                - name: "AlterConfigs"
+            - name: "Topic:anubis.payment*"
+              type: Topic
+              scopes:
+                - name: "Create"
+                - name: "Delete"
+                - name: "Describe"
+                - name: "Write"
+                - name: "Read"
+                - name: "Alter"
+                - name: "DescribeConfigs"
+                - name: "AlterConfigs"
+            - name: "Topic:mirrormaker2*"
+              type: Topic
+              scopes:
+                - name: "Create"
+                - name: "Delete"
+                - name: "Describe"
+                - name: "Write"
+                - name: "Read"
+                - name: "Alter"
+                - name: "DescribeConfigs"
+                - name: "AlterConfigs"
+            - name: "Cluster:*"
+              type: "Cluster"
+              ownerManagedAccess: false
+              scopes:
+                - name: "DescribeConfigs"
+                - name: "AlterConfigs"
+                - name: "ClusterAction"
+                - name: "IdempotentWrite"
+            - name: "Topic:*"
+              displayName: "Access to any topic"
+              type: "Topic"
+              ownerManagedAccess: false
+              scopes:
+                - name: "Create"
+                - name: "Delete"
+                - name: "Describe"
+                - name: "Write"
+                - name: "Read"
+                - name: "Alter"
+                - name: "DescribeConfigs"
+                - name: "AlterConfigs"
+            - name: "Group:*"
+              displayName: "Access to any group"
+              type: "Group"
+              ownerManagedAccess: false
+              scopes:
+                - name: "Create"
+                - name: "Delete"
+                - name: "Describe"
+                - name: "Write"
+                - name: "Read"
+                - name: "Alter"
+                - name: "DescribeConfigs"
+                - name: "AlterConfigs"
+
+          policies:
+            ################################
+            ### Flights Team permissions ###
+            ################################
+            - name: "flights-team"
+              type: "role"
+              logic: "POSITIVE"
+              decisionStrategy: "UNANIMOUS"
+              config:
+                roles: '[{"id":"flights-team","required":true}]'
+            - name: "flights-team-group"
+              description: "Team for flights data"
+              type: "group"
+              logic: "POSITIVE"
+              decisionStrategy: "UNANIMOUS"
+              config:
+                groups: '[{"path":"/flights-team-group","extendChildren":false}]'
+            - name: "flights-team-group-flights-full"
+              description: "Flights Group has full access to Flights topics"
+              type: "resource"
+              logic: "POSITIVE"
+              decisionStrategy: "UNANIMOUS"
+              config:
+                resources: '["Topic:anubis.flights*","Topic:flights*","Group:*"]'
+                applyPolicies: '["flights-team-group"]'
+            - name: "flights-team-flights-full"
+              description: "Flights Group has full access to Flights topics"
+              type: "resource"
+              logic: "POSITIVE"
+              decisionStrategy: "UNANIMOUS"
+              config:
+                resources: '["Topic:anubis.flights*","Topic:flights*","Group:*"]'
+                applyPolicies: '["flights-team"]'
+            #################################
+            ### Payments Team permissions ###
+            #################################
+            - name: "payments-team"
+              type: "role"
+              logic: "POSITIVE"
+              decisionStrategy: "UNANIMOUS"
+              config:
+                roles: '[{"id":"payments-team","required":true}]'
+            - name: "payments-team-group"
+              description: "Team for payments data"
+              type: "group"
+              logic: "POSITIVE"
+              decisionStrategy: "UNANIMOUS"
+              config:
+                groups: '[{"path":"/payments-team-group","extendChildren":false}]'
+            - name: "payments-team-group-payments-full"
+              description: "Payments Group has full access to Payments topics"
+              type: "resource"
+              logic: "POSITIVE"
+              decisionStrategy: "UNANIMOUS"
+              config:
+                resources: '["Topic:anubis.payment*","Topic:payment*","Group:*"]'
+                applyPolicies: '["payments-team-group"]'
+            - name: "payments-team-payments-full"
+              description: "Payments Group has full access to Payments topics"
+              type: "resource"
+              logic: "POSITIVE"
+              decisionStrategy: "UNANIMOUS"
+              config:
+                resources: '["Topic:anubis.payment*","Topic:payment*","Group:*"]'
+                applyPolicies: '["payments-team"]'
+            ##################################
+            ### Marketing Team permissions ###
+            ##################################
+            - name: "marketing-team"
+              type: "role"
+              logic: "POSITIVE"
+              decisionStrategy: "UNANIMOUS"
+              config:
+                roles: '[{"id":"marketing-team","required":true}]'
+            - name: "marketing-team-group"
+              description: "Team for marketing data"
+              type: "group"
+              logic: "POSITIVE"
+              decisionStrategy: "UNANIMOUS"
+              config:
+                groups: '[{"path":"/marketing-team-group","extendChildren":false}]'
+            - name: "marketing-team-group-flights-payments-read"
+              description: "Marketing Group has read access to Flights and Payments topics"
+              type: "scope"
+              logic: "POSITIVE"
+              decisionStrategy: "UNANIMOUS"
+              config:
+                resources: '["Topic:anubis.payment*","Topic:payment*","Topic:anubis.flights*","Topic:flights*","Group:*"]'
+                scopes: '["Describe","Read"]'
+                applyPolicies: '["marketing-team-group"]'
+            - name: "marketing-team-flights-payments-read"
+              description: "Marketing Group has read access to Flights and Payments topics"
+              type: "scope"
+              logic: "POSITIVE"
+              decisionStrategy: "UNANIMOUS"
+              config:
+                resources: '["Topic:anubis.payment*","Topic:payment*","Topic:anubis.flights*","Topic:flights*","Group:*"]'
+                scopes: '["Describe","Read"]'
+                applyPolicies: '["marketing-team"]'
+            ############################
+            ### Ops Team permissions ###
+            ############################
+            - name: "ops-team"
+              type: "role"
+              logic: "POSITIVE"
+              decisionStrategy: "UNANIMOUS"
+              config:
+                roles: '[{"id":"ops-team","required":true}]'
+            - name: "ops-team-group"
+              description: "Team for Kafka cluster operations"
+              type: "group"
+              logic: "POSITIVE"
+              decisionStrategy: "UNANIMOUS"
+              config:
+                groups: '[{"path":"/ops-team-group","extendChildren":false}]'
+            - name: "ops-team-group-kafka-full"
+              description: "Ops Group has full access to cluster"
+              type: "resource"
+              logic: "POSITIVE"
+              decisionStrategy: "UNANIMOUS"
+              config:
+                resources: '["Topic:*","Cluster:*","Group:*"]'
+                applyPolicies: '["ops-team-group"]'
+            - name: "ops-team-kafka-full"
+              description: "Ops Group has full access to cluster"
+              type: "resource"
+              logic: "POSITIVE"
+              decisionStrategy: "UNANIMOUS"
+              config:
+                resources: '["Topic:*","Cluster:*","Group:*"]'
+                applyPolicies: '["ops-team"]'
+      - clientId: ra-mirror-maker-2
+        enabled: true
+        clientAuthenticatorType: client-secret
+        secret: "secret"
+        bearerOnly: false
+        standardFlowEnabled: false
+        implicitFlowEnabled: false
+        directAccessGrantsEnabled: true
+        serviceAccountsEnabled: true
+        publicClient: false
+        fullScopeAllowed: true
+        protocolMappers:
+          - name: realm-roles
+            protocol: openid-connect
+            protocolMapper: oidc-usermodel-realm-role-mapper
+            config:
+              claim.name: "realm_access.roles"
+              multivalued: "true"
+              access.token.claim: "true"
+              id.token.claim: "false"
+              userinfo.token.claim: "false"
+
+      - clientId: "superuser-ra"
+        secret: "secret"
+        bearerOnly: false
+        consentRequired: false
+        standardFlowEnabled: false
+        implicitFlowEnabled: false
+        directAccessGrantsEnabled: true
+        serviceAccountsEnabled: true
+        publicClient: true
+        fullScopeAllowed: true
+      ######################
+      ### Team's clients ###
+      ######################
+      - clientId: "team-flights-client"
+        enabled: true
+        clientAuthenticatorType: "client-secret"
+        secret: "secret"
+        bearerOnly: false
+        consentRequired: false
+        standardFlowEnabled: false
+        implicitFlowEnabled: false
+        directAccessGrantsEnabled: true
+        serviceAccountsEnabled: true
+        publicClient: false
+        fullScopeAllowed: true
+      - clientId: "team-payments-client"
+        enabled: true
+        clientAuthenticatorType: "client-secret"
+        secret: "secret"
+        bearerOnly: false
+        consentRequired: false
+        standardFlowEnabled: false
+        implicitFlowEnabled: false
+        directAccessGrantsEnabled: true
+        serviceAccountsEnabled: true
+        publicClient: false
+        fullScopeAllowed: true
+      - clientId: "team-marketing-client"
+        enabled: true
+        clientAuthenticatorType: "client-secret"
+        secret: "secret"
+        bearerOnly: false
+        consentRequired: false
+        standardFlowEnabled: false
+        implicitFlowEnabled: false
+        directAccessGrantsEnabled: true
+        serviceAccountsEnabled: true
+        publicClient: false
+        fullScopeAllowed: true
+      - clientId: "team-ops-client"
+        enabled: true
+        clientAuthenticatorType: "client-secret"
+        secret: "secret"
+        bearerOnly: false
+        consentRequired: false
+        standardFlowEnabled: false
+        implicitFlowEnabled: false
+        directAccessGrantsEnabled: true
+        serviceAccountsEnabled: true
+        publicClient: false
+        fullScopeAllowed: true
