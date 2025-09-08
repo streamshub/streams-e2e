@@ -40,7 +40,7 @@ public class KeycloakManifestInstaller {
     /**
      * Operator namespace
      */
-    public static final String OPERATOR_NS = DEPLOYMENT_NAME;
+    public static final String OPERATOR_NS = "keycloak";
 
     /**
      * Installs operator from yaml manifests files

@@ -29,12 +29,13 @@
 | - | - | - |
 | 1. | Create namespace, serviceaccount and roles for Flink | Resources created |
 | 2. | Deploy Apicurio registry | Apicurio registry is up and running |
-| 3. | Deploy Kafka my-cluster with scram-sha auth | Kafka is up and running |
-| 4. | Create KafkaUser with scram-sha secret | KafkaUser created |
-| 5. | Deploy strimzi-kafka-clients producer with payment data generator | Client job is created and data are sent to flink.payment.data topic |
-| 6. | Deploy FlinkDeployment with sql which gets data from flink.payment.data topic filter payment of type paypal and send data to flink.payment.paypal topic, for authentication is used secret created by KafkaUser and this secret is passed into by secret interpolation | FlinkDeployment is up and tasks are deployed and it sends filtered data into flink.payment.paypal topic |
-| 7. | Deploy strimzi-kafka-clients consumer as job and consume messages fromkafka topic flink.payment.paypal | Consumer is deployed and it consumes messages |
-| 8. | Verify that messages are present | Messages are present |
+| 3. | Deploy Keycloak realm | Keyclaok realm is imported |
+| 4. | Deploy Kafka my-cluster with scram-sha auth | Kafka is up and running |
+| 5. | Create KafkaUser with scram-sha secret | KafkaUser created |
+| 6. | Deploy strimzi-kafka-clients producer with payment data generator | Client job is created and data are sent to flink.payment.data topic |
+| 7. | Deploy FlinkDeployment with sql which gets data from flink.payment.data topic filter payment of type paypal and send data to flink.payment.paypal topic, for authentication is used secret created by KafkaUser and this secret is passed into by secret interpolation | FlinkDeployment is up and tasks are deployed and it sends filtered data into flink.payment.paypal topic |
+| 8. | Deploy strimzi-kafka-clients consumer as job and consume messages fromkafka topic flink.payment.paypal | Consumer is deployed and it consumes messages |
+| 9. | Verify that messages are present | Messages are present |
 
 **Labels:**
 
