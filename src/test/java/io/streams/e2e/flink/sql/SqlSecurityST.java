@@ -4,6 +4,7 @@
  */
 package io.streams.e2e.flink.sql;
 
+import io.apicurio.registry.serde.avro.AvroKafkaSerializer;
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.NamespaceBuilder;
 import io.fabric8.kubernetes.api.model.Secret;
@@ -16,11 +17,25 @@ import io.skodjob.annotations.SuiteDoc;
 import io.skodjob.annotations.TestDoc;
 import io.skodjob.testframe.resources.KubeResourceManager;
 import io.streams.e2e.Abstract;
+import io.streams.clients.kafka.StrimziKafkaClients;
+import io.streams.clients.kafka.StrimziKafkaClientsBuilder;
+import io.streams.operands.apicurio.templates.ApicurioRegistryTemplate;
+import io.streams.operands.flink.templates.FlinkDeploymentTemplate;
+import io.streams.operands.strimzi.templates.KafkaUserTemplate;
+import io.streams.sql.TestStatements;
+import io.skodjob.testframe.utils.JobUtils;
+import io.skodjob.testframe.TestFrameConstants;
+import io.streams.utils.StrimziClientUtils;
+import io.streams.utils.TestUtils;
+import io.strimzi.api.kafka.model.kafka.listener.KafkaListenerAuthenticationScramSha512;
+import io.strimzi.api.kafka.model.user.KafkaUserScramSha512ClientAuthentication;
+import org.apache.flink.v1beta1.FlinkDeployment;
 import io.streams.operands.certmanager.templates.CertManagerCaTemplate;
 import io.streams.operands.flink.templates.FlinkRBAC;
 import io.streams.operands.keycloak.templates.KeycloakDeploymentTemplate;
 import io.streams.operands.strimzi.templates.KafkaNodePoolTemplate;
 import io.streams.operands.strimzi.templates.KafkaTemplate;
+import io.streams.operands.strimzi.resources.KafkaType;
 import io.streams.operators.InstallableOperator;
 import io.streams.operators.OperatorInstaller;
 import io.streams.operators.manifests.KeycloakManifestInstaller;
@@ -41,6 +56,8 @@ import java.util.List;
 import static io.streams.constants.TestTags.FLINK;
 import static io.streams.constants.TestTags.FLINK_SQL_RUNNER;
 import static io.streams.constants.TestTags.SMOKE;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Tag(FLINK)
 @Tag(FLINK_SQL_RUNNER)
@@ -73,7 +90,7 @@ public class SqlSecurityST extends Abstract {
 
     @TestDoc(
         description = @Desc("Test verifies sql-runner.jar works integrated with kafka, " +
-            "apicurio and uses scram-sha for kafka authentication"),
+            "apicurio and uses keycloak for kafka authentication"),
         steps = {
             @Step(value = "Create namespace, serviceaccount and roles for Flink", expected = "Resources created"),
             @Step(value = "Deploy Apicurio registry", expected = "Apicurio registry is up and running"),
@@ -147,7 +164,7 @@ public class SqlSecurityST extends Abstract {
 
             Secret clientSecret = new SecretBuilder()
                 .withNewMetadata()
-                .withName("ra-kafka")
+                .withName("kafka-client")
                 .withNamespace(namespace)
                 .endMetadata()
                 .withData(
@@ -171,10 +188,23 @@ public class SqlSecurityST extends Abstract {
                     .editKafka()
                     .withListeners(
                         new GenericKafkaListenerBuilder()
+                            .withName("plain")
+                            .withTls(false)
+                            .withType(KafkaListenerType.INTERNAL)
+                            .withPort((9092))
+                            .withAuth(new KafkaListenerAuthenticationScramSha512())
+                            .build(),
+                        new GenericKafkaListenerBuilder()
+                            .withName("unsecure")
+                            .withTls(false)
+                            .withType(KafkaListenerType.INTERNAL)
+                            .withPort((9094))
+                            .build(),
+                        new GenericKafkaListenerBuilder()
                             .withName("oauth2")
                             .withTls(true)
                             .withType(KafkaListenerType.INTERNAL)
-                            .withPort((9094))
+                            .withPort((9093))
                             .withAuth(new KafkaListenerAuthenticationOAuthBuilder()
                                 .withValidIssuerUri("https://keycloak-service.keycloak.svc.cluster.local:8443" +
                                     "/realms/streams-e2e")
@@ -186,7 +216,6 @@ public class SqlSecurityST extends Abstract {
                                     .withCertificate("tls.crt")
                                     .build()
                                 )
-                                .withDisableTlsHostnameVerification(false)
                                 .build())
                             .build()
                     )
@@ -194,10 +223,144 @@ public class SqlSecurityST extends Abstract {
                     .endSpec()
                     .build());
         });
-        try {
-            Thread.sleep(60_000);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
+
+        String bootstrapServerUnsecure = KafkaType.kafkaClient().inNamespace(namespace).withName(kafkaClusterName).get()
+            .getStatus().getListeners().stream().filter(l -> l.getName().equals("unsecure"))
+            .findFirst().get().getBootstrapServers();
+        String bootstrapServerOAuth = KafkaType.kafkaClient().inNamespace(namespace).withName(kafkaClusterName).get()
+            .getStatus().getListeners().stream().filter(l -> l.getName().equals("oauth2"))
+            .findFirst().get().getBootstrapServers();
+        String bootstrapServerAuth = KafkaType.kafkaClient().inNamespace(namespace).withName(kafkaClusterName).get()
+            .getStatus().getListeners().stream().filter(l -> l.getName().equals("plain"))
+            .findFirst().get().getBootstrapServers();
+
+        Allure.step("Create kafka scram sha user", () -> {
+            // Create kafka scram sha user
+            KubeResourceManager.get().createOrUpdateResourceWithWait(
+                KafkaUserTemplate.defaultKafkaUser(namespace, kafkaUser, kafkaClusterName)
+                    .editSpec()
+                    .withAuthentication(new KafkaUserScramSha512ClientAuthentication())
+                    .endSpec()
+                    .build());
+        });
+
+        String registryUrl = "http://apicurio-registry-service." + namespace + ".svc:8080/apis/ccompat/v6";
+
+        Allure.step("Deploy apicurio registry", () -> {
+            // Create topic for ksql apicurio
+            KubeResourceManager.get().createOrUpdateResourceWithWait(
+                ApicurioRegistryTemplate.apicurioKsqlTopic(namespace, kafkaClusterName, 3));
+
+            // Add apicurio
+            KubeResourceManager.get().createOrUpdateResourceWithWait(
+                ApicurioRegistryTemplate.defaultApicurioRegistry("apicurio-registry", namespace,
+                    bootstrapServerUnsecure).build());
+        });
+
+        Allure.step("Get user secret configuration");
+        // Get user secret jaas configuration
+        final String saslJaasConfigEncrypted = KubeResourceManager.get().kubeClient().getClient().secrets()
+            .inNamespace(namespace).withName(kafkaUser).get().getData().get("sasl.jaas.config");
+        final String saslJaasConfigDecrypted = TestUtils.decodeFromBase64(saslJaasConfigEncrypted);
+
+        String producerName = "kafka-producer";
+        Allure.step("Create kafka producer and produce payment data", () -> {
+            // Run internal producer and produce data
+            StrimziKafkaClients kafkaProducerClient = new StrimziKafkaClientsBuilder()
+                .withProducerName(producerName)
+                .withNamespaceName(namespace)
+                .withTopicName("flink.payment.data")
+                .withBootstrapAddress(bootstrapServerAuth)
+                .withMessageCount(10000)
+                .withUsername(kafkaUser)
+                .withDelayMs(10)
+                .withMessageTemplate("payment_fiat")
+                .withAdditionalConfig(
+                    StrimziClientUtils.getApicurioAdditionalProperties(AvroKafkaSerializer.class.getName(),
+                        "http://apicurio-registry-service." + namespace + ".svc:8080/apis/registry/v2") + "\n"
+                        + "sasl.mechanism=SCRAM-SHA-512\n"
+                        + "security.protocol=SASL_PLAINTEXT\n"
+                        + "sasl.jaas.config=" + saslJaasConfigDecrypted
+                )
+                .build();
+
+            KubeResourceManager.get().createResourceWithWait(
+                kafkaProducerClient.producerStrimzi()
+            );
+        });
+
+        Allure.step("Deploy flink application with OAuth authentication", () -> {
+            // Deploy flink with OAuth filter sql statement
+            FlinkDeployment flink = FlinkDeploymentTemplate.defaultFlinkDeployment(namespace,
+                    "flink-oauth", List.of(TestStatements.getTestFlinkFilterOAuth(
+                        bootstrapServerOAuth, registryUrl, namespace)))
+                .editSpec()
+                .editPodTemplate()
+                .editOrNewSpec()
+                .editFirstContainer()
+                .addNewVolumeMount()
+                .withMountPath("/opt/kafka-ca-cert")
+                .withName("kafka-ca-cert")
+                .endVolumeMount()
+                .addNewVolumeMount()
+                .withMountPath("/opt/keycloak-ca-cert")
+                .withName("keycloak-ca-cert")
+                .endVolumeMount()
+                .endContainer()
+                .addNewVolume()
+                .withName("kafka-ca-cert")
+                .withNewSecret()
+                .withSecretName(kafkaClusterName + "-cluster-ca-cert")
+                .addNewItem()
+                .withKey("ca.crt")
+                .withPath("ca.crt")
+                .endItem()
+                .endSecret()
+                .endVolume()
+                .addNewVolume()
+                .withName("keycloak-ca-cert")
+                .withNewSecret()
+                .withSecretName("keycloak-tls-secret")
+                .addNewItem()
+                .withKey("ca.crt")
+                .withPath("ca.crt")
+                .endItem()
+                .endSecret()
+                .endVolume()
+                .endSpec()
+                .endPodTemplate()
+                .endSpec()
+                .build();
+            KubeResourceManager.get().createOrUpdateResourceWithWait(flink);
+        });
+
+        Allure.step("Consume filtered messages", () -> {
+            // Run consumer and check if data are filtered
+            String consumerName = "kafka-consumer";
+            StrimziKafkaClients kafkaConsumerClient = new StrimziKafkaClientsBuilder()
+                .withConsumerName(consumerName)
+                .withNamespaceName(namespace)
+                .withTopicName("flink.payment.paypal")
+                .withBootstrapAddress(bootstrapServerAuth)
+                .withMessageCount(10)
+                .withAdditionalConfig(
+                    "sasl.mechanism=SCRAM-SHA-512\n" +
+                        "security.protocol=SASL_PLAINTEXT\n" +
+                        "sasl.jaas.config=" + saslJaasConfigDecrypted
+                )
+                .withConsumerGroup("flink-filter-test-group").build();
+
+            KubeResourceManager.get().createResourceWithWait(
+                kafkaConsumerClient.consumerStrimzi()
+            );
+
+            JobUtils.waitForJobSuccess(namespace, kafkaConsumerClient.getConsumerName(),
+                TestFrameConstants.GLOBAL_TIMEOUT_MEDIUM);
+            String consumerPodName = KubeResourceManager.get().kubeClient().listPodsByPrefixInName(namespace, consumerName)
+                .get(0).getMetadata().getName();
+            String log = KubeResourceManager.get().kubeClient().getLogsFromPod(namespace, consumerPodName);
+            assertTrue(log.contains("\"type\":\"paypal\""));
+            assertFalse(log.contains("\"type\":\"creditCard\""));
+        });
     }
 }

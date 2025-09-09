@@ -4,24 +4,29 @@ metadata:
   name: selfsigned-issuer
 spec:
   selfSigned: {}
+
 ---
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-  name: ca-certificate
+  name: my-selfsigned-ca
 spec:
-  secretName: ca-key-pair
   isCA: true
-  commonName: Streams E2E CA
-  duration: 8760h # 1 year
+  commonName: my-selfsigned-ca
+  secretName: my-selfsigned-ca-secret
+  privateKey:
+    algorithm: ECDSA
+    size: 256
   issuerRef:
     name: selfsigned-issuer
     kind: Issuer
+    group: cert-manager.io
+
 ---
 apiVersion: cert-manager.io/v1
 kind: Issuer
 metadata:
-  name: ca-issuer
+  name: my-selfsigned-ca-issuer
 spec:
   ca:
-    secretName: ca-key-pair
+    secretName: my-selfsigned-ca-secret

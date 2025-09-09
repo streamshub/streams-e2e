@@ -25,7 +25,7 @@ spec:
         team-marketing-client: [ ]
         team-ops-client: [ ]
         ra-mirror-maker-2: [ ]
-        ra-kafka:
+        kafka-client:
           - name: "uma_protection"
             clientRole: true
     groups:
@@ -42,7 +42,7 @@ spec:
         enabled: true
         credentials:
           - type: password
-            value: "password"
+            value: "secret"
         realmRoles:
           - "offline_access"
           - "uma_authorization"
@@ -57,7 +57,7 @@ spec:
         enabled: true
         credentials:
           - type: password
-            value: "password"
+            value: "secret"
         realmRoles:
           - "offline_access"
           - "uma_authorization"
@@ -72,7 +72,7 @@ spec:
         enabled: true
         credentials:
           - type: password
-            value: "password"
+            value: "secret"
         realmRoles:
           - "offline_access"
           - "uma_authorization"
@@ -87,7 +87,7 @@ spec:
         enabled: true
         credentials:
           - type: password
-            value: "password"
+            value: "secret"
         realmRoles:
           - "offline_access"
           - "uma_authorization"
@@ -102,7 +102,7 @@ spec:
         enabled: true
         credentials:
           - type: password
-            value: "password"
+            value: "secret"
         realmRoles:
           - "offline_access"
           - "uma_authorization"
@@ -117,7 +117,7 @@ spec:
         enabled: true
         credentials:
           - type: password
-            value: "password"
+            value: "secret"
         realmRoles:
           - "offline_access"
           - "uma_authorization"
@@ -132,7 +132,7 @@ spec:
         enabled: true
         credentials:
           - type: password
-            value: "password"
+            value: "secret"
         realmRoles:
           - "offline_access"
         clientRoles:
@@ -146,7 +146,7 @@ spec:
         enabled: true
         credentials:
           - type: password
-            value: "{password"
+            value: "secret"
         realmRoles:
           - "offline_access"
         clientRoles:
@@ -218,7 +218,7 @@ spec:
     ### Clients configurations ###
     ##############################
     clients:
-      - clientId: ra-kafka
+      - clientId: kafka-client
         enabled: true
         clientAuthenticatorType: client-secret
         secret: "secret"
@@ -259,8 +259,8 @@ spec:
                 - name: "Alter"
                 - name: "DescribeConfigs"
                 - name: "AlterConfigs"
-            - name: "Topic:anubis.flights*"
-              displayName: "Topics that start with anubis.flights prefix"
+            - name: "Topic:flink.flights*"
+              displayName: "Topics that start with flink.flights prefix"
               type: Topic
               ownerManagedAccess: false
               scopes:
@@ -284,7 +284,7 @@ spec:
                 - name: "Alter"
                 - name: "DescribeConfigs"
                 - name: "AlterConfigs"
-            - name: "Topic:anubis.payment*"
+            - name: "Topic:flink.payment*"
               type: Topic
               scopes:
                 - name: "Create"
@@ -364,7 +364,7 @@ spec:
               logic: "POSITIVE"
               decisionStrategy: "UNANIMOUS"
               config:
-                resources: '["Topic:anubis.flights*","Topic:flights*","Group:*"]'
+                resources: '["Topic:flink.flights*","Topic:flights*","Group:*"]'
                 applyPolicies: '["flights-team-group"]'
             - name: "flights-team-flights-full"
               description: "Flights Group has full access to Flights topics"
@@ -372,7 +372,7 @@ spec:
               logic: "POSITIVE"
               decisionStrategy: "UNANIMOUS"
               config:
-                resources: '["Topic:anubis.flights*","Topic:flights*","Group:*"]'
+                resources: '["Topic:flink.flights*","Topic:flights*","Group:*"]'
                 applyPolicies: '["flights-team"]'
             #################################
             ### Payments Team permissions ###
@@ -396,7 +396,7 @@ spec:
               logic: "POSITIVE"
               decisionStrategy: "UNANIMOUS"
               config:
-                resources: '["Topic:anubis.payment*","Topic:payment*","Group:*"]'
+                resources: '["Topic:flink.payment*","Topic:payment*","Group:*"]'
                 applyPolicies: '["payments-team-group"]'
             - name: "payments-team-payments-full"
               description: "Payments Group has full access to Payments topics"
@@ -404,7 +404,7 @@ spec:
               logic: "POSITIVE"
               decisionStrategy: "UNANIMOUS"
               config:
-                resources: '["Topic:anubis.payment*","Topic:payment*","Group:*"]'
+                resources: '["Topic:flink.payment*","Topic:payment*","Group:*"]'
                 applyPolicies: '["payments-team"]'
             ##################################
             ### Marketing Team permissions ###
@@ -428,7 +428,7 @@ spec:
               logic: "POSITIVE"
               decisionStrategy: "UNANIMOUS"
               config:
-                resources: '["Topic:anubis.payment*","Topic:payment*","Topic:anubis.flights*","Topic:flights*","Group:*"]'
+                resources: '["Topic:flink.payment*","Topic:payment*","Topic:flink.flights*","Topic:flights*","Group:*"]'
                 scopes: '["Describe","Read"]'
                 applyPolicies: '["marketing-team-group"]'
             - name: "marketing-team-flights-payments-read"
@@ -437,7 +437,7 @@ spec:
               logic: "POSITIVE"
               decisionStrategy: "UNANIMOUS"
               config:
-                resources: '["Topic:anubis.payment*","Topic:payment*","Topic:anubis.flights*","Topic:flights*","Group:*"]'
+                resources: '["Topic:flink.payment*","Topic:payment*","Topic:flink.flights*","Topic:flights*","Group:*"]'
                 scopes: '["Describe","Read"]'
                 applyPolicies: '["marketing-team"]'
             ############################

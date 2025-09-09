@@ -20,7 +20,7 @@ spec:
     - keycloak-service.keycloak
     - keycloak-service
   issuerRef:
-    name: ca-issuer  # Use CA issuer
+    name: my-selfsigned-ca-issuer  # Use CA issuer
     kind: Issuer
 ---
 apiVersion: k8s.keycloak.org/v2alpha1
