@@ -232,6 +232,95 @@ public class TestStatements {
         return part1 + part2 + part3;
     }
 
+    public static String getTestFlinkFilterOAuth(String bootstrap, String registryUrl, String keycloakUrl,
+                                                 String realm, String cliSecretName, String namespace) {
+        StringBuilder builder = new StringBuilder();
+        builder.append("CREATE TABLE payment_fiat (paymentDetails ROW<transactionId STRING, type STRING, " +
+            "amount DOUBLE, currency STRING, `date` STRING, status STRING>, payer ROW<name STRING, payerType STRING, " +
+            "accountNumber STRING, bank STRING, billingAddress ROW<street STRING, city STRING, state STRING, " +
+            "country STRING, postalCode STRING>, cardNumber STRING, cardType STRING, expiryDate STRING>, " +
+            "payee ROW<name STRING, payeeType STRING, accountNumber STRING, bank STRING, address ROW<street STRING, " +
+            "city STRING, state STRING, country STRING, postalCode STRING>>)");
+
+        Map<String, String> additionalProperties = new HashMap<>();
+        additionalProperties.put("properties.group.id", "flink-oauth-filter-group");
+        additionalProperties.put("value.format", "avro-confluent");
+        additionalProperties.put("value.avro-confluent.url", registryUrl);
+        additionalProperties.put("scan.startup.mode", "earliest-offset");
+        additionalProperties.put("properties.security.protocol", "SASL_SSL");
+        additionalProperties.put("properties.sasl.mechanism", "OAUTHBEARER");
+        additionalProperties.put("properties.sasl.jaas.config",
+            "org.apache.flink.kafka.shaded.org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginModule required " +
+                "oauth.ssl.truststore.location=\"/opt/keycloak-ca-cert/ca.crt\" " +
+                "oauth.ssl.truststore.type=\"PEM\" " +
+                "oauth.client.id=\"kafka-client\" " +
+                "oauth.client.secret=\"{{secret:" + namespace + "/" + cliSecretName + "/clientSecret}}\" " +
+                "oauth.token.endpoint.uri=\"" + keycloakUrl + "/" +
+                "realms/"+ realm + "/protocol/openid-connect/token\"\\;");
+        additionalProperties.put("properties.sasl.login.callback.handler.class", 
+            "io.strimzi.kafka.oauth.client.JaasClientOauthLoginCallbackHandler");
+        additionalProperties.put("properties.ssl.check.hostname", "false");
+        additionalProperties.put("properties.ssl.endpoint.identification.algorithm", "");
+        additionalProperties.put("properties.ssl.truststore.location", "/opt/kafka-ca-cert/ca.crt");
+        additionalProperties.put("properties.ssl.truststore.type", "PEM");
+
+        SqlWith sqlWith = new SqlWithBuilder()
+            .withSqlStatement(builder.toString())
+            .withConnector("kafka")
+            .withTopic("flink.payment.data")
+            .withBootstrapServer(bootstrap)
+            .withAdditionalProperties(additionalProperties)
+            .build();
+
+        String part1 = sqlWith.generateSql();
+
+        builder = new StringBuilder();
+        builder.append("CREATE TABLE paypal ( transactionId STRING, type STRING )");
+
+        additionalProperties = new HashMap<>();
+        additionalProperties.put("properties.client.id", "flink-oauth-paypal");
+        additionalProperties.put("properties.transaction.timeout.ms", "800000");
+        additionalProperties.put("key.format", "raw");
+        additionalProperties.put("key.fields", "transactionId");
+        additionalProperties.put("value.format", "json");
+        additionalProperties.put("value.fields-include", "ALL");
+        additionalProperties.put("properties.security.protocol", "SASL_SSL");
+        additionalProperties.put("properties.sasl.mechanism", "OAUTHBEARER");
+        additionalProperties.put("properties.sasl.jaas.config",
+            "org.apache.flink.kafka.shaded.org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginModule required " +
+                "oauth.ssl.truststore.location=\"/opt/keycloak-ca-cert/ca.crt\" " +
+                "oauth.ssl.truststore.type=\"PEM\" " +
+                "oauth.client.id=\"kafka-client\" " +
+                "oauth.client.secret=\"{{secret:" + namespace + "/" + cliSecretName + "/clientSecret}}\" " +
+                "oauth.token.endpoint.uri=\"" + keycloakUrl + "/" +
+                "realms/" + realm + "/protocol/openid-connect/token\"\\;");
+        additionalProperties.put("properties.sasl.login.callback.handler.class", 
+            "io.strimzi.kafka.oauth.client.JaasClientOauthLoginCallbackHandler");
+        additionalProperties.put("properties.ssl.check.hostname", "false");
+        additionalProperties.put("properties.ssl.endpoint.identification.algorithm", "");
+        additionalProperties.put("properties.ssl.truststore.location", "/opt/kafka-ca-cert/ca.crt");
+        additionalProperties.put("properties.ssl.truststore.type", "PEM");
+
+        sqlWith = new SqlWithBuilder()
+            .withSqlStatement(builder.toString())
+            .withConnector("kafka")
+            .withBootstrapServer(bootstrap)
+            .withTopic("flink.payment.paypal")
+            .withAdditionalProperties(additionalProperties)
+            .build();
+
+        String part2 = sqlWith.generateSql();
+
+        builder = new StringBuilder();
+        builder.append("INSERT INTO paypal" +
+            " SELECT paymentDetails.transactionId, paymentDetails.type " +
+            "FROM payment_fiat WHERE paymentDetails.type = 'paypal';");
+
+        String part3 = builder.toString();
+
+        return part1 + part2 + part3;
+    }
+
     public static String getWrongConnectionSql() {
         StringBuilder builder = new StringBuilder();
         builder.append("CREATE TABLE test (message STRING)");

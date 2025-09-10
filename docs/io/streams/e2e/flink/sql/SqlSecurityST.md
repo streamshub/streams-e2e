@@ -1,0 +1,44 @@
+# SqlSecurityST
+
+**Description:** This test suite verifies that flink-sql can uses security kafka connection
+
+**Before tests execution steps:**
+
+| Step | Action | Result |
+| - | - | - |
+| 1. | Deploy the Strimzi Kafka operator | Strimzi operator is deployed |
+| 2. | Deploy the Flink Kubernetes operator | Flink operator is deployed |
+| 3. | Deploy the Keycloak Kubernetes operator | Keycloak operator is deployed |
+| 4. | Deploy the Apicurio operator | Apicurio operator is deployed |
+| 5. | Deploy the cert-manager operator | Cert-manager operator is deployed |
+
+**Labels:**
+
+* `flink-sql-runner` (description file doesn't exist)
+* `flink` (description file doesn't exist)
+
+<hr style="border:1px solid">
+
+## testKeycloakUsers
+
+**Description:** Test verifies sql-runner.jar works integrated with kafka, apicurio and uses keycloak for kafka authentication
+
+**Steps:**
+
+| Step | Action | Result |
+| - | - | - |
+| 1. | Create namespace, serviceaccount and roles for Flink | Resources created |
+| 2. | Deploy Apicurio registry | Apicurio registry is up and running |
+| 3. | Deploy Keycloak realm | Keyclaok realm is imported |
+| 4. | Deploy Kafka my-cluster with oauth2 auth | Kafka is up and running |
+| 5. | Create KafkaUser with scram-sha secret | KafkaUser created |
+| 6. | Deploy strimzi-kafka-clients producer with payment data generator | Client job is created and data are sent to flink.payment.data topic |
+| 7. | Deploy FlinkDeployment with sql which gets data from flink.payment.data topic filter payment of type paypal and send data to flink.payment.paypal topic, for auth is used secret with clientSecret for keycloak | FlinkDeployment is up and tasks are deployed and it sends filtered data into flink.payment.paypal topic |
+| 8. | Deploy strimzi-kafka-clients consumer as job and consume messages fromkafka topic flink.payment.paypal | Consumer is deployed and it consumes messages |
+| 9. | Verify that messages are present | Messages are present |
+
+**Labels:**
+
+* `flink-sql-runner` (description file doesn't exist)
+* `flink` (description file doesn't exist)
+

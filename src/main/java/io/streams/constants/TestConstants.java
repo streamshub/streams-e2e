@@ -16,7 +16,7 @@ public interface TestConstants {
     String ALWAYS_IMAGE_PULL_POLICY = "Always";
     String IF_NOT_PRESENT_IMAGE_PULL_POLICY = "IfNotPresent";
 
-    String STRIMZI_TEST_CLIENTS_IMAGE = "quay.io/strimzi-test-clients/test-clients:latest-kafka-3.8.0";
+    String STRIMZI_TEST_CLIENTS_IMAGE = "quay.io/strimzi-test-clients/test-clients:latest-kafka-4.0.0";
 
     String STRIMZI_TEST_CLIENTS_LABEL_KEY = "strimzi-test-clients";
     String STRIMZI_TEST_CLIENTS_LABEL_VALUE = "true";
