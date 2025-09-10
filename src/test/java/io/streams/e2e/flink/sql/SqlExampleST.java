@@ -68,7 +68,7 @@ public class SqlExampleST extends Abstract {
     Path exampleFiles = TestConstants.YAML_MANIFEST_PATH.resolve("examples").resolve("sql-example");
 
     @BeforeAll
-    void prepareOperators() throws Exception {
+    void prepareOperators() {
         Allure.step("Install required operators", () -> OperatorInstaller.installRequiredOperators(
             InstallableOperator.FLINK,
             InstallableOperator.APICURIO,

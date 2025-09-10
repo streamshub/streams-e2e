@@ -232,7 +232,8 @@ public class TestStatements {
         return part1 + part2 + part3;
     }
 
-    public static String getTestFlinkFilterOAuth(String bootstrap, String registryUrl, String namespace) {
+    public static String getTestFlinkFilterOAuth(String bootstrap, String registryUrl, String keycloakUrl,
+                                                 String realm, String cliSecretName, String namespace) {
         StringBuilder builder = new StringBuilder();
         builder.append("CREATE TABLE payment_fiat (paymentDetails ROW<transactionId STRING, type STRING, " +
             "amount DOUBLE, currency STRING, `date` STRING, status STRING>, payer ROW<name STRING, payerType STRING, " +
@@ -253,9 +254,9 @@ public class TestStatements {
                 "oauth.ssl.truststore.location=\"/opt/keycloak-ca-cert/ca.crt\" " +
                 "oauth.ssl.truststore.type=\"PEM\" " +
                 "oauth.client.id=\"kafka-client\" " +
-                "oauth.client.secret=\"{{secret:" + namespace + "/kafka-client/clientSecret}}\" " +
-                "oauth.token.endpoint.uri=\"https://keycloak-service.keycloak.svc.cluster.local:8443/" +
-                "realms/streams-e2e/protocol/openid-connect/token\"\\;");
+                "oauth.client.secret=\"{{secret:" + namespace + "/" + cliSecretName + "/clientSecret}}\" " +
+                "oauth.token.endpoint.uri=\"" + keycloakUrl + "/" +
+                "realms/"+ realm + "/protocol/openid-connect/token\"\\;");
         additionalProperties.put("properties.sasl.login.callback.handler.class", 
             "io.strimzi.kafka.oauth.client.JaasClientOauthLoginCallbackHandler");
         additionalProperties.put("properties.ssl.check.hostname", "false");
@@ -290,9 +291,9 @@ public class TestStatements {
                 "oauth.ssl.truststore.location=\"/opt/keycloak-ca-cert/ca.crt\" " +
                 "oauth.ssl.truststore.type=\"PEM\" " +
                 "oauth.client.id=\"kafka-client\" " +
-                "oauth.client.secret=\"{{secret:" + namespace + "/kafka-client/clientSecret}}\" " +
-                "oauth.token.endpoint.uri=\"https://keycloak-service.keycloak.svc.cluster.local:8443/" +
-                "realms/streams-e2e/protocol/openid-connect/token\"\\;");
+                "oauth.client.secret=\"{{secret:" + namespace + "/" + cliSecretName + "/clientSecret}}\" " +
+                "oauth.token.endpoint.uri=\"" + keycloakUrl + "/" +
+                "realms/" + realm + "/protocol/openid-connect/token\"\\;");
         additionalProperties.put("properties.sasl.login.callback.handler.class", 
             "io.strimzi.kafka.oauth.client.JaasClientOauthLoginCallbackHandler");
         additionalProperties.put("properties.ssl.check.hostname", "false");

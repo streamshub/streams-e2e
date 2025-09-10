@@ -15,36 +15,36 @@ import io.skodjob.annotations.Label;
 import io.skodjob.annotations.Step;
 import io.skodjob.annotations.SuiteDoc;
 import io.skodjob.annotations.TestDoc;
+import io.skodjob.testframe.TestFrameConstants;
 import io.skodjob.testframe.resources.KubeResourceManager;
-import io.streams.e2e.Abstract;
+import io.skodjob.testframe.utils.JobUtils;
 import io.streams.clients.kafka.StrimziKafkaClients;
 import io.streams.clients.kafka.StrimziKafkaClientsBuilder;
+import io.streams.e2e.Abstract;
 import io.streams.operands.apicurio.templates.ApicurioRegistryTemplate;
-import io.streams.operands.flink.templates.FlinkDeploymentTemplate;
-import io.streams.operands.strimzi.templates.KafkaUserTemplate;
-import io.streams.sql.TestStatements;
-import io.skodjob.testframe.utils.JobUtils;
-import io.skodjob.testframe.TestFrameConstants;
-import io.streams.utils.StrimziClientUtils;
-import io.streams.utils.TestUtils;
-import io.strimzi.api.kafka.model.kafka.listener.KafkaListenerAuthenticationScramSha512;
-import io.strimzi.api.kafka.model.user.KafkaUserScramSha512ClientAuthentication;
-import org.apache.flink.v1beta1.FlinkDeployment;
 import io.streams.operands.certmanager.templates.CertManagerCaTemplate;
+import io.streams.operands.flink.templates.FlinkDeploymentTemplate;
 import io.streams.operands.flink.templates.FlinkRBAC;
 import io.streams.operands.keycloak.templates.KeycloakDeploymentTemplate;
+import io.streams.operands.strimzi.resources.KafkaType;
 import io.streams.operands.strimzi.templates.KafkaNodePoolTemplate;
 import io.streams.operands.strimzi.templates.KafkaTemplate;
-import io.streams.operands.strimzi.resources.KafkaType;
+import io.streams.operands.strimzi.templates.KafkaUserTemplate;
 import io.streams.operators.InstallableOperator;
 import io.streams.operators.OperatorInstaller;
 import io.streams.operators.manifests.KeycloakManifestInstaller;
+import io.streams.sql.TestStatements;
+import io.streams.utils.StrimziClientUtils;
+import io.streams.utils.TestUtils;
 import io.strimzi.api.kafka.model.common.CertSecretSourceBuilder;
 import io.strimzi.api.kafka.model.kafka.listener.GenericKafkaListenerBuilder;
 import io.strimzi.api.kafka.model.kafka.listener.KafkaListenerAuthenticationOAuthBuilder;
+import io.strimzi.api.kafka.model.kafka.listener.KafkaListenerAuthenticationScramSha512;
 import io.strimzi.api.kafka.model.kafka.listener.KafkaListenerType;
 import io.strimzi.api.kafka.model.nodepool.ProcessRoles;
+import io.strimzi.api.kafka.model.user.KafkaUserScramSha512ClientAuthentication;
 import org.apache.commons.codec.binary.Base64;
+import org.apache.flink.v1beta1.FlinkDeployment;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -79,7 +79,7 @@ public class SqlSecurityST extends Abstract {
     final String kafkaClusterName = "my-cluster";
 
     @BeforeAll
-    void prepareOperators() throws Exception {
+    void prepareOperators() {
         Allure.step("Install required operators", () -> OperatorInstaller.installRequiredOperators(
             InstallableOperator.FLINK,
             InstallableOperator.APICURIO,
@@ -95,13 +95,13 @@ public class SqlSecurityST extends Abstract {
             @Step(value = "Create namespace, serviceaccount and roles for Flink", expected = "Resources created"),
             @Step(value = "Deploy Apicurio registry", expected = "Apicurio registry is up and running"),
             @Step(value = "Deploy Keycloak realm", expected = "Keyclaok realm is imported"),
-            @Step(value = "Deploy Kafka my-cluster with scram-sha auth", expected = "Kafka is up and running"),
+            @Step(value = "Deploy Kafka my-cluster with oauth2 auth", expected = "Kafka is up and running"),
             @Step(value = "Create KafkaUser with scram-sha secret", expected = "KafkaUser created"),
             @Step(value = "Deploy strimzi-kafka-clients producer with payment data generator",
                 expected = "Client job is created and data are sent to flink.payment.data topic"),
             @Step(value = "Deploy FlinkDeployment with sql which gets data from flink.payment.data topic filter " +
-                "payment of type paypal and send data to flink.payment.paypal topic, for authentication is used " +
-                "secret created by KafkaUser and this secret is passed into by secret interpolation",
+                "payment of type paypal and send data to flink.payment.paypal topic, for auth is used " +
+                "secret with clientSecret for keycloak",
                 expected = "FlinkDeployment is up and tasks are deployed and it sends filtered " +
                     "data into flink.payment.paypal topic"),
             @Step(value = "Deploy strimzi-kafka-clients consumer as job and consume messages from" +
@@ -119,6 +119,8 @@ public class SqlSecurityST extends Abstract {
     void testKeycloakUsers() {
         String namespace = "flink-keycloak";
         String kafkaUser = "test-user";
+        String keycloakUrl = "https://keycloak-service." +
+            KeycloakManifestInstaller.OPERATOR_NS + ".svc.cluster.local:8443";
 
         Allure.step("Prepare " + namespace + " namespace", () -> {
             // Create namespace
@@ -206,10 +208,8 @@ public class SqlSecurityST extends Abstract {
                             .withType(KafkaListenerType.INTERNAL)
                             .withPort((9093))
                             .withAuth(new KafkaListenerAuthenticationOAuthBuilder()
-                                .withValidIssuerUri("https://keycloak-service.keycloak.svc.cluster.local:8443" +
-                                    "/realms/streams-e2e")
-                                .withJwksEndpointUri("https://keycloak-service.keycloak.svc.cluster.local:8443" +
-                                    "/realms/streams-e2e/protocol/openid-connect/certs")
+                                .withValidIssuerUri(keycloakUrl + "/realms/streams-e2e")
+                                .withJwksEndpointUri(keycloakUrl + "/realms/streams-e2e/protocol/openid-connect/certs")
                                 .withUserNameClaim("preferred_username")
                                 .withTlsTrustedCertificates(new CertSecretSourceBuilder()
                                     .withSecretName("keycloak-tls-secret")
@@ -293,7 +293,8 @@ public class SqlSecurityST extends Abstract {
             // Deploy flink with OAuth filter sql statement
             FlinkDeployment flink = FlinkDeploymentTemplate.defaultFlinkDeployment(namespace,
                     "flink-oauth", List.of(TestStatements.getTestFlinkFilterOAuth(
-                        bootstrapServerOAuth, registryUrl, namespace)))
+                        bootstrapServerOAuth, registryUrl, keycloakUrl,
+                        "streams-e2e", "kafka-client", namespace)))
                 .editSpec()
                 .editPodTemplate()
                 .editOrNewSpec()
