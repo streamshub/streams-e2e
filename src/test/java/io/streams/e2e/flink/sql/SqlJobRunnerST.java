@@ -76,7 +76,7 @@ public class SqlJobRunnerST extends Abstract {
     final String kafkaClusterName = "my-cluster";
 
     @BeforeAll
-    void prepareOperators() throws Exception {
+    void prepareOperators() {
         Allure.step("Install required operators", () -> OperatorInstaller.installRequiredOperators(
             InstallableOperator.FLINK,
             InstallableOperator.APICURIO,

@@ -36,6 +36,7 @@
         <maven.surefire.version>3.5.3</maven.surefire.version>
         <allure.junit.version>2.29.1</allure.junit.version>
         <allure.maven.version>2.15.2</allure.maven.version>
+        <commons.codec.version>1.17.0</commons.codec.version>
 
         <!--   Build tools' properties     -->
         <spotbugs.version>4.9.4</spotbugs.version>
@@ -236,6 +237,12 @@
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-failsafe-plugin</artifactId>
             <version>${maven.surefire.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
+            <version>${commons.codec.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>

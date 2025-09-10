@@ -1,0 +1,68 @@
+kind: Secret
+apiVersion: v1
+metadata:
+  name: keycloak-db-secret
+type: Opaque
+data:
+  username: YWRtaW4=
+  password: YWRtaW4=
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres
+  labels:
+    app: postgres
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+        - name: postgres
+          image: mirror.gcr.io/postgres:17
+          env:
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: keycloak-db-secret
+                  key: username
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: keycloak-db-secret
+                  key: password
+            - name: POSTGRES_DB
+              value: "keycloak"
+            - name: POSTGRES_LOG_STATEMENT
+              value: "all"
+          ports:
+            - name: postgres
+              containerPort: 5432
+          volumeMounts:
+            # Using volume mount for PostgreSQL's data folder as it is otherwise not writable
+            - name: postgres-data
+              mountPath: /var/lib/postgresql
+      volumes:
+        - name: postgres-data
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: postgres
+  name: postgres
+spec:
+  selector:
+    app: postgres
+  ports:
+    - protocol: TCP
+      port: 5432
+      targetPort: 5432
+  type: ClusterIP
