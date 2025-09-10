@@ -52,6 +52,8 @@ import org.junit.jupiter.api.Test;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.LockSupport;
 
 import static io.streams.constants.TestTags.FLINK;
 import static io.streams.constants.TestTags.FLINK_SQL_RUNNER;
@@ -142,7 +144,7 @@ public class SqlSecurityST extends Abstract {
                 KeycloakDeploymentTemplate.defaultKeycloakDeployment(
                     KeycloakManifestInstaller.OPERATOR_NS).toArray(new HasMetadata[0]));
 
-            Thread.sleep(30_000);
+            LockSupport.parkNanos(TimeUnit.SECONDS.toNanos(30));
 
             KubeResourceManager.get().createOrUpdateResourceWithWait(
                 KeycloakDeploymentTemplate.defaultKeycloakRealm(
