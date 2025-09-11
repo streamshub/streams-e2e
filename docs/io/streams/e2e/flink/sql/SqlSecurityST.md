@@ -19,7 +19,30 @@
 
 <hr style="border:1px solid">
 
-## testKeycloakUsers
+## testMTls
+
+**Description:** Test verifies sql-runner.jar works integrated with kafka, apicurio and uses mtls for kafka authentication
+
+**Steps:**
+
+| Step | Action | Result |
+| - | - | - |
+| 1. | Create namespace, serviceaccount and roles for Flink | Resources created |
+| 2. | Deploy Apicurio registry | Apicurio registry is up and running |
+| 3. | Deploy Kafka my-cluster with mtls auth | Kafka is up and running |
+| 4. | Create KafkaUser with tls secret | KafkaUser created |
+| 5. | Deploy strimzi-kafka-clients producer with payment data generator | Client job is created and data are sent to flink.payment.data topic |
+| 6. | Deploy FlinkDeployment with sql which gets data from flink.payment.data topic filter payment of type paypal and send data to flink.payment.paypal topic, for auth is used secret with certs for user | FlinkDeployment is up and tasks are deployed and it sends filtered data into flink.payment.paypal topic |
+| 7. | Deploy strimzi-kafka-clients consumer as job and consume messages fromkafka topic flink.payment.paypal | Consumer is deployed and it consumes messages |
+| 8. | Verify that messages are present | Messages are present |
+
+**Labels:**
+
+* `flink-sql-runner` (description file doesn't exist)
+* `flink` (description file doesn't exist)
+
+
+## testOauthWithTls
 
 **Description:** Test verifies sql-runner.jar works integrated with kafka, apicurio and uses keycloak for kafka authentication
 
