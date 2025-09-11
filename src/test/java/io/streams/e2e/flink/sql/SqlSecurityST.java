@@ -179,7 +179,18 @@ public class SqlSecurityST extends Abstract {
                 )
                 .build();
 
-            KubeResourceManager.get().createOrUpdateResourceWithWait(copiedSecret, clientSecret);
+            Secret paymentClientSecret = new SecretBuilder()
+                .withNewMetadata()
+                .withName("team-payments-client")
+                .withNamespace(namespace)
+                .endMetadata()
+                .withData(
+                    Collections.singletonMap("clientSecret",
+                        Base64.encodeBase64String("secret".getBytes(StandardCharsets.UTF_8)))
+                )
+                .build();
+
+            KubeResourceManager.get().createOrUpdateResourceWithWait(copiedSecret, clientSecret, paymentClientSecret);
         });
 
         Allure.step("Create kafka with Oauth 2.0 keycloak authentication", () -> {
@@ -298,7 +309,7 @@ public class SqlSecurityST extends Abstract {
             FlinkDeployment flink = FlinkDeploymentTemplate.defaultFlinkDeployment(namespace,
                     "flink-oauth", List.of(TestStatements.getTestFlinkFilterOAuth(
                         bootstrapServerOAuth, registryUrl, keycloakUrl,
-                        "streams-e2e", "kafka-client", namespace)))
+                        "streams-e2e", "team-payments-client", namespace)))
                 .editSpec()
                 .editPodTemplate()
                 .editOrNewSpec()
