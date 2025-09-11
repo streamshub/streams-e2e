@@ -242,6 +242,14 @@ public class TestStatements {
             "payee ROW<name STRING, payeeType STRING, accountNumber STRING, bank STRING, address ROW<street STRING, " +
             "city STRING, state STRING, country STRING, postalCode STRING>>)");
 
+        String oauthConfig = "org.apache.flink.kafka.shaded.org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginModule required " +
+            "oauth.ssl.truststore.location=\"/opt/keycloak-ca-cert/ca.crt\" " +
+            "oauth.ssl.truststore.type=\"PEM\" " +
+            "oauth.client.id=\"" + cliSecretName + "\" " +
+            "oauth.client.secret=\"{{secret:" + namespace + "/" + cliSecretName + "/clientSecret}}\" " +
+            "oauth.token.endpoint.uri=\"" + keycloakUrl + "/" +
+            "realms/" + realm + "/protocol/openid-connect/token\"\\;";
+
         Map<String, String> additionalProperties = new HashMap<>();
         additionalProperties.put("properties.group.id", "flink-oauth-filter-group");
         additionalProperties.put("value.format", "avro-confluent");
@@ -250,13 +258,7 @@ public class TestStatements {
         additionalProperties.put("properties.security.protocol", "SASL_SSL");
         additionalProperties.put("properties.sasl.mechanism", "OAUTHBEARER");
         additionalProperties.put("properties.sasl.jaas.config",
-            "org.apache.flink.kafka.shaded.org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginModule required " +
-                "oauth.ssl.truststore.location=\"/opt/keycloak-ca-cert/ca.crt\" " +
-                "oauth.ssl.truststore.type=\"PEM\" " +
-                "oauth.client.id=\"kafka-client\" " +
-                "oauth.client.secret=\"{{secret:" + namespace + "/" + cliSecretName + "/clientSecret}}\" " +
-                "oauth.token.endpoint.uri=\"" + keycloakUrl + "/" +
-                "realms/"+ realm + "/protocol/openid-connect/token\"\\;");
+            oauthConfig);
         additionalProperties.put("properties.sasl.login.callback.handler.class",
             "io.strimzi.kafka.oauth.client.JaasClientOauthLoginCallbackHandler");
         additionalProperties.put("properties.ssl.check.hostname", "false");
@@ -287,13 +289,7 @@ public class TestStatements {
         additionalProperties.put("properties.security.protocol", "SASL_SSL");
         additionalProperties.put("properties.sasl.mechanism", "OAUTHBEARER");
         additionalProperties.put("properties.sasl.jaas.config",
-            "org.apache.flink.kafka.shaded.org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginModule required " +
-                "oauth.ssl.truststore.location=\"/opt/keycloak-ca-cert/ca.crt\" " +
-                "oauth.ssl.truststore.type=\"PEM\" " +
-                "oauth.client.id=\"kafka-client\" " +
-                "oauth.client.secret=\"{{secret:" + namespace + "/" + cliSecretName + "/clientSecret}}\" " +
-                "oauth.token.endpoint.uri=\"" + keycloakUrl + "/" +
-                "realms/" + realm + "/protocol/openid-connect/token\"\\;");
+            oauthConfig);
         additionalProperties.put("properties.sasl.login.callback.handler.class", 
             "io.strimzi.kafka.oauth.client.JaasClientOauthLoginCallbackHandler");
         additionalProperties.put("properties.ssl.check.hostname", "false");
