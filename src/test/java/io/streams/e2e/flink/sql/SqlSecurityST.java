@@ -40,9 +40,11 @@ import io.strimzi.api.kafka.model.common.CertSecretSourceBuilder;
 import io.strimzi.api.kafka.model.kafka.listener.GenericKafkaListenerBuilder;
 import io.strimzi.api.kafka.model.kafka.listener.KafkaListenerAuthenticationOAuthBuilder;
 import io.strimzi.api.kafka.model.kafka.listener.KafkaListenerAuthenticationScramSha512;
+import io.strimzi.api.kafka.model.kafka.listener.KafkaListenerAuthenticationTls;
 import io.strimzi.api.kafka.model.kafka.listener.KafkaListenerType;
 import io.strimzi.api.kafka.model.nodepool.ProcessRoles;
 import io.strimzi.api.kafka.model.user.KafkaUserScramSha512ClientAuthentication;
+import io.strimzi.api.kafka.model.user.KafkaUserTlsClientAuthentication;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.flink.v1beta1.FlinkDeployment;
 import org.junit.jupiter.api.BeforeAll;
@@ -118,7 +120,7 @@ public class SqlSecurityST extends Abstract {
     )
     @Test
     @Tag(SMOKE)
-    void testKeycloakUsers() {
+    void testOauthWithTls() {
         String namespace = "flink-keycloak";
         String kafkaUser = "test-user";
         String keycloakUrl = "https://keycloak-service." +
@@ -355,6 +357,189 @@ public class SqlSecurityST extends Abstract {
 
             KubeResourceManager.get().createResourceWithWait(
                 kafkaConsumerClient.consumerStrimzi()
+            );
+
+            JobUtils.waitForJobSuccess(namespace, kafkaConsumerClient.getConsumerName(),
+                TestFrameConstants.GLOBAL_TIMEOUT_MEDIUM);
+            String consumerPodName = KubeResourceManager.get().kubeClient().listPodsByPrefixInName(namespace, consumerName)
+                .get(0).getMetadata().getName();
+            String log = KubeResourceManager.get().kubeClient().getLogsFromPod(namespace, consumerPodName);
+            assertTrue(log.contains("\"type\":\"paypal\""));
+            assertFalse(log.contains("\"type\":\"creditCard\""));
+        });
+    }
+
+    @TestDoc(
+        description = @Desc("Test verifies sql-runner.jar works integrated with kafka, " +
+            "apicurio and uses mtls for kafka authentication"),
+        steps = {
+            @Step(value = "Create namespace, serviceaccount and roles for Flink", expected = "Resources created"),
+            @Step(value = "Deploy Apicurio registry", expected = "Apicurio registry is up and running"),
+            @Step(value = "Deploy Kafka my-cluster with mtls auth", expected = "Kafka is up and running"),
+            @Step(value = "Create KafkaUser with tls secret", expected = "KafkaUser created"),
+            @Step(value = "Deploy strimzi-kafka-clients producer with payment data generator",
+                expected = "Client job is created and data are sent to flink.payment.data topic"),
+            @Step(value = "Deploy FlinkDeployment with sql which gets data from flink.payment.data topic filter " +
+                "payment of type paypal and send data to flink.payment.paypal topic, for auth is used " +
+                "secret with certs for user",
+                expected = "FlinkDeployment is up and tasks are deployed and it sends filtered " +
+                    "data into flink.payment.paypal topic"),
+            @Step(value = "Deploy strimzi-kafka-clients consumer as job and consume messages from" +
+                "kafka topic flink.payment.paypal",
+                expected = "Consumer is deployed and it consumes messages"),
+            @Step(value = "Verify that messages are present", expected = "Messages are present"),
+        },
+        labels = {
+            @Label(value = FLINK_SQL_RUNNER),
+            @Label(value = FLINK),
+        }
+    )
+    @Test
+    void testMTls() {
+        String namespace = "flink-mtls";
+        String kafkaUser = "test-user";
+
+        Allure.step("Prepare " + namespace + " namespace", () -> {
+            // Create namespace
+            KubeResourceManager.get().createOrUpdateResourceWithWait(
+                new NamespaceBuilder().withNewMetadata().withName(namespace).endMetadata().build());
+
+            // Add flink RBAC
+            KubeResourceManager.get().createOrUpdateResourceWithWait(
+                FlinkRBAC.getFlinkRbacResources(namespace).toArray(new HasMetadata[0]));
+        });
+
+        Allure.step("Create kafka with mtls listener", () -> {
+            // Create kafka
+            KubeResourceManager.get().createOrUpdateResourceWithWait(
+                KafkaNodePoolTemplate.defaultKafkaNodePoolJbod(namespace, "dual-role",
+                    3, kafkaClusterName, List.of(ProcessRoles.BROKER, ProcessRoles.CONTROLLER)).build());
+
+            KubeResourceManager.get().createOrUpdateResourceWithWait(
+                KafkaTemplate.defaultKafka(namespace, kafkaClusterName)
+                    .editSpec()
+                    .editKafka()
+                    .withListeners(
+                        new GenericKafkaListenerBuilder()
+                            .withName("mtls")
+                            .withTls(true)
+                            .withType(KafkaListenerType.INTERNAL)
+                            .withPort((9092))
+                            .withAuth(new KafkaListenerAuthenticationTls())
+                            .build(),
+                        new GenericKafkaListenerBuilder()
+                            .withName("unsecure")
+                            .withTls(false)
+                            .withType(KafkaListenerType.INTERNAL)
+                            .withPort((9094))
+                            .build()
+                    )
+                    .endKafka()
+                    .endSpec()
+                    .build());
+        });
+
+        String bootstrapServerUnsecure = KafkaType.kafkaClient().inNamespace(namespace).withName(kafkaClusterName).get()
+            .getStatus().getListeners().stream().filter(l -> l.getName().equals("unsecure"))
+            .findFirst().get().getBootstrapServers();
+        String bootstrapServersMTls = KafkaType.kafkaClient().inNamespace(namespace).withName(kafkaClusterName).get()
+            .getStatus().getListeners().stream().filter(l -> l.getName().equals("mtls"))
+            .findFirst().get().getBootstrapServers();
+
+        Allure.step("Create kafka tls user", () -> {
+            // Create kafka scram sha user
+            KubeResourceManager.get().createOrUpdateResourceWithWait(
+                KafkaUserTemplate.defaultKafkaUser(namespace, kafkaUser, kafkaClusterName)
+                    .editSpec()
+                    .withAuthentication(new KafkaUserTlsClientAuthentication())
+                    .endSpec()
+                    .build());
+        });
+
+        String registryUrl = "http://apicurio-registry-service." + namespace + ".svc:8080/apis/ccompat/v6";
+
+        Allure.step("Deploy apicurio registry", () -> {
+            // Create topic for ksql apicurio
+            KubeResourceManager.get().createOrUpdateResourceWithWait(
+                ApicurioRegistryTemplate.apicurioKsqlTopic(namespace, kafkaClusterName, 3));
+
+            // Add apicurio
+            KubeResourceManager.get().createOrUpdateResourceWithWait(
+                ApicurioRegistryTemplate.defaultApicurioRegistry("apicurio-registry", namespace,
+                    bootstrapServerUnsecure).build());
+        });
+
+        String producerName = "kafka-producer";
+        Allure.step("Create kafka producer and produce payment data", () -> {
+            // Run internal producer and produce data
+            StrimziKafkaClients kafkaProducerClient = new StrimziKafkaClientsBuilder()
+                .withProducerName(producerName)
+                .withNamespaceName(namespace)
+                .withTopicName("flink.payment.data")
+                .withBootstrapAddress(bootstrapServersMTls)
+                .withMessageCount(10000)
+                .withUsername(kafkaUser)
+                .withDelayMs(10)
+                .withMessageTemplate("payment_fiat")
+                .withCaCertSecretName(kafkaClusterName + "-cluster-ca-cert")
+                .withUsername(kafkaUser)
+                .withAdditionalConfig(
+                    StrimziClientUtils.getApicurioAdditionalProperties(AvroKafkaSerializer.class.getName(),
+                        "http://apicurio-registry-service." + namespace + ".svc:8080/apis/registry/v2") + "\n"
+                )
+                .build();
+
+            KubeResourceManager.get().createResourceWithWait(
+                kafkaProducerClient.producerTlsStrimzi(kafkaClusterName)
+            );
+        });
+
+        Allure.step("Deploy flink application with mtls authentication", () -> {
+            // Deploy flink with OAuth filter sql statement
+            FlinkDeployment flink = FlinkDeploymentTemplate.defaultFlinkDeployment(namespace,
+                    "flink-oauth", List.of(TestStatements.getTestFlinkFilterMtls(
+                        bootstrapServersMTls, registryUrl, "test-user", namespace)))
+                .editSpec()
+                .editPodTemplate()
+                .editOrNewSpec()
+                .editFirstContainer()
+                .addNewVolumeMount()
+                .withMountPath("/opt/kafka-ca-cert")
+                .withName("kafka-ca-cert")
+                .endVolumeMount()
+                .endContainer()
+                .addNewVolume()
+                .withName("kafka-ca-cert")
+                .withNewSecret()
+                .withSecretName(kafkaClusterName + "-cluster-ca-cert")
+                .addNewItem()
+                .withKey("ca.crt")
+                .withPath("ca.crt")
+                .endItem()
+                .endSecret()
+                .endVolume()
+                .endSpec()
+                .endPodTemplate()
+                .endSpec()
+                .build();
+            KubeResourceManager.get().createOrUpdateResourceWithWait(flink);
+        });
+
+        Allure.step("Consume filtered messages", () -> {
+            // Run consumer and check if data are filtered
+            String consumerName = "kafka-consumer";
+            StrimziKafkaClients kafkaConsumerClient = new StrimziKafkaClientsBuilder()
+                .withConsumerName(consumerName)
+                .withNamespaceName(namespace)
+                .withTopicName("flink.payment.paypal")
+                .withBootstrapAddress(bootstrapServersMTls)
+                .withUsername(kafkaUser)
+                .withCaCertSecretName(kafkaClusterName + "-cluster-ca-cert")
+                .withMessageCount(10)
+                .withConsumerGroup("flink-filter-test-group").build();
+
+            KubeResourceManager.get().createResourceWithWait(
+                kafkaConsumerClient.consumerTlsStrimzi(kafkaClusterName)
             );
 
             JobUtils.waitForJobSuccess(namespace, kafkaConsumerClient.getConsumerName(),
