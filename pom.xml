@@ -24,15 +24,14 @@
         <maven.compiler.release>17</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <test-frame.version>1.1.0</test-frame.version>
+        <test-frame.version>1.2.0</test-frame.version>
         <skodjob-doc.version>0.4.0</skodjob-doc.version>
         <fabric8.version>7.4.0</fabric8.version>
         <log4j.version>2.25.2</log4j.version>
         <slf4j.version>2.0.17</slf4j.version>
         <jackson.version>2.17.2</jackson.version>
 
-        <junit.jupiter.version>5.13.4</junit.jupiter.version>
-        <junit.platform.version>1.13.4</junit.platform.version>
+        <junit.jupiter.version>6.0.0</junit.jupiter.version>
         <maven.surefire.version>3.5.4</maven.surefire.version>
         <allure.junit.version>2.30.0</allure.junit.version>
         <allure.maven.version>2.16.1</allure.maven.version>
@@ -209,17 +208,17 @@
         <dependency>
             <groupId>org.junit.platform</groupId>
             <artifactId>junit-platform-commons</artifactId>
-            <version>${junit.platform.version}</version>
+            <version>${junit.jupiter.version}</version>
         </dependency>
         <dependency>
             <groupId>org.junit.platform</groupId>
             <artifactId>junit-platform-launcher</artifactId>
-            <version>${junit.platform.version}</version>
+            <version>${junit.jupiter.version}</version>
         </dependency>
         <dependency>
             <groupId>org.junit.platform</groupId>
             <artifactId>junit-platform-engine</artifactId>
-            <version>${junit.platform.version}</version>
+            <version>${junit.jupiter.version}</version>
         </dependency>
         <dependency>
             <groupId>io.qameta.allure</groupId>
