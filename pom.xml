@@ -31,7 +31,7 @@
         <slf4j.version>2.0.17</slf4j.version>
         <jackson.version>2.17.2</jackson.version>
 
-        <junit.jupiter.version>6.0.0</junit.jupiter.version>
+        <junit.jupiter.version>6.0.1</junit.jupiter.version>
         <maven.surefire.version>3.5.4</maven.surefire.version>
         <allure.junit.version>2.30.0</allure.junit.version>
         <allure.maven.version>2.16.1</allure.maven.version>
