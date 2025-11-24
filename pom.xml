@@ -39,7 +39,7 @@
 
         <!--   Build tools' properties     -->
         <spotbugs.version>4.9.8</spotbugs.version>
-        <maven.spotbugs.version>4.9.8.1</maven.spotbugs.version>
+        <maven.spotbugs.version>4.9.8.2</maven.spotbugs.version>
         <maven.checkstyle.version>3.6.0</maven.checkstyle.version>
         <maven.compile.plugin.version>3.14.1</maven.compile.plugin.version>
         <maven.dependency.version>3.9.0</maven.dependency.version>
@@ -57,7 +57,7 @@
         <debezium.operator.files.destination>debezium</debezium.operator.files.destination>
         <keycloak.operator.files.destination>keycloak</keycloak.operator.files.destination>
         <!-- Operators versions -->
-        <strimzi.version>0.48.0</strimzi.version>
+        <strimzi.version>0.49.0</strimzi.version>
         <flink.version>1.12.1</flink.version>
         <cert.manager.version>1.18.2</cert.manager.version>
         <apicurio.registry.version>1.1.3-v2.6.4.final</apicurio.registry.version>
