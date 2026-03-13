@@ -29,9 +29,10 @@ RUN export ARCH=$(case $(uname -m) in x86_64) echo -n amd64 ;; aarch64) echo -n 
     curl -LO ${OPERATOR_SDK_DL_URL}/operator-sdk_${OS}_${ARCH} && \
     chmod +x operator-sdk_${OS}_${ARCH} && \
     mv operator-sdk_${OS}_${ARCH} /usr/local/bin/operator-sdk  && \
-    curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 && \
-    chmod 700 get_helm.sh && \
-    ./get_helm.sh
+    curl -fsSL -o helm.tar.gz "https://get.helm.sh/helm-v3.17.1-${OS}-${ARCH}.tar.gz" && \
+    tar -xzf helm.tar.gz && \
+    mv "${OS}-${ARCH}/helm" /usr/local/bin/helm && \
+    rm -rf helm.tar.gz "${OS}-${ARCH}"
 
 
 RUN mkdir -p /opt/kubeconfig && chown 185:0 /opt/kubeconfig && \
