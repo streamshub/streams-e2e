@@ -6,8 +6,8 @@ package io.streams.operands.strimzi.resources;
 
 import io.fabric8.kubernetes.client.dsl.MixedOperation;
 import io.fabric8.kubernetes.client.dsl.Resource;
-import io.skodjob.testframe.interfaces.ResourceType;
-import io.skodjob.testframe.resources.KubeResourceManager;
+import io.skodjob.kubetest4j.interfaces.ResourceType;
+import io.skodjob.kubetest4j.resources.KubeResourceManager;
 import io.strimzi.api.kafka.Crds;
 import io.strimzi.api.kafka.model.kafka.Kafka;
 import io.strimzi.api.kafka.model.kafka.KafkaList;

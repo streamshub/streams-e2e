@@ -14,9 +14,9 @@ import io.fabric8.kubernetes.api.model.Namespaced;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.api.model.rbac.ClusterRoleBinding;
 import io.fabric8.kubernetes.api.model.rbac.RoleBinding;
-import io.skodjob.testframe.TestFrameConstants;
-import io.skodjob.testframe.resources.KubeResourceManager;
-import io.skodjob.testframe.wait.Wait;
+import io.skodjob.kubetest4j.KubeTestConstants;
+import io.skodjob.kubetest4j.resources.KubeResourceManager;
+import io.skodjob.kubetest4j.wait.Wait;
 import io.streams.constants.TestConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -84,8 +84,8 @@ public class ApicurioRegistryManifestInstaller {
             KubeResourceManager.get().createOrUpdateResourceWithoutWait(res);
         });
         LOGGER.info("Apicurio Registry operator installed to namespace: {}", OPERATOR_NS);
-        return Wait.untilAsync("Apicurio Registry operator readiness", TestFrameConstants.GLOBAL_POLL_INTERVAL_1_SEC,
-            TestFrameConstants.GLOBAL_TIMEOUT, ApicurioRegistryManifestInstaller::isReady);
+        return Wait.untilAsync("Apicurio Registry operator readiness", KubeTestConstants.GLOBAL_POLL_INTERVAL_1_SEC,
+            KubeTestConstants.GLOBAL_TIMEOUT, ApicurioRegistryManifestInstaller::isReady);
     }
 
     private static void modifyDeployment(Deployment deployment) {

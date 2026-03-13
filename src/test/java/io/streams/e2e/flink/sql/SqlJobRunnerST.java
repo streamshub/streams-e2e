@@ -15,10 +15,10 @@ import io.skodjob.annotations.Label;
 import io.skodjob.annotations.Step;
 import io.skodjob.annotations.SuiteDoc;
 import io.skodjob.annotations.TestDoc;
-import io.skodjob.testframe.TestFrameConstants;
-import io.skodjob.testframe.resources.KubeResourceManager;
-import io.skodjob.testframe.utils.JobUtils;
-import io.skodjob.testframe.wait.Wait;
+import io.skodjob.kubetest4j.KubeTestConstants;
+import io.skodjob.kubetest4j.resources.KubeResourceManager;
+import io.skodjob.kubetest4j.utils.JobUtils;
+import io.skodjob.kubetest4j.wait.Wait;
 import io.streams.clients.kafka.StrimziKafkaClients;
 import io.streams.clients.kafka.StrimziKafkaClientsBuilder;
 import io.streams.e2e.Abstract;
@@ -227,7 +227,7 @@ public class SqlJobRunnerST extends Abstract {
         });
 
         Allure.step("Wait until producer produce all messages", () ->
-            JobUtils.waitForJobSuccess(namespace, producerName, TestFrameConstants.GLOBAL_TIMEOUT_MEDIUM));
+            JobUtils.waitForJobSuccess(namespace, producerName, KubeTestConstants.GLOBAL_TIMEOUT_MEDIUM));
 
 
         Allure.step("Consume filtered messages", () -> {
@@ -251,7 +251,7 @@ public class SqlJobRunnerST extends Abstract {
             );
 
             JobUtils.waitForJobSuccess(namespace, kafkaConsumerClient.getConsumerName(),
-                TestFrameConstants.GLOBAL_TIMEOUT_MEDIUM);
+                KubeTestConstants.GLOBAL_TIMEOUT_MEDIUM);
             String consumerPodName = KubeResourceManager.get().kubeClient().listPodsByPrefixInName(namespace, consumerName)
                 .get(0).getMetadata().getName();
             String log = KubeResourceManager.get().kubeClient().getLogsFromPod(namespace, consumerPodName);
@@ -300,8 +300,8 @@ public class SqlJobRunnerST extends Abstract {
 
         Allure.step("Verify that flink deployment failed with error", () -> {
             // Check if no task is deployed and error is proper in flink deployment
-            Wait.until("Flink deployment fail", TestFrameConstants.GLOBAL_POLL_INTERVAL_1_SEC,
-                TestFrameConstants.GLOBAL_TIMEOUT_MEDIUM, () -> {
+            Wait.until("Flink deployment fail", KubeTestConstants.GLOBAL_POLL_INTERVAL_1_SEC,
+                KubeTestConstants.GLOBAL_TIMEOUT_MEDIUM, () -> {
                     String error = new FlinkDeploymentType().getClient().inNamespace(namespace).withName(flinkDeploymentName)
                         .get().getStatus().getError();
                     return error.contains("DeploymentFailedException") ||
@@ -312,8 +312,8 @@ public class SqlJobRunnerST extends Abstract {
             String podName = KubeResourceManager.get().kubeClient().listPodsByPrefixInName(namespace, flinkDeploymentName)
                 .get(0).getMetadata().getName();
 
-            Wait.until("Flink deployment contains error message", TestFrameConstants.GLOBAL_POLL_INTERVAL_1_SEC,
-                TestFrameConstants.GLOBAL_TIMEOUT_MEDIUM, () ->
+            Wait.until("Flink deployment contains error message", KubeTestConstants.GLOBAL_POLL_INTERVAL_1_SEC,
+                KubeTestConstants.GLOBAL_TIMEOUT_MEDIUM, () ->
                     KubeResourceManager.get().kubeClient()
                         .getLogsFromPod(namespace, podName).contains("SQL parse failed"));
         });
@@ -358,15 +358,15 @@ public class SqlJobRunnerST extends Abstract {
 
         Allure.step("Verify that flink deployment fails with connection issue", () -> {
             // Check if no task is deployed and error is proper in flink deployment
-            Wait.until("Flink deployment starts", TestFrameConstants.GLOBAL_POLL_INTERVAL_1_SEC,
-                TestFrameConstants.GLOBAL_TIMEOUT_MEDIUM, () ->
+            Wait.until("Flink deployment starts", KubeTestConstants.GLOBAL_POLL_INTERVAL_1_SEC,
+                KubeTestConstants.GLOBAL_TIMEOUT_MEDIUM, () ->
                     !KubeResourceManager.get().kubeClient().listPodsByPrefixInName(namespace, flinkDeploymentName).isEmpty());
 
             String podName = KubeResourceManager.get().kubeClient().listPodsByPrefixInName(namespace, flinkDeploymentName)
                 .get(0).getMetadata().getName();
 
-            Wait.until("Flink deployment contains error message", TestFrameConstants.GLOBAL_POLL_INTERVAL_1_SEC,
-                TestFrameConstants.GLOBAL_TIMEOUT_MEDIUM, () ->
+            Wait.until("Flink deployment contains error message", KubeTestConstants.GLOBAL_POLL_INTERVAL_1_SEC,
+                KubeTestConstants.GLOBAL_TIMEOUT_MEDIUM, () ->
                     KubeResourceManager.get().kubeClient()
                         .getLogsFromPod(namespace, podName)
                         .contains("No resolvable bootstrap urls given in bootstrap.servers"));
@@ -556,13 +556,13 @@ public class SqlJobRunnerST extends Abstract {
 
         Allure.step("Wait for producer produce payment messages", () -> {
             JobUtils.waitForJobSuccess(namespace, producerName,
-                TestFrameConstants.GLOBAL_TIMEOUT_MEDIUM);
+                KubeTestConstants.GLOBAL_TIMEOUT_MEDIUM);
         });
 
         Allure.step("Verify that flink use rocksDB on PVC as state backend", () -> {
             //Check task manager log for presence rocksbd configuration
-            Wait.until("Task manager contains info about rocksdb", TestFrameConstants.GLOBAL_POLL_INTERVAL_LONG,
-                TestFrameConstants.GLOBAL_TIMEOUT, () -> {
+            Wait.until("Task manager contains info about rocksdb", KubeTestConstants.GLOBAL_POLL_INTERVAL_LONG,
+                KubeTestConstants.GLOBAL_TIMEOUT, () -> {
                     List<Pod> taskManagerPods = KubeResourceManager.get().kubeClient()
                         .listPodsByPrefixInName(namespace, flinkDeploymentName + "-taskmanager");
                     for (Pod p : taskManagerPods) {
@@ -594,7 +594,7 @@ public class SqlJobRunnerST extends Abstract {
             );
 
             JobUtils.waitForJobSuccess(namespace, kafkaConsumerClient.getConsumerName(),
-                TestFrameConstants.GLOBAL_TIMEOUT_MEDIUM);
+                KubeTestConstants.GLOBAL_TIMEOUT_MEDIUM);
             String consumerPodName = KubeResourceManager.get().kubeClient().listPodsByPrefixInName(namespace, consumerName)
                 .get(0).getMetadata().getName();
             String log = KubeResourceManager.get().kubeClient().getLogsFromPod(namespace, consumerPodName);
@@ -824,13 +824,13 @@ public class SqlJobRunnerST extends Abstract {
 
         Allure.step("Wait for producer produces all messages", () -> {
             JobUtils.waitForJobSuccess(namespace, producerName,
-                TestFrameConstants.GLOBAL_TIMEOUT_MEDIUM);
+                KubeTestConstants.GLOBAL_TIMEOUT_MEDIUM);
         });
 
         Allure.step("Verify that flink uses s3 as state backend", () -> {
             //Check task manager log for presence checkpoint configuration
-            Wait.until("Task manager contains info about state.backend", TestFrameConstants.GLOBAL_POLL_INTERVAL_LONG,
-                TestFrameConstants.GLOBAL_TIMEOUT, () -> {
+            Wait.until("Task manager contains info about state.backend", KubeTestConstants.GLOBAL_POLL_INTERVAL_LONG,
+                KubeTestConstants.GLOBAL_TIMEOUT, () -> {
                     List<Pod> taskManagerPods = KubeResourceManager.get().kubeClient()
                         .listPodsByPrefixInName(namespace, flinkDeploymentName + "-taskmanager");
                     for (Pod p : taskManagerPods) {
@@ -866,7 +866,7 @@ public class SqlJobRunnerST extends Abstract {
                 );
 
             JobUtils.waitForJobSuccess(namespace, kafkaConsumerClient.getConsumerName(),
-                TestFrameConstants.GLOBAL_TIMEOUT_MEDIUM);
+                KubeTestConstants.GLOBAL_TIMEOUT_MEDIUM);
             String consumerPodName = KubeResourceManager.get().kubeClient()
                 .listPodsByPrefixInName(namespace, consumerName)
                 .get(0)

@@ -9,8 +9,8 @@ import io.apicurio.registry.operator.api.v1.model.apicurioregistrystatus.Conditi
 import io.fabric8.kubernetes.api.model.KubernetesResourceList;
 import io.fabric8.kubernetes.client.dsl.MixedOperation;
 import io.fabric8.kubernetes.client.dsl.Resource;
-import io.skodjob.testframe.interfaces.ResourceType;
-import io.skodjob.testframe.resources.KubeResourceManager;
+import io.skodjob.kubetest4j.interfaces.ResourceType;
+import io.skodjob.kubetest4j.resources.KubeResourceManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

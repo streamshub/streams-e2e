@@ -1,4 +1,4 @@
-FROM registry.access.redhat.com/ubi9/openjdk-17:1.22
+FROM registry.access.redhat.com/ubi9/openjdk-21:latest
 
 LABEL org.opencontainers.image.source='https://github.com/streamshub/streams-e2e'
 
