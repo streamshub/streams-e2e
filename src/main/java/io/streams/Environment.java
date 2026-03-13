@@ -4,7 +4,7 @@
  */
 package io.streams;
 
-import io.skodjob.testframe.environment.TestEnvironmentVariables;
+import io.skodjob.kubetest4j.environment.TestEnvironmentVariables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

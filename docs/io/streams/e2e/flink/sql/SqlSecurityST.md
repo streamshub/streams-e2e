@@ -2,7 +2,7 @@
 
 **Description:** This test suite verifies that flink-sql can uses security kafka connection
 
-**Before tests execution steps:**
+**Before test execution steps:**
 
 | Step | Action | Result |
 | - | - | - |

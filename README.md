@@ -4,7 +4,7 @@ Test suite for verify interoperability of streams components like kafka, flink, 
 
 ## Requirements
 There is several requirements you have to have installed to properly build the project and run the tests:
-- Java 17+
+- Java 21+
 - Helm 3+
 - OperatorSDK
 

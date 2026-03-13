@@ -15,9 +15,9 @@ import io.skodjob.annotations.Label;
 import io.skodjob.annotations.Step;
 import io.skodjob.annotations.SuiteDoc;
 import io.skodjob.annotations.TestDoc;
-import io.skodjob.testframe.TestFrameConstants;
-import io.skodjob.testframe.resources.KubeResourceManager;
-import io.skodjob.testframe.utils.JobUtils;
+import io.skodjob.kubetest4j.KubeTestConstants;
+import io.skodjob.kubetest4j.resources.KubeResourceManager;
+import io.skodjob.kubetest4j.utils.JobUtils;
 import io.streams.clients.kafka.StrimziKafkaClients;
 import io.streams.clients.kafka.StrimziKafkaClientsBuilder;
 import io.streams.e2e.Abstract;
@@ -371,7 +371,7 @@ public class SqlSecurityST extends Abstract {
             );
 
             JobUtils.waitForJobSuccess(namespace, kafkaConsumerClient.getConsumerName(),
-                TestFrameConstants.GLOBAL_TIMEOUT_MEDIUM);
+                KubeTestConstants.GLOBAL_TIMEOUT_MEDIUM);
             String consumerPodName = KubeResourceManager.get().kubeClient().listPodsByPrefixInName(namespace, consumerName)
                 .get(0).getMetadata().getName();
             String log = KubeResourceManager.get().kubeClient().getLogsFromPod(namespace, consumerPodName);
@@ -554,7 +554,7 @@ public class SqlSecurityST extends Abstract {
             );
 
             JobUtils.waitForJobSuccess(namespace, kafkaConsumerClient.getConsumerName(),
-                TestFrameConstants.GLOBAL_TIMEOUT_MEDIUM);
+                KubeTestConstants.GLOBAL_TIMEOUT_MEDIUM);
             String consumerPodName = KubeResourceManager.get().kubeClient().listPodsByPrefixInName(namespace, consumerName)
                 .get(0).getMetadata().getName();
             String log = KubeResourceManager.get().kubeClient().getLogsFromPod(namespace, consumerPodName);

@@ -9,9 +9,9 @@ import io.fabric8.kubernetes.api.model.Namespace;
 import io.fabric8.kubernetes.api.model.NamespaceBuilder;
 import io.fabric8.kubernetes.api.model.Namespaced;
 import io.fabric8.kubernetes.api.model.rbac.ClusterRoleBinding;
-import io.skodjob.testframe.TestFrameConstants;
-import io.skodjob.testframe.resources.KubeResourceManager;
-import io.skodjob.testframe.wait.Wait;
+import io.skodjob.kubetest4j.KubeTestConstants;
+import io.skodjob.kubetest4j.resources.KubeResourceManager;
+import io.skodjob.kubetest4j.wait.Wait;
 import io.streams.constants.TestConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -75,8 +75,8 @@ public class DebeziumManifestInstaller {
             KubeResourceManager.get().createOrUpdateResourceWithoutWait(res);
         });
         LOGGER.info("Debezium operator installed to namespace: {}", OPERATOR_NS);
-        return Wait.untilAsync("Debezium operator readiness", TestFrameConstants.GLOBAL_POLL_INTERVAL_1_SEC,
-            TestFrameConstants.GLOBAL_TIMEOUT, DebeziumManifestInstaller::isReady);
+        return Wait.untilAsync("Debezium operator readiness", KubeTestConstants.GLOBAL_POLL_INTERVAL_1_SEC,
+            KubeTestConstants.GLOBAL_TIMEOUT, DebeziumManifestInstaller::isReady);
     }
 
     private static boolean isReady() {

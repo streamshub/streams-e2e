@@ -6,7 +6,7 @@ package io.streams.operands.flink.templates;
 
 import io.fabric8.kubernetes.api.model.PersistentVolumeClaimBuilder;
 import io.fabric8.kubernetes.api.model.Quantity;
-import io.skodjob.testframe.utils.KubeUtils;
+import io.skodjob.kubetest4j.utils.KubeUtils;
 import io.streams.Environment;
 import org.apache.flink.v1beta1.FlinkDeploymentBuilder;
 import org.apache.flink.v1beta1.FlinkDeploymentSpec;

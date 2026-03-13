@@ -2,7 +2,7 @@
 
 **Description:** This test suite verifies that flink-sql-example works correctly
 
-**Before tests execution steps:**
+**Before test execution steps:**
 
 | Step | Action | Result |
 | - | - | - |

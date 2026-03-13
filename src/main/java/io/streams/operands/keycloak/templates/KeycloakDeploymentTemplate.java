@@ -5,7 +5,7 @@
 package io.streams.operands.keycloak.templates;
 
 import io.fabric8.kubernetes.api.model.HasMetadata;
-import io.skodjob.testframe.resources.KubeResourceManager;
+import io.skodjob.kubetest4j.resources.KubeResourceManager;
 
 import java.io.IOException;
 import java.util.List;

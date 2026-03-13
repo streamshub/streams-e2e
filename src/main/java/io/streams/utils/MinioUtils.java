@@ -6,9 +6,9 @@ package io.streams.utils;
 
 import io.fabric8.kubernetes.api.model.LabelSelector;
 import io.fabric8.kubernetes.api.model.LabelSelectorBuilder;
-import io.skodjob.testframe.TestFrameConstants;
-import io.skodjob.testframe.resources.KubeResourceManager;
-import io.skodjob.testframe.wait.Wait;
+import io.skodjob.kubetest4j.KubeTestConstants;
+import io.skodjob.kubetest4j.resources.KubeResourceManager;
+import io.skodjob.kubetest4j.wait.Wait;
 import io.streams.constants.TestConstants;
 import io.streams.operands.minio.MinioInstaller;
 import org.apache.logging.log4j.LogManager;
@@ -93,8 +93,8 @@ public class MinioUtils {
      */
     public static void waitForDataInMinio(String namespace, String bucketName) {
         Wait.until("data sync from Kafka to Minio",
-            TestFrameConstants.GLOBAL_POLL_INTERVAL_MEDIUM,
-            TestFrameConstants.GLOBAL_TIMEOUT,
+            KubeTestConstants.GLOBAL_POLL_INTERVAL_MEDIUM,
+            KubeTestConstants.GLOBAL_TIMEOUT,
             () -> {
                 String bucketSizeInfo = getBucketSizeInfo(namespace, bucketName);
                 Map<String, Object> parsedSize = parseTotalSize(bucketSizeInfo);
@@ -114,8 +114,8 @@ public class MinioUtils {
      */
     public static void waitForObjectsInMinio(String namespace, String bucketName) {
         Wait.until("data sync from Kafka to Minio",
-            TestFrameConstants.GLOBAL_POLL_INTERVAL_MEDIUM,
-            TestFrameConstants.GLOBAL_TIMEOUT,
+            KubeTestConstants.GLOBAL_POLL_INTERVAL_MEDIUM,
+            KubeTestConstants.GLOBAL_TIMEOUT,
             () -> {
                 String bucketSizeInfo = getBucketSizeInfo(namespace, bucketName);
                 int objectCount = parseObjectCount(bucketSizeInfo);
@@ -134,7 +134,7 @@ public class MinioUtils {
      * @param bucketName bucket name
      */
     public static void waitForNoDataInMinio(String namespace, String bucketName) {
-        Wait.until("data deletion in Minio", TestFrameConstants.GLOBAL_POLL_INTERVAL_MEDIUM, TestFrameConstants.GLOBAL_TIMEOUT, () -> {
+        Wait.until("data deletion in Minio", KubeTestConstants.GLOBAL_POLL_INTERVAL_MEDIUM, KubeTestConstants.GLOBAL_TIMEOUT, () -> {
             String bucketSizeInfo = getBucketSizeInfo(namespace, bucketName);
             Map<String, Object> parsedSize = parseTotalSize(bucketSizeInfo);
             double bucketSize = (Double) parsedSize.get("size");

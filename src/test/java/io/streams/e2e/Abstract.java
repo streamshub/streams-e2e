@@ -4,17 +4,17 @@
  */
 package io.streams.e2e;
 
-import io.skodjob.testframe.annotations.MustGather;
-import io.skodjob.testframe.annotations.ResourceManager;
-import io.skodjob.testframe.annotations.TestVisualSeparator;
-import io.skodjob.testframe.resources.DeploymentType;
-import io.skodjob.testframe.resources.InstallPlanType;
-import io.skodjob.testframe.resources.KubeResourceManager;
-import io.skodjob.testframe.resources.NamespaceType;
-import io.skodjob.testframe.resources.OperatorGroupType;
-import io.skodjob.testframe.resources.ServiceType;
-import io.skodjob.testframe.resources.SubscriptionType;
-import io.skodjob.testframe.utils.KubeUtils;
+import io.skodjob.kubetest4j.annotations.MustGather;
+import io.skodjob.kubetest4j.annotations.ResourceManager;
+import io.skodjob.kubetest4j.annotations.TestVisualSeparator;
+import io.skodjob.kubetest4j.resources.DeploymentType;
+import io.skodjob.kubetest4j.resources.InstallPlanType;
+import io.skodjob.kubetest4j.resources.KubeResourceManager;
+import io.skodjob.kubetest4j.resources.NamespaceType;
+import io.skodjob.kubetest4j.resources.OperatorGroupType;
+import io.skodjob.kubetest4j.resources.ServiceType;
+import io.skodjob.kubetest4j.resources.SubscriptionType;
+import io.skodjob.kubetest4j.utils.KubeUtils;
 import io.streams.Environment;
 import io.streams.constants.TestConstants;
 import io.streams.listeners.MustGatherImpl;

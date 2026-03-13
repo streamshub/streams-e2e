@@ -8,12 +8,12 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.fabric8.kubernetes.api.model.LabelSelectorBuilder;
 import io.fabric8.kubernetes.api.model.Namespace;
 import io.fabric8.kubernetes.api.model.NamespaceBuilder;
-import io.skodjob.testframe.TestFrameConstants;
-import io.skodjob.testframe.olm.OperatorSdkRun;
-import io.skodjob.testframe.olm.OperatorSdkRunBuilder;
-import io.skodjob.testframe.resources.KubeResourceManager;
-import io.skodjob.testframe.utils.PodUtils;
-import io.skodjob.testframe.wait.Wait;
+import io.skodjob.kubetest4j.KubeTestConstants;
+import io.skodjob.kubetest4j.olm.OperatorSdkRun;
+import io.skodjob.kubetest4j.olm.OperatorSdkRunBuilder;
+import io.skodjob.kubetest4j.resources.KubeResourceManager;
+import io.skodjob.kubetest4j.utils.PodUtils;
+import io.skodjob.kubetest4j.wait.Wait;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,8 +51,8 @@ public class StrimziOlmBundleInstaller {
 
         CompletableFuture<Void> osrRun = CompletableFuture.runAsync(osr::run);
 
-        return Wait.untilAsync(operatorName + " is ready", TestFrameConstants.GLOBAL_POLL_INTERVAL_1_SEC,
-            TestFrameConstants.GLOBAL_TIMEOUT, () -> {
+        return Wait.untilAsync(operatorName + " is ready", KubeTestConstants.GLOBAL_POLL_INTERVAL_1_SEC,
+            KubeTestConstants.GLOBAL_TIMEOUT, () -> {
                 CompletableFuture.allOf(osrRun).join();
                 return isOperatorReady(operatorNamespace);
             });

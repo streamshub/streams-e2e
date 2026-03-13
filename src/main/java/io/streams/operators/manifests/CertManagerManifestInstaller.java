@@ -9,9 +9,9 @@ import io.fabric8.kubernetes.api.model.Namespace;
 import io.fabric8.kubernetes.api.model.NamespaceBuilder;
 import io.fabric8.kubernetes.api.model.rbac.ClusterRoleBinding;
 import io.fabric8.kubernetes.api.model.rbac.RoleBinding;
-import io.skodjob.testframe.TestFrameConstants;
-import io.skodjob.testframe.resources.KubeResourceManager;
-import io.skodjob.testframe.wait.Wait;
+import io.skodjob.kubetest4j.KubeTestConstants;
+import io.skodjob.kubetest4j.resources.KubeResourceManager;
+import io.skodjob.kubetest4j.wait.Wait;
 import io.streams.constants.TestConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -81,8 +81,8 @@ public class CertManagerManifestInstaller {
             KubeResourceManager.get().createOrUpdateResourceWithoutWait(res);
         });
         LOGGER.info("Cert-manager installed to namespace: {}", OPERATOR_NS);
-        return Wait.untilAsync("Cert-manager readiness", TestFrameConstants.GLOBAL_POLL_INTERVAL_1_SEC,
-            TestFrameConstants.GLOBAL_TIMEOUT, CertManagerManifestInstaller::isReady);
+        return Wait.untilAsync("Cert-manager readiness", KubeTestConstants.GLOBAL_POLL_INTERVAL_1_SEC,
+            KubeTestConstants.GLOBAL_TIMEOUT, CertManagerManifestInstaller::isReady);
     }
 
     private static boolean isReady() {

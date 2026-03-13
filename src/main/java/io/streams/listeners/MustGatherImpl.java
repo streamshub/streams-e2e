@@ -5,10 +5,10 @@
 package io.streams.listeners;
 
 import io.fabric8.kubernetes.api.model.LabelSelectorBuilder;
-import io.skodjob.testframe.LogCollector;
-import io.skodjob.testframe.LogCollectorBuilder;
-import io.skodjob.testframe.interfaces.MustGatherSupplier;
-import io.skodjob.testframe.resources.KubeResourceManager;
+import io.skodjob.kubetest4j.LogCollector;
+import io.skodjob.kubetest4j.LogCollectorBuilder;
+import io.skodjob.kubetest4j.interfaces.MustGatherSupplier;
+import io.skodjob.kubetest4j.resources.KubeResourceManager;
 import io.streams.Environment;
 import io.streams.constants.KubeResourceConstants;
 import io.streams.constants.TestConstants;

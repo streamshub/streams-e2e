@@ -10,9 +10,9 @@ import io.fabric8.kubernetes.api.model.NamespaceBuilder;
 import io.fabric8.kubernetes.api.model.Namespaced;
 import io.fabric8.kubernetes.api.model.rbac.ClusterRoleBinding;
 import io.fabric8.kubernetes.api.model.rbac.RoleBinding;
-import io.skodjob.testframe.TestFrameConstants;
-import io.skodjob.testframe.resources.KubeResourceManager;
-import io.skodjob.testframe.wait.Wait;
+import io.skodjob.kubetest4j.KubeTestConstants;
+import io.skodjob.kubetest4j.resources.KubeResourceManager;
+import io.skodjob.kubetest4j.wait.Wait;
 import io.streams.constants.TestConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -76,8 +76,8 @@ public class KeycloakManifestInstaller {
             KubeResourceManager.get().createOrUpdateResourceWithoutWait(res);
         });
         LOGGER.info("Keycloak operator installed to namespace: {}", OPERATOR_NS);
-        return Wait.untilAsync("Keycloak operator readiness", TestFrameConstants.GLOBAL_POLL_INTERVAL_1_SEC,
-            TestFrameConstants.GLOBAL_TIMEOUT, KeycloakManifestInstaller::isReady);
+        return Wait.untilAsync("Keycloak operator readiness", KubeTestConstants.GLOBAL_POLL_INTERVAL_1_SEC,
+            KubeTestConstants.GLOBAL_TIMEOUT, KeycloakManifestInstaller::isReady);
     }
 
     private static boolean isReady() {

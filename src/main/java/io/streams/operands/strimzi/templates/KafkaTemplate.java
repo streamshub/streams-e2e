@@ -4,7 +4,6 @@
  */
 package io.streams.operands.strimzi.templates;
 
-import io.strimzi.api.ResourceAnnotations;
 import io.strimzi.api.kafka.model.kafka.KafkaBuilder;
 import io.strimzi.api.kafka.model.kafka.listener.GenericKafkaListenerBuilder;
 import io.strimzi.api.kafka.model.kafka.listener.KafkaListenerType;
@@ -15,8 +14,6 @@ public class KafkaTemplate {
         return new KafkaBuilder()
             .withNewMetadata()
             .withNamespace(namespace)
-            .addToAnnotations(ResourceAnnotations.ANNO_STRIMZI_IO_NODE_POOLS, "enabled")
-            .addToAnnotations(ResourceAnnotations.ANNO_STRIMZI_IO_KRAFT, "enabled")
             .withName(name)
             .endMetadata()
             .withNewSpec()
