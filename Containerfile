@@ -21,7 +21,7 @@ RUN export ARCH=$(case $(uname -m) in x86_64) echo -n amd64 ;; aarch64) echo -n 
     export OS=$(uname | awk '{print tolower($0)}') && \
     export OPERATOR_SDK_DL_URL=https://github.com/operator-framework/operator-sdk/releases/download/v${OPERATOR_SDK_VERSION} && \
     curl -L "https://mirror.openshift.com/pub/openshift-v4/clients/ocp/stable/openshift-client-linux-${ARCH}-rhel9.tar.gz" -o openshift-client-linux.tar.gz && \
-    tar -xzf openshift-client-linux.tar.gz && \
+    tar --no-same-owner -xzf openshift-client-linux.tar.gz && \
     chmod +x oc kubectl && \
     mv oc /usr/local/bin/ && \
     mv kubectl /usr/local/bin/ && \
@@ -30,7 +30,7 @@ RUN export ARCH=$(case $(uname -m) in x86_64) echo -n amd64 ;; aarch64) echo -n 
     chmod +x operator-sdk_${OS}_${ARCH} && \
     mv operator-sdk_${OS}_${ARCH} /usr/local/bin/operator-sdk  && \
     curl -fsSL -o helm.tar.gz "https://get.helm.sh/helm-v3.17.1-${OS}-${ARCH}.tar.gz" && \
-    tar -xzf helm.tar.gz && \
+    tar --no-same-owner -xzf helm.tar.gz && \
     mv "${OS}-${ARCH}/helm" /usr/local/bin/helm && \
     rm -rf helm.tar.gz "${OS}-${ARCH}"
 
