@@ -9,6 +9,8 @@ import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.NamespaceBuilder;
 import io.fabric8.kubernetes.api.model.Secret;
 import io.fabric8.kubernetes.api.model.SecretBuilder;
+import io.fabric8.kubernetes.api.model.SecretVolumeSourceBuilder;
+import io.fabric8.kubernetes.api.model.VolumeMountBuilder;
 import io.qameta.allure.Allure;
 import io.skodjob.annotations.Desc;
 import io.skodjob.annotations.Label;
@@ -36,9 +38,8 @@ import io.streams.operators.manifests.KeycloakManifestInstaller;
 import io.streams.sql.TestStatements;
 import io.streams.utils.StrimziClientUtils;
 import io.streams.utils.TestUtils;
-import io.strimzi.api.kafka.model.common.CertSecretSourceBuilder;
 import io.strimzi.api.kafka.model.kafka.listener.GenericKafkaListenerBuilder;
-import io.strimzi.api.kafka.model.kafka.listener.KafkaListenerAuthenticationOAuthBuilder;
+import io.strimzi.api.kafka.model.kafka.listener.KafkaListenerAuthenticationCustomBuilder;
 import io.strimzi.api.kafka.model.kafka.listener.KafkaListenerAuthenticationScramSha512;
 import io.strimzi.api.kafka.model.kafka.listener.KafkaListenerAuthenticationTls;
 import io.strimzi.api.kafka.model.kafka.listener.KafkaListenerType;
@@ -222,18 +223,42 @@ class SqlSecurityST extends Abstract {
                             .withTls(true)
                             .withType(KafkaListenerType.INTERNAL)
                             .withPort((9093))
-                            .withAuth(new KafkaListenerAuthenticationOAuthBuilder()
-                                .withValidIssuerUri(keycloakUrl + "/realms/streams-e2e")
-                                .withJwksEndpointUri(keycloakUrl + "/realms/streams-e2e/protocol/openid-connect/certs")
-                                .withUserNameClaim("preferred_username")
-                                .withTlsTrustedCertificates(new CertSecretSourceBuilder()
-                                    .withSecretName("keycloak-tls-secret")
-                                    .withCertificate("tls.crt")
-                                    .build()
-                                )
+                            .withAuth(new KafkaListenerAuthenticationCustomBuilder()
+                                .withSasl(true)
+                                .addToListenerConfig("sasl.enabled.mechanisms", "OAUTHBEARER")
+                                .addToListenerConfig("oauthbearer.sasl.server.callback.handler.class",
+                                    "io.strimzi.kafka.oauth.server.JaasServerOauthValidatorCallbackHandler")
+                                .addToListenerConfig("oauthbearer.sasl.jaas.config",
+                                    "org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginModule required"
+                                        + " unsecuredLoginStringClaim_sub=\"thePrincipalName\""
+                                        + " oauth.valid.issuer.uri=\"" + keycloakUrl + "/realms/streams-e2e\""
+                                        + " oauth.jwks.endpoint.uri=\""
+                                        + keycloakUrl + "/realms/streams-e2e/protocol/openid-connect/certs\""
+                                        + " oauth.username.claim=\"preferred_username\""
+                                        + " oauth.ssl.truststore.location=\"/mnt/oauth-certs/tls.crt\""
+                                        + " oauth.ssl.truststore.type=\"PEM\";")
+                                .addToListenerConfig("connections.max.reauth.ms", 3600000)
                                 .build())
                             .build()
                     )
+                    .addToConfig("principal.builder.class",
+                        "io.strimzi.kafka.oauth.server.OAuthKafkaPrincipalBuilder")
+                    .editOrNewTemplate()
+                    .editOrNewPod()
+                    .addNewVolume()
+                    .withName("oauth-certs")
+                    .withSecret(new SecretVolumeSourceBuilder()
+                        .withSecretName("keycloak-tls-secret")
+                        .build())
+                    .endVolume()
+                    .endPod()
+                    .editOrNewKafkaContainer()
+                    .addToVolumeMounts(new VolumeMountBuilder()
+                        .withName("oauth-certs")
+                        .withMountPath("/mnt/oauth-certs")
+                        .build())
+                    .endKafkaContainer()
+                    .endTemplate()
                     .endKafka()
                     .endSpec()
                     .build());

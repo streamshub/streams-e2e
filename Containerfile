@@ -12,8 +12,6 @@ ENV KUBECONFIG=/opt/kubeconfig/config
 ENV OPERATOR_SDK_VERSION=1.41.1
 ENV HELM_VERSION=3.17.3
 
-COPY . /opt/streams-e2e
-
 USER root
 RUN microdnf --setopt=install_weak_deps=0 --setopt=tsflags=nodocs install -y unzip git bsdtar && microdnf clean all
 
@@ -36,19 +34,27 @@ RUN export ARCH=$(case $(uname -m) in x86_64) echo -n amd64 ;; aarch64) echo -n 
     chmod +x /usr/local/bin/helm && \
     rm -rf helm.tar.gz ${OS}-${ARCH}
 
-
 RUN mkdir -p /opt/kubeconfig && chown 185:0 /opt/kubeconfig && \
-    chown -R 185:0 /opt/streams-e2e && chmod +x /opt/streams-e2e/mvnw
+    mkdir -p /opt/streams-e2e && chown -R 185:0 /opt/streams-e2e
+
+# Copy only build definition files first to cache dependency resolution
+COPY --chown=185:0 pom.xml mvnw /opt/streams-e2e/
+COPY --chown=185:0 .mvn /opt/streams-e2e/.mvn
 
 USER 185
 
 WORKDIR $STREAMS_HOME
 
+# Cache dependencies - only re-runs when pom.xml or wrapper changes
+RUN ./mvnw dependency:go-offline -B -q
+
+# Copy full source
+COPY --chown=185:0 . /opt/streams-e2e
+
 VOLUME ["/opt/kubeconfig"]
 VOLUME ["${STREAMS_HOME}/operator-install-files"]
 
-RUN ./mvnw dependency:go-offline -B -q \
-    && ./mvnw install -Pget-operator-files \
-    && ./mvnw compile test-compile -B -q -Dcheckstyle.skip=true
+# Download operator files (generate-sources) + compile main and test in one pass
+RUN ./mvnw test-compile -Pget-operator-files -B -q -Dcheckstyle.skip=true
 
 CMD ["./mvnw", "verify", "-Ptest"]
