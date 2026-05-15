@@ -62,7 +62,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
         @Label(value = FLINK),
     }
 )
-public class SqlExampleST extends Abstract {
+class SqlExampleST extends Abstract {
 
     String namespace = "flink";
     Path exampleFiles = TestConstants.YAML_MANIFEST_PATH.resolve("examples").resolve("sql-example");
@@ -99,7 +99,7 @@ public class SqlExampleST extends Abstract {
         }
     )
     @Test
-    void testRecommendationApp() throws IOException {
+    void testRecommendationApp() {
         Allure.step("Prepare " + namespace + " namespace", () -> {
             // Create namespace
             KubeResourceManager.get().createOrUpdateResourceWithWait(

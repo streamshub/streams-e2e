@@ -13,7 +13,7 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class SqlWithTest {
+class SqlWithTest {
     @Test
     void testCreateTableWithFilesystemConnector() {
         String expectedSql = "CREATE TABLE ProductInventoryTable ( product_id STRING, category STRING, stock STRING, rating STRING ) " +

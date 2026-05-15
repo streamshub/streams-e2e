@@ -79,7 +79,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
         @Label(value = FLINK),
     }
 )
-public class SqlSecurityST extends Abstract {
+class SqlSecurityST extends Abstract {
     final String kafkaClusterName = "my-cluster";
 
     @BeforeAll
