@@ -72,7 +72,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
         @Label(value = FLINK),
     }
 )
-public class SqlJobRunnerST extends Abstract {
+class SqlJobRunnerST extends Abstract {
     final String kafkaClusterName = "my-cluster";
 
     @BeforeAll
